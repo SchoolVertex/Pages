@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+<head>
+  <meta charset="UTF-8" />
+  <title>School Admission Form</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+    }
+    .form-container {
+      width: 900px;
+      /* margin: 20px auto; */
+      background: #fff;
+      /* padding: 20px; */
+      border: 1px solid #333;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .field {
+      flex: 1;
+    }
+    label {
+      font-size: 12px;
+      font-weight: bold;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 4px;
+      font-size: 13px;
+      box-sizing: border-box;
+    }
+    textarea {
+      resize: none;
+    }
+    .photo-box {
+      width: 120px;
+      height: 130px;
+      border: 1px solid #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    table, th, td {
+      border: 1px solid #333;
+    }
+    th, td {
+      padding: 5px;
+      font-size: 13px;
+      text-align: center;
+    }
+    .fees input {
+      text-align: right;
+    }
+    .print-btn {
+      margin-top: 15px;
+      text-align: center;
+    }
+    @media print {
+      body { background: #fff; }
+      .print-btn { display: none; }
+      .form-container { border: none; width: 100%; margin: 0; }
+    }
+  </style>
+</head>
+<body ng-controller="myCtrl">
+  <div class="form-container">
+    <div style="display:flex; align-items:center; border-bottom:2px solid #333; padding-bottom:10px; margin-bottom:15px;">
+      <div style="width:80px; height:80px; display:flex; align-items:center; justify-content:center; font-size:11px; margin-right:15px;">
+       <img src="{{orgInfo.Image}}" style="width:80px; height:80px;">
+      </div>
+      <div style="flex:1; text-align:center;">
+        <div style="font-size:20px; font-weight:bold;">{{orgInfo.Name}}</div>
+        <div style="font-size:13px;" ng-if="orgInfo.Description">{{orgInfo.Description}}</div>
+        <div style="font-size:12px;" ng-if="orgInfo.AffiliationInfo">{{orgInfo.AffiliationInfo}}</div>
+         <div style="font-size:12px;" ng-if="orgInfo.FullAddress">{{orgInfo.FullAddress}}</div>
+      </div>
+      <div style="font-size: 12px;">
+        Date: {{admInfo.CreatedDate | date:'dd-MM-yyyy'}}
+        <br />
+        Time: {{admInfo.CreatedDate | date:'HH:mm:ss'}}
+      </div>
+    </div>
+
+    <h2>Application Form</h2>
+
+    <div class="row">
+      <div class="field">
+        <!-- <label>Date</label><input type="date" ng-model="admInfo.CreatedDate" /> -->
+      <div class="field"><label>Student ID/Admission No</label><input type="text" /></div>
+      <div class="field"><label>Class</label><input type="text" /></div>
+      <div class="field"><label>1st Language</label><input type="text" /></div>
+      </div>
+      <div class="field">
+        <div class="field"><label>Gender</label><input type="text" ng-model="gender" /></div>
+      <div class="field"><label>Religion</label><input type="text" ng-model="admInfo.Religion" /></div>
+      <div class="field"><label>Caste</label><input type="text" ng-model="admInfo.Caste" /></div>
+      </div>
+      <div class="photo-box">Photo</div>
+    </div>
+
+    <div class="row">
+     
+    </div>
+
+    <div class="row">
+      <div class="field"><label>Student Name</label><input type="text" ng-model="admInfo.FullName" /></div>
+    </div>
+
+    <div class="row">
+      
+    </div>
+
+    <div class="row">
+      <div class="field"><label>Date of Birth</label><input type="date" ng-model="admInfo.DateOfBirth" /></div>
+      <div class="field"><label>Aadhar Number</label><input type="text" ng-model="admInfo.AadharNumber" /></div>
+    </div>
+
+    <div class="row">
+      <div class="field"><label>Father / Guardian Name</label><input type="text" ng-model="admInfo.FatherName" /></div>
+    </div>
+
+    <div class="row">
+      <div class="field"><label>Father Mobile</label><input type="text" ng-model="admInfo.FatherMobile" /></div>
+      <div class="field"><label>Father Aadhar</label><input type="text" /></div>
+    </div>
+
+    <div class="row">
+      <div class="field"><label>Mother Name</label><input type="text" ng-model="admInfo.MotherName" /></div>
+    </div>
+
+    <div class="row">
+      <div class="field"><label>Mother Mobile</label><input type="text" ng-model="admInfo.MotherMobile" /></div>
+      <div class="field"><label>Mother Aadhar</label><input type="text" /></div>
+    </div>
+
+    <div class="row">
+      <div class="field"><label>Communication Address</label><textarea rows="4" ng-model="admInfo.Address"></textarea></div>
+    </div>
+
+    <div class="row">
+      <div class="field"><label>Email ID</label><input type="email" /></div>
+      <div class="field"><label>Is Parent employee of GMS?</label><input type="text" /></div>
+      <div class="field"><label>If yes, EMP ID</label><input type="text" /></div>
+    </div>
+
+    <label>Details of Siblings</label>
+    <table>
+      <tr>
+        <th>S.No</th>
+        <th>Name</th>
+        <th>Branch</th>
+        <th>Class</th>
+      </tr>
+      <tr><td>1</td><td></td><td></td><td></td></tr>
+      <tr><td>2</td><td></td><td></td><td></td></tr>
+    </table>
+
+    <table class="fees">
+      <tr>
+        <th>Old Dues (Rs)</th>
+        <th>Net Tuition Fee</th>
+        <th>1st Term</th>
+        <th>2nd Term</th>
+        <th>3rd Term</th>
+      </tr>
+      <tr>
+        <td><input type="text" /></td>
+        <td><input type="text" /></td>
+        <td><input type="text" /></td>
+        <td><input type="text" /></td>
+        <td><input type="text" /></td>
+      </tr>
+    </table>
+
+    <div class="print-btn">
+      <button onclick="window.print()">Print Form</button>
+    </div>
+  </div>
+
+<script src="https://reports.schoolvertex.com/Admission/admission.js"></script>
+</body>
+</html>

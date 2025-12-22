@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>School Admission Confirmation Letter</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <style>
+        :root {
+            --ink: #101114;
+            --muted: #525866;
+            --brand: #1d4ed8;
+            --accent: #0ea5e9;
+            --border: #d6d8de;
+            --bg: #ffffff;
+            --fs-base: 16.5px;
+            --lh: 1.55;
+            --pad-page: 18mm;
+            --pad-block: 12px;
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            margin: 0;
+            background: #f3f5f7;
+            color: var(--ink);
+            font: var(--fs-base)/var(--lh) system-ui, "Segoe UI", Roboto, Helvetica, Arial
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 14px auto;
+            background: var(--bg);
+            box-shadow: 0 2px 16px rgba(10, 12, 18, .08)
+        }
+
+        .sheet {
+            padding: var(--pad-page)
+        }
+
+        .flex {
+            display: flex;
+            gap: 14px;
+            align-items: center
+        }
+
+        .grow {
+            flex: 1
+        }
+
+        .right {
+            text-align: right
+        }
+
+        h1 {
+            font-size: 28px;
+            margin: 0 0 4px;
+            letter-spacing: .2px
+        }
+
+        h2 {
+            font-size: 15px;
+            margin: 0 0 2px;
+            color: var(--muted);
+            font-weight: 600
+        }
+
+        .letter-title {
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin: 8px 0 12px;
+            font-size: 18px
+        }
+
+        .muted {
+            color: var(--muted)
+        }
+
+        .brand {
+            color: var(--brand)
+        }
+
+        .divider {
+            height: 2px;
+            background: grey;
+            margin: 12px 0 14px
+        }
+
+        .badge {
+            display: inline-block;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 5px 10px;
+            font-size: 13px;
+            color: var(--muted)
+        }
+
+        .meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 18px;
+            margin: 6px 0 12px;
+            font-size: 15px
+        }
+
+        .meta div {
+            display: flex;
+            gap: 8px
+        }
+
+        .meta label {
+            min-width: 142px;
+            color: var(--muted)
+        }
+
+        .block {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: var(--pad-block);
+            margin: 10px 0
+        }
+
+        table.details {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 4px 0;
+            font-size: 15.5px
+        }
+
+        .details th,
+        .details td {
+            border: 1px solid var(--border);
+            padding: 10px 12px;
+            text-align: left
+        }
+
+        .details th {
+            background: #f7f9fc;
+            font-weight: 700
+        }
+
+        .sign-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-top: 14px
+        }
+
+        .sign {
+            border: 1px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 10px
+        }
+
+        .sign .line {
+            border-bottom: 1px solid var(--border);
+            height: 28px;
+            margin: 8px 0 6px
+        }
+
+        .note {
+            font-size: 13px;
+            color: var(--muted)
+        }
+
+        .footer {
+            font-size: 12.5px;
+            color: var(--muted);
+            margin-top: 14px
+        }
+
+        .watermark {
+            position: absolute;
+            inset: auto 0 24mm;
+            text-align: center;
+            opacity: .2;
+            font-weight: 800;
+            font-size: 64px;
+            color: var(--brand)
+        }
+
+        .toolbar {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            background: #0b1220;
+            color: #fff;
+            padding: 10px 12px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            border-bottom: 1px solid #0f172a;
+            font-size: 14px
+        }
+
+        .toolbar button {
+            border: 0;
+            border-radius: 10px;
+            padding: 10px 14px;
+            cursor: pointer;
+            font-weight: 700;
+            background: #1f2937;
+            color: #e5e7eb;
+        }
+
+        .toolbar button.primary {
+            background: #1d4ed8
+        }
+
+        .toolbar .group {
+            display: flex;
+            gap: 6px
+        }
+
+        [data-edit] {
+            padding: 2px 4px;
+            border-radius: 6px;
+            transition: .2s
+        }
+
+        .editing [data-edit] {
+            outline: 1px dashed #60a5fa;
+            background: #eff6ff
+        }
+
+        .logo {
+            width: 120px;
+            height: 120px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            /* background: conic-gradient(from 180deg, var(--brand), var(--accent)); */
+            color: #fff;
+            box-shadow: inset 0 0 0 4px rgba(255, 255, 255, .25)
+        }
+
+        .crest {
+            width: 36px;
+            height: 36px
+        }
+
+        @page {
+            size: A4;
+            margin: 12mm 12mm 16mm 12mm
+        }
+
+        @media print {
+            .page {
+                box-shadow: none;
+                margin: 0
+            }
+
+            .sheet {
+                padding: 0
+            }
+
+            .toolbar {
+                display: none !important
+            }
+
+            :root {
+                --fs-base: 15.6px;
+                --pad-page: 0mm;
+                --pad-block: 10px
+            }
+        }
+    </style>
+</head>
+
+<body ng-controller="myCtrl">
+
+    <div class="toolbar">
+        <div class="group">
+            <button id="toggleEdit">Edit fields</button>
+            <button id="printBtn" class="primary">Lock & Print</button>
+        </div>
+    </div>
+
+    <div class="page">
+        <div class="sheet">
+
+            <div class="flex">
+                <div class="logo">
+                    <img ng-src="{{orgInfo.Image}}" alt="School Logo" style="height: 100%; width: 100%;">
+                </div>
+                <div class="grow" style="text-align: center;">
+                    <h1 class="brand" data-edit>{{orgInfo.Name}}</h1>
+                    <div class="muted" data-edit ng-if="orgInfo.AffiliationInfo">{{orgInfo.Description}} - {{orgInfo.AffiliationInfo}}</div>
+                    <div class="muted" data-edit ng-if="orgInfo.FullAddress">{{orgInfo.FullAddress}}</div>
+                </div>
+                <!-- <div class="right">
+        <span class="badge" data-edit>Academic Year: 2025–2026</span>
+        <div class="muted" style="margin-top:6px">Document ID: <span data-edit>ADM-2025-00173</span></div>
+      </div> -->
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="letter-title" style="text-align: center;">
+                <span>Admission Confirmation Letter</span>
+            </div>
+
+            <!-- <div class="meta">
+      <div><label>Date:</label> <span data-edit>08 November 2025</span></div>
+      <div><label>Place:</label> <span data-edit>Springfield</span></div>
+      <div><label>Parent/Guardian:</label> <span data-edit>Mrs. Ananya Rao</span></div>
+      <div><label>Contact:</label> <span data-edit>+91 90000 11111</span></div>
+      <div><label>Address:</label> <span data-edit>12, Maple Residency, Sector 5</span></div>
+      <div><label>Student Name:</label> <span data-edit>Aarav Rao</span></div>
+    </div> -->
+
+            <div class="block">
+                <p>Dear Parent/Guardian,</p>
+                <p>We are pleased to formally confirm the admission of <strong data-edit>{{admInfo.FullName}}</strong> to <strong
+                        data-edit>{{GradeName}}</strong> at <strong>{{orgInfo.Name}}</strong> for the academic year <strong
+                        data-edit>{{admInfo.YearId}}</strong>.
+                    Your decision to choose {{orgInfo.Name}} reflects a thoughtful commitment to providing a strong academic
+                    foundation and a supportive learning environment for your child.
+                </p>
+                <p>At {{orgInfo.Name}}, we are dedicated to maintaining high standards of academic excellence, discipline,
+                    and holistic development. We look forward to partnering with you in guiding Ananya toward a
+                    successful and enriching educational journey.</p>
+
+                <p>Please find the admission details below.</p>
+
+            </div>
+
+            <table class="details">
+                <tr>
+                    <th>Father Name</th>
+                    <td data-edit>{{admInfo.FatherName}}</td>
+                    <th>Mother Name</th>
+                    <td data-edit>{{admInfo.MotherName}}</td>
+                </tr>
+                <tr>
+                    <th>Address</th>
+                    <td data-edit colspan="3">{{admInfo.Address}}</td>
+                </tr>
+                <tr>
+                    <th>Date Of Birth</th>
+                    <td data-edit>{{admInfo.CreatedDate | date:'dd-MM-yyyy'}}</td>
+                    <th>Date of Admission</th>
+                    <td data-edit>{{admInfo.CreatedDate | date:'dd-MM-yyyy'}}</td>
+                </tr>
+                <tr>
+                    <th>Fees Received</th>
+                    <td data-edit>₹ 42,000 (Term I)</td>
+                    <th>Payment Mode</th>
+                    <td data-edit>UPI</td>
+                </tr>
+                <!-- <tr>
+                    <th>Transport</th>
+                    <td data-edit>Route 7 (Blue)</td>
+                    <th>Meal Plan</th>
+                    <td data-edit>Not opted</td>
+                </tr> -->
+            </table>
+
+            <div class="block">
+                <strong>Documents Received:</strong>
+                <ul style="margin:8px 0 0 18px">
+                    <li><span data-edit>Birth Certificate</span></li>
+                    <li><span data-edit>Previous Report Card</span></li>
+                    <li><span data-edit>Transfer Certificate</span></li>
+                    <li><span data-edit>4 Passport Photos</span></li>
+                </ul>
+            </div>
+
+            <!-- Instructions -->
+            <div class="block">
+                <strong>Important Information:</strong>
+                <ol style="margin:8px 0 0 18px">
+                    <li>School reopening for new students: <span data-edit>Monday, 17 November 2025</span>.</li>
+                    <li>Orientation and textbook distribution: <span data-edit>14 November 2025, 9:30 AM</span>.</li>
+                    <li>School timing for Grade 3: <span data-edit>8:15 AM – 2:45 PM</span> (Mon–Fri).</li>
+                    <li>Kindly display the parent ID at the gate during the first week.</li>
+                </ol>
+            </div>
+
+            <div class="sign-row" style="text-align: center;">
+                <!-- <div class="sign">
+                    <div class="muted">Admissions Officer</div>
+                    <div class="line"></div>
+                    <strong data-edit>Officer Name</strong>
+                </div> -->
+                <div class="sign">
+                    <div class="muted">Principal</div>
+                    <div class="line"></div>
+                    <strong data-edit>Principal Name</strong>
+                </div>
+                <div class="sign">
+                    <div class="muted">Parent/Guardian</div>
+                    <div class="line"></div>
+                    <strong data-edit>{{admInfo.FatherName}}</strong>
+                </div>
+            </div>
+
+            <!-- <div class="footer">
+      For any clarification, contact <span data-edit>+91 98765 43210</span>.
+    </div> -->
+
+            <div class="watermark">ADMITTED</div>
+
+        </div>
+    </div>
+
+    <script>
+        const root = document.body, btnEdit = document.getElementById('toggleEdit'), btnPrint = document.getElementById('printBtn');
+        let isEditing = false;
+        function editable() { return document.querySelectorAll('[data-edit]'); }
+        function setEditable(f) { editable().forEach(e => e.contentEditable = f ? "true" : "false"); root.classList.toggle('editing', f); btnEdit.textContent = f ? "Finish Editing" : "Edit fields"; }
+        btnEdit.onclick = () => { isEditing = !isEditing; setEditable(isEditing); }
+        btnPrint.onclick = () => { setEditable(false); window.getSelection()?.removeAllRanges(); window.print(); }
+        setEditable(false);
+    </script>
+
+    <script src="https://gitcdnsv.github.io/SchoolSettings/Admission/admission.js"></script>
+</body>
+
+
+</html>
