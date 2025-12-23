@@ -2,7 +2,7 @@
 <html lang="en" ng-app="myApp">
 <head>
 <meta charset="UTF-8">
-<title>Admission Form - Ridge Board International School</title>
+<title>Admission Form</title>
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
 
 <style>
@@ -110,14 +110,13 @@
 <div class="page">
     <div class="header">
         <div class="logo-container">
-            <img ng-src="{{orgInfo.Image}}" width="80" ng-if="orgInfo.Image">
+            <img ng-src="{{orgInfo.Image}}" width="115" ng-if="orgInfo.Image">
             <img src="https://via.placeholder.com/80?text=LOGO" width="80" ng-if="!orgInfo.Image">
         </div>
         <div class="school-info">
-            <h1>RIDGE BOARD</h1>
-            <h2>INTERNATIONAL SCHOOL</h2>
-            <div class="tagline">Tradition # Technology</div>
-            <div class="address">{{orgInfo.FullAddress || 'Plot No. 1, Suraksha Hills, Ameenpur Road, Chandanagar, Hyderabad - 500 050.'}}</div>
+            <h1>{{orgInfo.Name}}</h1>
+            <div class="tagline">{{orgInfo.Description}}</div>
+            <div class="address">{{orgInfo.FullAddress}}</div>
         </div>
         <div class="photo-box">PHOTO</div>
     </div>
@@ -128,9 +127,7 @@
         <div class="field"><span class="label">Application Form No.:</span><span class="value-box">{{admInfo.AdmisssionId}}</span></div>
         <div class="field">
             <span class="label">Date of Admission:</span>
-            <div class="grid-box">
-                <div class="grid-cell" ng-repeat="c in (admInfo.CreatedDate | date:'ddMMyyyy').split('') track by $index">{{c}}</div>
-            </div>
+            <span class="value-box">{{admInfo.CreatedDate | date:'dd-MM-yyyy'}}</span>
         </div>
     </div>
 
@@ -145,7 +142,7 @@
             <div class="field">
                 <span class="label">Student Aadhar No.:</span>
                 <div class="grid-box">
-                    <div class="grid-cell" style="width:15px" ng-repeat="x in [1,2,3,4,5,6,7,8,9,10,11,12]"></div>
+                    <div class="grid-cell" style="width:20px" ng-repeat="x in [1,2,3,4,5,6,7,8,9,10,11,12]"></div>
                 </div>
             </div>
         </div>
@@ -210,7 +207,7 @@
         <div class="field"><span class="label">E-Mail ID:</span><span class="value-box"></span></div>
         <div class="field">
             <span class="label">Aadhar No.:</span>
-            <div class="grid-box"><div class="grid-cell" style="width:15px" ng-repeat="x in [1,2,3,4,5,6,7,8,9,10,11,12]"></div></div>
+            <div class="grid-box"><div class="grid-cell" style="width:20px" ng-repeat="x in [1,2,3,4,5,6,7,8,9,10,11,12]"></div></div>
         </div>
     </div>
     <div class="field" style="margin:8px 0;"><span class="label">Residential Address:</span><span class="value-box">{{admInfo.Address}}</span></div>
@@ -232,7 +229,7 @@
         <div class="field"><span class="label">Ph. No.:</span><span class="value-box">{{admInfo.MotherMobile}}</span></div>
         <div class="field">
             <span class="label">Aadhar No.:</span>
-            <div class="grid-box"><div class="grid-cell" style="width:15px" ng-repeat="x in [1,2,3,4,5,6,7,8,9,10,11,12]"></div></div>
+            <div class="grid-box"><div class="grid-cell" style="width:20px" ng-repeat="x in [1,2,3,4,5,6,7,8,9,10,11,12]"></div></div>
         </div>
     </div>
 
@@ -240,7 +237,7 @@
     <div class="field" style="margin:10px 0;"><span class="label">Guardian's Name:</span><span class="value-box"></span></div>
     <div class="row">
         <div class="field"><span class="label">Contact No.:</span><span class="value-box"></span></div>
-        <div class="field"><span class="label">Aadhar No.:</span><span class="value-box"></span></div>
+        <div class="field"><span class="label">Aadhar No.:</span><div class="grid-box"><div class="grid-cell" style="width:20px" ng-repeat="x in [1,2,3,4,5,6,7,8,9,10,11,12]"></div></div></div>
     </div>
 
     <div class="beige-section" style="margin-top:30px;">
@@ -270,7 +267,7 @@
 
     <div class="row" style="margin-top:30px;">
         <span class="label">Date :</span>
-        <div class="grid-box"><div class="grid-cell" style="width:15px" ng-repeat="x in [1,2,3,4,5,6,7,8]"></div></div>
+        <div class="grid-box"><div class="grid-cell" style="width:25px; height: 25px;" ng-repeat="x in [1,2,3,4,5,6,7,8]"></div></div>
     </div>
 
     <div class="signature-row">
