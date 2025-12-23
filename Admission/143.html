@@ -1,197 +1,307 @@
 <!DOCTYPE html>
 <html lang="en" ng-app="myApp">
 <head>
-  <meta charset="UTF-8" />
-  <title>School Admission Form</title>
-  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
-  <style>
+<meta charset="UTF-8">
+<title>Admission Form - Ridge Board International School</title>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+    :root {
+        --maroon: #800000;
+        --navy: #1a237e;
+        --beige: #fdf5e6;
+        --border-color: #800000;
+    }
+
+    * { box-sizing: border-box; -webkit-print-color-adjust: exact; }
+
     body {
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
+        margin: 0; padding: 0;
+        font-family: 'Roboto', sans-serif;
+        font-size: 12px;
+        background: #f0f0f0;
     }
-    .form-container {
-      width: 900px;
-      /* margin: 20px auto; */
-      background: #fff;
-      /* padding: 20px; */
-      border: 1px solid #333;
+
+    .page {
+        width: 210mm;
+        height: 296mm; /* Slight adjustment for bleed */
+        padding: 10mm;
+        margin: 10mm auto;
+        background: white;
+        border: 8px double var(--maroon);
+        position: relative;
+        overflow: hidden;
     }
-    h2 {
-      text-align: center;
-      margin-bottom: 10px;
-    }
-    .row {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 8px;
-    }
-    .field {
-      flex: 1;
-    }
-    label {
-      font-size: 12px;
-      font-weight: bold;
-    }
-    input, textarea {
-      width: 100%;
-      padding: 4px;
-      font-size: 13px;
-      box-sizing: border-box;
-    }
-    textarea {
-      resize: none;
-    }
-    .photo-box {
-      width: 120px;
-      height: 130px;
-      border: 1px solid #333;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-    table, th, td {
-      border: 1px solid #333;
-    }
-    th, td {
-      padding: 5px;
-      font-size: 13px;
-      text-align: center;
-    }
-    .fees input {
-      text-align: right;
-    }
-    .print-btn {
-      margin-top: 15px;
-      text-align: center;
-    }
+
     @media print {
-      body { background: #fff; }
-      .print-btn { display: none; }
-      .form-container { border: none; width: 100%; margin: 0; }
+        body { background: none; }
+        .page { margin: 0; border: 8px double var(--maroon); page-break-after: always; }
     }
-  </style>
+
+    /* Header Styles */
+    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+    .logo-container { width: 15%; text-align: center; }
+    .school-info { width: 70%; text-align: center; }
+    .photo-box { 
+        width: 100px; height: 120px; 
+        border: 1px dashed #666; 
+        display: flex; align-items: center; justify-content: center;
+        font-size: 10px; color: #666; font-weight: bold;
+        transform: rotate(5deg);
+    }
+
+    .school-info h1 { 
+        color: var(--maroon); font-size: 32px; margin: 0; font-weight: 800; letter-spacing: 1px;
+    }
+    .school-info h2 { font-size: 20px; margin: 5px 0; letter-spacing: 2px; }
+    .tagline { 
+        background: #d4a76a; color: white; display: inline-block; 
+        padding: 2px 15px; font-style: italic; border-radius: 4px; font-size: 14px;
+    }
+    .address { font-size: 11px; margin-top: 8px; color: #333; }
+
+    /* Titles */
+    .main-title { 
+        background: var(--navy); color: white; text-align: center; 
+        padding: 6px; font-weight: bold; font-size: 16px; margin: 15px 0;
+        letter-spacing: 1px;
+    }
+
+    /* Forms & Layout */
+    .row { display: flex; gap: 15px; margin-bottom: 10px; align-items: center; }
+    .field { display: flex; flex: 1; align-items: flex-end; }
+    .label { font-weight: bold; white-space: nowrap; margin-right: 5px; }
+    .value-box { 
+        border-bottom: 1px solid #ccc; flex-grow: 1; min-height: 18px; 
+        padding-left: 5px; color: #1a237e; font-weight: bold;
+    }
+
+    .grid-box { 
+        display: inline-flex; border: 1px solid #999; margin-left: 5px;
+    }
+    .grid-cell { 
+        width: 20px; height: 20px; border-right: 1px solid #999; 
+        text-align: center; line-height: 20px; 
+    }
+    .grid-cell:last-child { border-right: none; }
+
+    /* Beige Sections */
+    .beige-section { 
+        background: var(--beige); border-radius: 15px; padding: 15px; margin-bottom: 15px; 
+    }
+    .section-header { font-weight: bold; text-decoration: underline; margin-bottom: 10px; display: block; }
+
+    /* Checkboxes */
+    .checkbox-container { display: flex; gap: 20px; margin: 10px 0; flex-wrap: wrap; }
+    .checkbox-item { display: flex; align-items: center; gap: 5px; }
+    .check-sq { width: 14px; height: 14px; border: 1px solid #666; background: white; }
+
+    /* Page 2 Specific */
+    .declaration { margin-top: 30px; line-height: 1.6; text-align: justify; }
+    .signature-row { display: flex; justify-content: space-between; margin-top: 60px; font-weight: bold; border-top: 1px solid transparent; }
+    .sign-line { border-top: 1px solid #000; width: 200px; text-align: center; padding-top: 5px; }
+
+</style>
 </head>
+
 <body ng-controller="myCtrl">
-  <div class="form-container">
-    <div style="display:flex; align-items:center; border-bottom:2px solid #333; padding-bottom:10px; margin-bottom:15px;">
-      <div style="width:80px; height:80px; display:flex; align-items:center; justify-content:center; font-size:11px; margin-right:15px;">
-       <img src="{{orgInfo.Image}}" style="width:80px; height:80px;">
-      </div>
-      <div style="flex:1; text-align:center;">
-        <div style="font-size:20px; font-weight:bold;">{{orgInfo.Name}}</div>
-        <div style="font-size:13px;" ng-if="orgInfo.Description">{{orgInfo.Description}}</div>
-        <div style="font-size:12px;" ng-if="orgInfo.AffiliationInfo">{{orgInfo.AffiliationInfo}}</div>
-         <div style="font-size:12px;" ng-if="orgInfo.FullAddress">{{orgInfo.FullAddress}}</div>
-      </div>
-      <div style="font-size: 12px;">
-        Date: {{admInfo.CreatedDate | date:'dd-MM-yyyy'}}
-        <br />
-        Time: {{admInfo.CreatedDate | date:'HH:mm:ss'}}
-      </div>
+
+<div class="page">
+    <div class="header">
+        <div class="logo-container">
+            <img ng-src="{{orgInfo.Image}}" width="80" ng-if="orgInfo.Image">
+            <img src="https://via.placeholder.com/80?text=LOGO" width="80" ng-if="!orgInfo.Image">
+        </div>
+        <div class="school-info">
+            <h1>RIDGE BOARD</h1>
+            <h2>INTERNATIONAL SCHOOL</h2>
+            <div class="tagline">Tradition # Technology</div>
+            <div class="address">{{orgInfo.FullAddress || 'Plot No. 1, Suraksha Hills, Ameenpur Road, Chandanagar, Hyderabad - 500 050.'}}</div>
+        </div>
+        <div class="photo-box">PHOTO</div>
     </div>
 
-    <h2>Application Form</h2>
+    <div class="main-title">ADMISSION FORM</div>
 
     <div class="row">
-      <div class="field">
-        <!-- <label>Date</label><input type="date" ng-model="admInfo.CreatedDate" /> -->
-      <div class="field"><label>Student ID/Admission No</label><input type="text" /></div>
-      <div class="field"><label>Class</label><input type="text" /></div>
-      <div class="field"><label>1st Language</label><input type="text" /></div>
-      </div>
-      <div class="field">
-        <div class="field"><label>Gender</label><input type="text" ng-model="gender" /></div>
-      <div class="field"><label>Religion</label><input type="text" ng-model="admInfo.Religion" /></div>
-      <div class="field"><label>Caste</label><input type="text" ng-model="admInfo.Caste" /></div>
-      </div>
-      <div class="photo-box">Photo</div>
+        <div class="field"><span class="label">Application Form No.:</span><span class="value-box">{{admInfo.AdmisssionId}}</span></div>
+        <div class="field">
+            <span class="label">Date of Admission:</span>
+            <div class="grid-box">
+                <div class="grid-cell" ng-repeat="c in (admInfo.CreatedDate | date:'ddMMyyyy').split('') track by $index">{{c}}</div>
+            </div>
+        </div>
     </div>
 
     <div class="row">
-     
+        <div class="field"><span class="label">Class of Admission:</span><span class="value-box">{{GradeName}}</span></div>
+        <div class="field"><span class="label">Session:</span><span class="value-box">{{admInfo.YearId}}</span></div>
     </div>
 
+    <div class="beige-section">
+        <div class="row">
+            <div class="field"><span class="label">Student PEN No.:</span><span class="value-box"></span></div>
+            <div class="field">
+                <span class="label">Student Aadhar No.:</span>
+                <div class="grid-box">
+                    <div class="grid-cell" style="width:15px" ng-repeat="x in [1,2,3,4,5,6,7,8,9,10,11,12]"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="field" style="margin: 10px 0;">
+            <span class="label">Name of the Student:</span>
+            <span class="value-box">{{admInfo.FullName | uppercase}}</span>
+        </div>
+        <small style="display:block; text-align:center; font-size:9px; margin-top:-8px;">(NAME SHOULD BE FIELD IN BLOCK LETTERS)</small>
+
+        <div class="row" style="margin-top:10px;">
+            <div class="field"><span class="label">Date of Birth:</span><span class="value-box">{{admInfo.DateOfBirth | date:'dd-MM-yyyy'}}</span></div>
+            <div class="field"><span class="label">Gender:</span><span class="value-box">{{gender}}</span></div>
+        </div>
+
+        <div class="row">
+            <div class="field"><span class="label">Nationality:</span><span class="value-box">Indian</span></div>
+            <div class="field"><span class="label">Religion:</span><span class="value-box">{{admInfo.Religion}}</span></div>
+            <div class="field"><span class="label">Mother Tongue:</span><span class="value-box">{{admInfo.MotherTougue}}</span></div>
+        </div>
+
+        <div class="row">
+            <div class="field"><span class="label">Caste (OC/BC/SC/ST/Other):</span><span class="value-box">{{admInfo.Caste}}</span></div>
+            <div class="field"><span class="label">Sub caste (BC-A/B/C/D/E):</span><span class="value-box">{{admInfo.SubCaste}}</span></div>
+        </div>
+
+        <div class="field" style="margin:10px 0;"><span class="label">Name of the School Last Studied:</span><span class="value-box"></span></div>
+        
+        <div class="row">
+            <div class="field" style="flex:2"><span class="label">Last Class Attended:</span><span class="value-box"></span></div>
+            <div class="field"><span class="label">% of Marks:</span><span class="value-box"></span></div>
+        </div>
+
+        <span class="section-header">STUDENT IDENTIFICATION MARKS (MOLES) :</span>
+        <div class="field" style="margin:5px 0;"><span class="label">1. A Mole on the</span><span class="value-box"></span></div>
+        <div class="field" style="margin:5px 0;"><span class="label">2. A Mole on the</span><span class="value-box"></span></div>
+
+        <span class="section-header" style="margin-top:15px;">STUDENT HEALTH PROFILE :</span>
+        <div class="checkbox-container">
+            <div class="checkbox-item"><div class="check-sq"></div> Allergies</div>
+            <div class="checkbox-item"><div class="check-sq"></div> Health Chronic</div>
+            <div class="checkbox-item"><div class="check-sq"></div> Under Medication</div>
+            <div class="checkbox-item"><div class="check-sq"></div> Under Gone any Surgeries</div>
+        </div>
+        <div class="field" style="margin-top:10px;">
+            <div style="width:100%; border:1px solid #ccc; height:60px; padding:5px; background:white;">
+                <small>Student Health Concerns if any (Brief Description and Measures to be taken in such a case by the school) :</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-title">FATHER'S PROFILE</div>
     <div class="row">
-      <div class="field"><label>Student Name</label><input type="text" ng-model="admInfo.FullName" /></div>
+        <div class="field"><span class="label">Father's Name:</span><span class="value-box">{{admInfo.FatherName}}</span></div>
+        <div class="field"><span class="label">Qualification:</span><span class="value-box"></span></div>
     </div>
-
     <div class="row">
-      
+        <div class="field"><span class="label">Occupation:</span><span class="value-box">{{admInfo.FatherOccupation}}</span></div>
+        <div class="field"><span class="label">Designation:</span><span class="value-box"></span></div>
     </div>
-
     <div class="row">
-      <div class="field"><label>Date of Birth</label><input type="date" ng-model="admInfo.DateOfBirth" /></div>
-      <div class="field"><label>Aadhar Number</label><input type="text" ng-model="admInfo.AadharNumber" /></div>
+        <div class="field"><span class="label">E-Mail ID:</span><span class="value-box"></span></div>
+        <div class="field">
+            <span class="label">Aadhar No.:</span>
+            <div class="grid-box"><div class="grid-cell" style="width:15px" ng-repeat="x in [1,2,3,4,5,6,7,8,9,10,11,12]"></div></div>
+        </div>
     </div>
+    <div class="field" style="margin:8px 0;"><span class="label">Residential Address:</span><span class="value-box">{{admInfo.Address}}</span></div>
+    <div class="field" style="margin:8px 0;"><span class="label">Work Place Address:</span><span class="value-box"></span></div>
+    <div class="field"><span class="label">Father Contact No.:</span><span class="value-box">{{admInfo.FatherMobile}}</span></div>
+</div>
 
+<div class="page">
+    <div class="main-title">MOTHER'S PROFILE</div>
     <div class="row">
-      <div class="field"><label>Father / Guardian Name</label><input type="text" ng-model="admInfo.FatherName" /></div>
+        <div class="field"><span class="label">Mother's Name:</span><span class="value-box">{{admInfo.MotherName}}</span></div>
+        <div class="field"><span class="label">Qualification:</span><span class="value-box"></span></div>
     </div>
-
     <div class="row">
-      <div class="field"><label>Father Mobile</label><input type="text" ng-model="admInfo.FatherMobile" /></div>
-      <div class="field"><label>Father Aadhar</label><input type="text" /></div>
+        <div class="field"><span class="label">Occupation:</span><span class="value-box">{{admInfo.MotherOccupation}}</span></div>
+        <div class="field"><span class="label">Designation:</span><span class="value-box"></span></div>
     </div>
-
     <div class="row">
-      <div class="field"><label>Mother Name</label><input type="text" ng-model="admInfo.MotherName" /></div>
+        <div class="field"><span class="label">Ph. No.:</span><span class="value-box">{{admInfo.MotherMobile}}</span></div>
+        <div class="field">
+            <span class="label">Aadhar No.:</span>
+            <div class="grid-box"><div class="grid-cell" style="width:15px" ng-repeat="x in [1,2,3,4,5,6,7,8,9,10,11,12]"></div></div>
+        </div>
     </div>
 
+    <div class="main-title" style="margin-top:30px;">GUARDIAN'S PROFILE</div>
+    <div class="field" style="margin:10px 0;"><span class="label">Guardian's Name:</span><span class="value-box"></span></div>
     <div class="row">
-      <div class="field"><label>Mother Mobile</label><input type="text" ng-model="admInfo.MotherMobile" /></div>
-      <div class="field"><label>Mother Aadhar</label><input type="text" /></div>
+        <div class="field"><span class="label">Contact No.:</span><span class="value-box"></span></div>
+        <div class="field"><span class="label">Aadhar No.:</span><span class="value-box"></span></div>
     </div>
 
-    <div class="row">
-      <div class="field"><label>Communication Address</label><textarea rows="4" ng-model="admInfo.Address"></textarea></div>
+    <div class="beige-section" style="margin-top:30px;">
+        <div class="main-title" style="width:120px; margin: -25px auto 15px auto;">OFFICE USE</div>
+        <div class="row">
+            <div class="field"><span class="label">Admission No:</span><span class="value-box"></span></div>
+            <div class="field"><span class="label">Class of Admission:</span><span class="value-box"></span></div>
+        </div>
+        <div class="field" style="margin:10px 0;"><span class="label">Transport Requirement from Area:</span><span class="value-box"></span></div>
+        <div style="background:white; border:1px solid #ccc; height:40px; margin-bottom:15px;"></div>
+
+        <span class="section-header">DOCUMENT'S SUBMITTED</span>
+        <div class="checkbox-container">
+            <div class="checkbox-item"><div class="check-sq"></div> Student Birth Certificate</div>
+            <div class="checkbox-item"><div class="check-sq"></div> Student Aadhar Copy</div>
+            <div class="checkbox-item"><div class="check-sq"></div> Father Aadhar Copy</div>
+            <div class="checkbox-item"><div class="check-sq"></div> Mother Aadhar Copy</div>
+            <div class="checkbox-item"><div class="check-sq"></div> Original TC/Record Sheet</div>
+            <div class="checkbox-item"><div class="check-sq"></div> Bonafide/Conduct Certificate</div>
+        </div>
     </div>
 
-    <div class="row">
-      <div class="field"><label>Email ID</label><input type="email" /></div>
-      <div class="field"><label>Is Parent employee of GMS?</label><input type="text" /></div>
-      <div class="field"><label>If yes, EMP ID</label><input type="text" /></div>
+    <div class="main-title" style="margin-top:40px;">DECLARATION FROM THE PARENT</div>
+    <p class="declaration">
+        I <span style="display:inline-block; border-bottom:1px solid #000; width:300px;"></span> do solemnly declare & certify that the particulars given by me are accurate. I have understood the rules and Regulations of the school and it shall be my responsibility to see that my ward shall unquestionably abide by the decision of the Head Master / Management and render all Co-operation to the school.
+    </p>
+
+    <div class="row" style="margin-top:30px;">
+        <span class="label">Date :</span>
+        <div class="grid-box"><div class="grid-cell" style="width:15px" ng-repeat="x in [1,2,3,4,5,6,7,8]"></div></div>
     </div>
 
-    <label>Details of Siblings</label>
-    <table>
-      <tr>
-        <th>S.No</th>
-        <th>Name</th>
-        <th>Branch</th>
-        <th>Class</th>
-      </tr>
-      <tr><td>1</td><td></td><td></td><td></td></tr>
-      <tr><td>2</td><td></td><td></td><td></td></tr>
-    </table>
-
-    <table class="fees">
-      <tr>
-        <th>Old Dues (Rs)</th>
-        <th>Net Tuition Fee</th>
-        <th>1st Term</th>
-        <th>2nd Term</th>
-        <th>3rd Term</th>
-      </tr>
-      <tr>
-        <td><input type="text" /></td>
-        <td><input type="text" /></td>
-        <td><input type="text" /></td>
-        <td><input type="text" /></td>
-        <td><input type="text" /></td>
-      </tr>
-    </table>
-
-    <div class="print-btn">
-      <button onclick="window.print()">Print Form</button>
+    <div class="signature-row">
+        <div class="sign-line">Signature of the Parent / Guardian</div>
+        <div class="sign-line">Head of the Institution</div>
     </div>
-  </div>
+</div>
 
-<script src="https://reports.schoolvertex.com/Admission/admission.js"></script>
+<script>
+var app = angular.module("myApp", []);
+app.controller("myCtrl", function ($scope, $http) {
+    const baseUrl = 'https://api.schoolvertex.com/api';
+    const q = new URLSearchParams(location.search);
+
+    // Default data for preview if API fails
+    $scope.orgInfo = { Name: "RIDGE BOARD", Description: "Tradition # Technology" };
+
+    $http.get(`${baseUrl}/Organisation/GetInfoForCertificate/${q.get('orgid')}`)
+    .then(r => $scope.orgInfo = r.data);
+
+    $http.get(`${baseUrl}/AdmissionReport/GetById/${q.get('id')}`)
+    .then(r => {
+        $scope.admInfo = r.data;
+        $scope.gender = r.data.GenderId == 501 ? 'Male' : 'Female';
+        $scope.admInfo.DateOfBirth = new Date(r.data.DateOfBirth);
+        $scope.admInfo.CreatedDate = new Date(r.data.CreatedDate);
+        $scope.GradeName = r.data.GradeName || 'Class';
+    });
+});
+</script>
+
 </body>
 </html>
