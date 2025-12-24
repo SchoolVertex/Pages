@@ -2,7 +2,7 @@
 <html lang="en" ng-app="myApp">
 <head>
 <meta charset="UTF-8">
-<title>Admission Form</title>
+<title>Fee Declaration</title>
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
 
 <style>
@@ -26,7 +26,7 @@
 
     .page {
         width: 210mm;
-        height: 296mm; /* Slight adjustment for bleed */
+        height: 290mm; /* Slight adjustment for bleed */
         padding: 10mm;
         margin: 10mm auto;
         background: white;
@@ -35,10 +35,10 @@
         overflow: hidden;
     }
 
-    @media print {
+    /* @media print {
         body { background: none; }
         .page { margin: 0; border: 8px double var(--maroon); page-break-after: always; }
-    }
+    } */
 
     /* Header Styles */
     .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
