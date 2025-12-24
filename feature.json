@@ -1,4 +1,5 @@
 {
   "Admission": [143,153],
-  "ThermalReceipt": [30, 139, 151]
+  "ThermalReceipt": [30, 139, 151],
+  "FeeDeclaration": []
 }
