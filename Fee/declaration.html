@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+<head>
+<meta charset="UTF-8">
+<title>Admission Form</title>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+    :root {
+        --maroon: #800000;
+        --navy: #1a237e;
+        --beige: #fdf5e6;
+        --border-color: #800000;
+    }
+
+    * { box-sizing: border-box; -webkit-print-color-adjust: exact; }
+
+    body {
+        margin: 0; padding: 0;
+        font-family: 'Roboto', sans-serif;
+        font-size: 12px;
+        background: #f0f0f0;
+    }
+
+    .page {
+        width: 210mm;
+        height: 296mm; /* Slight adjustment for bleed */
+        padding: 10mm;
+        margin: 10mm auto;
+        background: white;
+        border: 8px double var(--maroon);
+        position: relative;
+        overflow: hidden;
+    }
+
+    @media print {
+        body { background: none; }
+        .page { margin: 0; border: 8px double var(--maroon); page-break-after: always; }
+    }
+
+    /* Header Styles */
+    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+    .logo-container { width: 15%; text-align: center; }
+    .school-info { width: 85%; text-align: center; }
+    .photo-box { 
+        width: 100px; height: 120px; 
+        border: 1px dashed #666; 
+        display: flex; align-items: center; justify-content: center;
+        font-size: 10px; color: #666; font-weight: bold;
+    }
+
+    .school-info h1 { 
+        color: var(--maroon); font-size: 32px; margin: 0; font-weight: 800; letter-spacing: 1px;
+    }
+    .school-info h2 { font-size: 20px; margin: 5px 0; letter-spacing: 2px; }
+    .tagline { 
+        background: #d4a76a; color: white; display: inline-block; 
+        padding: 2px 15px; font-style: italic; border-radius: 4px; font-size: 14px;
+    }
+    .address { font-size: 11px; margin-top: 8px; color: #333; }
+
+    /* Titles */
+    .main-title { 
+        background: var(--navy); color: white; text-align: center; 
+        padding: 6px; font-weight: bold; font-size: 16px; margin: 15px 0;
+        letter-spacing: 1px;
+    }
+
+    /* Forms & Layout */
+    .row { display: flex; gap: 15px; margin-bottom: 20px; align-items: center; }
+    .field { display: flex; flex: 1; align-items: flex-end; }
+    .label { font-weight: bold; white-space: nowrap; margin-right: 5px; }
+    .value-box { 
+        border-bottom: 1px solid #ccc; flex-grow: 1; min-height: 18px; 
+        padding-left: 5px; color: #1a237e; font-weight: bold;
+    }
+
+    .grid-box { 
+        display: inline-flex; border: 1px solid #999; margin-left: 5px;
+    }
+    .grid-cell { 
+        width: 20px; height: 20px; border-right: 1px solid #999; 
+        text-align: center; line-height: 20px; 
+    }
+    .grid-cell:last-child { border-right: none; }
+
+    /* Beige Sections */
+    .beige-section { 
+        background: var(--beige); border-radius: 15px; padding: 15px; margin-bottom: 15px; 
+    }
+    .section-header { font-weight: bold; text-decoration: underline; margin-bottom: 30px; display: block; }
+
+    /* Checkboxes */
+    .checkbox-container { display: flex; gap: 50px; margin: 10px 0; flex-wrap: wrap; }
+    .checkbox-item { display: flex; align-items: center; gap: 5px; }
+    .check-sq { width: 14px; height: 14px; border: 1px solid #666; background: white; }
+
+    /* Page 2 Specific */
+    .declaration { margin-top: 30px; line-height: 1.6; text-align: justify; }
+    .signature-row { display: flex; justify-content: space-between; margin-top: 60px; font-weight: bold; border-top: 1px solid transparent; }
+    .sign-line { border-top: 1px solid #000; width: 200px; text-align: center; padding-top: 5px; }
+    table {
+        width: 100%;
+        text-align: center;
+        font-size: 16px;
+    }
+
+    th, td {
+        margin: 5px;
+        border: 1px solid;
+    }
+
+    td {
+    height: 40px;
+    vertical-align: center;
+    }
+
+</style>
+</head>
+
+<body ng-controller="myCtrl">
+
+<div class="page">
+    <div class="header">
+        <div class="logo-container">
+            <img ng-src="{{orgInfo.Image}}" width="115" ng-if="orgInfo.Image">
+            <img src="https://via.placeholder.com/80?text=LOGO" width="80" ng-if="!orgInfo.Image">
+        </div>
+        <div class="school-info">
+            <h1>{{orgInfo.Name}}</h1>
+            <div class="tagline">{{orgInfo.Description}}</div>
+            <div class="address">{{orgInfo.FullAddress}}</div>
+        </div>
+    </div>
+
+    <div class="main-title">FEE DETAILS</div>
+
+    <div class="row">
+        <table>
+            <thead>
+                <th>Fee Item</th>
+                <th>Amount</th>
+            </thead>
+            <tbody>
+            <tr ng-repeat="item in feeInfo">
+                <td>{{item.ItemName}}</td>
+                <td>{{item.TotalAmount - item.ConcessionAmount}}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="main-title" style="margin-top:40px;">DECLARATION FROM THE PARENT</div>
+    <p class="declaration">
+        I <span style="display:inline-block; border-bottom:1px solid #000; width:300px;"></span> do solemnly declare & certify that the particulars given by me are accurate. I have understood the rules and Regulations of the school and it shall be my responsibility to see that my ward shall unquestionably abide by the decision of the Head Master / Management and render all Co-operation to the school.
+    </p>
+
+    <div class="row" style="margin-top:30px;">
+        <span class="label">Date :</span>
+         <span class="value-box">{{today | date: 'dd-MM-yyyy'}}</span>
+    </div>
+
+    <div class="signature-row">
+        <div class="sign-line">Signature of the Parent / Guardian</div>
+        <div class="sign-line">Head of the Institution</div>
+    </div>
+</div>
+
+ <script>
+        var app = angular.module("myApp", []);
+    app.controller("myCtrl", function ($scope, $http, $window) {
+
+        // --- Fetching Data and Controller Logic ---
+        function getQueryParams() {
+            const params = {};
+            location.search
+                .substr(1)
+                .split("&")
+                .forEach(function (item) {
+                    const [key, value] = item.split("=");
+                    if (key) params[key] = decodeURIComponent(value);
+                });
+            return params;
+        }
+
+        // const baseUrl = 'https://api.schoolvertex.com/api';
+        const baseUrl = 'http://localhost:62786/api';
+        
+        const query = getQueryParams();
+        const userId = query.userid;
+        const yearId = query.yearid;
+        const orgId = query.orgid;
+
+        $scope.gender = '';
+        $scope.today = new Date();
+
+        const orgInfoUrl = `${baseUrl}/Organisation/GetInfoForCertificate/${orgId}`;
+        $http.get(orgInfoUrl).then(function (response) {
+            $scope.orgInfo = response.data;
+        });
+
+        const feeInfoUrl = `${baseUrl}/Fee/GetUserFeeItemSummary/${userId}/${yearId}`;
+        $http.get(feeInfoUrl).then(function (feeResp) {
+            $scope.feeInfo = feeResp.data;
+        });
+    });
+ </script>
+</body>
+
+</body>
+</html>
