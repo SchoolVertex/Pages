@@ -258,7 +258,7 @@
             <option ng-repeat="bg in bgImages" value="{{bg.url}}">{{bg.name}}</option>
         </select>
 
-        <button class="btn btn-save" onclick="downloadImage()">Save as Image</button>
+        <button class="btn btn-save" ng-click="downloadImage(userInfo.FullName)">Save as Image</button>
         <button class="btn" onclick="window.print()">Print</button>
     </div>
 
@@ -303,15 +303,7 @@
             reader.readAsDataURL(event.target.files[0]);
         }
 
-        function downloadImage() {
-            const poster = document.getElementById('poster');
-            html2canvas(poster, { scale: 2, useCORS: true }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = 'Birthday_Poster.png';
-                link.href = canvas.toDataURL();
-                link.click();
-            });
-        }
+
     </script>
 
     <script>
@@ -324,6 +316,16 @@
                 { name: 'BG 2', url: 'https://schoolvertex.github.io/Pages/Birthday/images/bg-2.jpg' },
                 { name: 'BG 3', url: 'https://schoolvertex.github.io/Pages/Birthday/images/bg-3.jpg' },
             ];
+
+            $scope.downloadImage = function (name) {
+                const poster = document.getElementById('poster');
+                html2canvas(poster, { scale: 2, useCORS: true }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = name + '.png';
+                    link.href = canvas.toDataURL();
+                    link.click();
+                });
+            }
 
             $scope.changeBackground = function (bg) {
                 const poster = document.getElementById('poster');
@@ -351,8 +353,8 @@
                 return params;
             }
 
-            // const baseUrl = 'https://api.schoolvertex.com/api';
-            const baseUrl = 'http://localhost:62786/api';
+            const baseUrl = 'https://api.schoolvertex.com/api';
+            // const baseUrl = 'http://localhost:62786/api';
 
             const query = getQueryParams();
             const userId = query.id;
