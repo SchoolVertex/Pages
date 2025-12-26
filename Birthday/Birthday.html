@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modern Student Birthday Poster</title>
+    <title>Birthday Poster</title>
 
     <!-- Fonts -->
     <link
@@ -255,7 +255,7 @@
 
         <select class="btn" ng-model="selectedBg" ng-change="changeBackground(selectedBg)">
             <option value="">Default BG</option>
-            <option ng-repeat="bg in bgImages" value="{{bg}}">{{bg}}</option>
+            <option ng-repeat="bg in bgImages" value="{{bg.url}}">{{bg.name}}</option>
         </select>
 
         <button class="btn btn-save" onclick="downloadImage()">Save as Image</button>
@@ -320,9 +320,9 @@
 
             // Background images (existing)
             $scope.bgImages = [
-                'images/bg-1.jpg',
-                'images/bg-2.jpg',
-                'images/bg-3.jpg'
+                { name: 'BG 1', url: 'https://schoolvertex.github.io/Pages/Birthday/images/bg-1.jpg' },
+                { name: 'BG 2', url: 'https://schoolvertex.github.io/Pages/Birthday/images/bg-2.jpg' },
+                { name: 'BG 3', url: 'https://schoolvertex.github.io/Pages/Birthday/images/bg-3.jpg' },
             ];
 
             $scope.changeBackground = function (bg) {
