@@ -70,18 +70,22 @@
             display: flex;
             flex-direction: column;
             box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+            background-image: url('https://schoolvertex.github.io/Pages/Appreciation/images/bg-5.jpg');
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            background-position: center;
         }
 
         .shape { position: absolute; pointer-events: none; z-index: 1; }
-        .red-sq { top: 240px; left: 50px; }
-        .bars-r { top: 240px; right: 50px; }
+        .red-sq { top: 240px; left: 75px; }
+        .bars-r { top: 240px; right: 75px; }
         .bar { width: 65px; height: 10px; background: var(--accent-red); border-radius: 5px; }
 
         .top-header {
             z-index: 5;
             display: flex;
             justify-content: space-between;
-            padding: 10px 50px 0;
+            padding: 40px 50px 0;
         }
 
         .school-logo, .student-photo {
@@ -120,7 +124,7 @@
 
         .title-pill {
             background: var(--accent-yellow);
-            font-size: 52px;
+            font-size: 30px;
             font-weight: 900;
             padding: 5px 60px;
             border-radius: 60px;
@@ -129,12 +133,12 @@
 
         .subtitle {
             letter-spacing: 5px;
-            /* margin-bottom: 40px; */
+            margin-bottom: 10px;
             font-weight: bold;
         }
 
         .recipient-name {
-            font-size: 48px;
+            font-size: 36px;
             font-weight: 800;
             width: 80%;
             margin: auto;
@@ -143,7 +147,7 @@
 
         .description {
             max-width: 650px;
-            margin: 20px auto;
+            margin: 10px auto;
             line-height: 1.6;
         }
 
@@ -151,7 +155,7 @@
             margin-top: auto;
             display: flex;
             justify-content: space-between;
-            padding: 0 60px 40px;
+            padding: 0 60px 80px;
             align-items: flex-end;
             z-index: 5;
         }
@@ -261,7 +265,7 @@
             <img id="studentImg" ng-src="{{userInfo.Image}}">
         </div>
 
-        <p>This certificate is proudly awarded to</p>
+        <div>This certificate is proudly awarded to</div>
         <div class="recipient-name">{{userInfo.FullName}}</div>
 
         <div class="description">
@@ -305,11 +309,11 @@ app.controller("myCtrl", function ($scope, $http) {
     $scope.bgImages = [
         { name: 'BG 1', url: basePath + 'bg-1.jpg' },
         { name: 'BG 2', url: basePath + 'bg-2.jpg' },
-        { name: 'BG 3', url: basePath + 'bg-3.jpg' },
-        { name: 'BG 1', url: basePath + 'bg-4.jpg' },
-        { name: 'BG 2', url: basePath + 'bg-5.jpg' },
-        { name: 'BG 3', url: basePath + 'bg-6.jpg' },
-        { name: 'BG 3', url: basePath + 'bg-7.jpg' }
+        { name: 'BG 3', url: basePath + 'bg-3.png' },
+        { name: 'BG 4', url: basePath + 'bg-4.jpg' },
+        { name: 'BG 5', url: basePath + 'bg-5.jpg' },
+        { name: 'BG 6', url: basePath + 'bg-6.jpg' },
+        { name: 'BG 7', url: basePath + 'bg-7.jpg' }
     ];
 
     // ✅ ICON LIST
@@ -322,7 +326,6 @@ app.controller("myCtrl", function ($scope, $http) {
     $scope.changeBackground = function (bg) {
         const poster = document.getElementById('poster');
         poster.style.backgroundImage = bg ? `url(${bg})` : '';
-        poster.style.backgroundSize = 'cover';
     };
 
     $scope.downloadImage = function (name) {
