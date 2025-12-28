@@ -1,216 +1,237 @@
 <!DOCTYPE html>
 <html lang="en" ng-app="myApp">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academic Certificate</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Academic Certificate</title>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
 
-    <style>
-        :root {
-            --primary-blue: #2c3e75;
-            --border-blue: #3f51b5;
-            --accent-yellow: #ffb100;
-            --accent-red: #ef5350;
-            --text-gray: #555;
-            --bg-purple: #b5b9ff;
-        }
+<style>
+:root {
+    --primary-blue: #2c3e75;
+    --accent-yellow: #ffb100;
+    --accent-red: #ef5350;
+    --bg-purple: #b5b9ff;
+}
 
-        body {
-            background-color: var(--bg-purple);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
+* { box-sizing: border-box; }
 
-        /* Toolbar */
-        .toolbar {
-            background: white;
-            padding: 12px 25px;
-            border-radius: 50px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            margin-bottom: 20px;
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            position: sticky;
-            top: 10px;
-            z-index: 1000;
-        }
+body {
+    margin: 0;
+    background: var(--bg-purple);
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 
-        .btn {
-            padding: 8px 16px;
-            border-radius: 20px;
-            border: none;
-            background: var(--border-blue);
-            color: white;
-            cursor: pointer;
-            font-weight: bold;
-        }
+/* Toolbar */
+.toolbar {
+    background: #fff;
+    padding: 12px 25px;
+    border-radius: 50px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    margin: 20px 0;
+    display: flex;
+    gap: 12px;
+    position: sticky;
+    top: 10px;
+    z-index: 1000;
+}
 
-        select.btn {
-            background: #f5f5f5;
-            color: #333;
-        }
+.btn {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: none;
+    background: #3f51b5;
+    color: #fff;
+    cursor: pointer;
+    font-weight: bold;
+}
 
-        /* Certificate */
-        .certificate {
-            width: 950px;
-            height: 680px;
-            background: white;
-            border-radius: 10px;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
-            background-image: url('https://schoolvertex.github.io/Pages/Appreciation/images/bg-5.jpg');
-            background-size: 100% 100%;
-            background-repeat: no-repeat;
-            background-position: center;
-        }
+select.btn {
+    background: #f5f5f5;
+    color: #333;
+}
 
-        .shape { position: absolute; pointer-events: none; z-index: 1; }
-        .red-sq { top: 240px; left: 75px; }
-        .bars-r { top: 240px; right: 75px; }
-        .bar { width: 65px; height: 10px; background: var(--accent-red); border-radius: 5px; }
+/* Certificate */
+.certificate {
+    width: 1020px;
+    height: 680px;
+    position: relative;
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.3);
 
-        .top-header {
-            z-index: 5;
-            display: flex;
-            justify-content: space-between;
-            padding: 40px 50px 0;
-        }
+    background-image: url('https://schoolvertex.github.io/Pages/Appreciation/images/bg-5.jpg');
+    background-size: cover;
+    background-position: center;
+    padding: 20px;
+    overflow: visible;
+}
 
-        .school-logo, .student-photo {
-            background: #eee;
-            cursor: pointer;
-        }
+.certificate-inner {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+}
 
-        .school-logo {
-            width: 100px; height: 100px;
-            display: flex; align-items: center; justify-content: center;
-        }
+/* Decorative medal placements */
+.shape {
+    position: absolute;
+    z-index: 1;
+}
 
-        .student-photo {
-            width: 150px; height: 150px;
-            border-radius: 50%;
-            overflow: hidden;
-            display: inline-block;
-        }
+.red-sq { top: 240px; left: 75px; }
+.bars-r { top: 240px; right: 75px; }
 
-        img { width: 100%; height: 100%; object-fit: cover; }
+/* Medal */
+.medal-box {
+    width: 120px;
+    height: 120px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
-        .school-name {
-            flex-grow: 1;
-            text-align: center;
-            font-size: 28px;
-            font-weight: 800;
-            color: var(--primary-blue);
-            margin-top: 10px;
-        }
+/* ✅ Canvas-safe medal */
+.medal-gold {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    /* border: 5px solid #fff; */
+    background: transparent;
 
-        .main-content {
-            text-align: center;
-            margin-top: 10px;
-            z-index: 5;
-        }
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
-        .title-pill {
-            background: var(--accent-yellow);
-            font-size: 30px;
-            font-weight: 900;
-            padding: 5px 60px;
-            border-radius: 60px;
-            display: inline-block;
-        }
+    font-size: 100px;
+    line-height: 1;
+    font-family: "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif;
 
-        .subtitle {
-            letter-spacing: 5px;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
+    position: relative;
+    z-index: 2;
+}
 
-        .recipient-name {
-            font-size: 36px;
-            font-weight: 800;
-            width: 80%;
-            margin: auto;
-            border-bottom: 2px solid #ccc;
-        }
+/* ✅ Gold ring (REPLACES box-shadow) */
+.medal-gold::after {
+    content: "";
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+    /* border: 5px solid var(--accent-yellow); */
+    pointer-events: none;
+}
 
-        .description {
-            max-width: 650px;
-            margin: 10px auto;
-            line-height: 1.6;
-        }
+/* Ribbons */
+.medal-ribbon {
+    position: absolute;
+    width: 30px;
+    height: 35px;
+    background: var(--primary-blue);
+    top: 95px;
+    z-index: 0;
+    clip-path: polygon(0 0,100% 0,100% 100%,50% 80%,0 100%);
+}
 
-        .footer {
-            margin-top: auto;
-            display: flex;
-            justify-content: space-between;
-            padding: 0 60px 80px;
-            align-items: flex-end;
-            z-index: 5;
-        }
+.ribbon-l { left: 25px; transform: rotate(30deg); }
+.ribbon-r { right: 25px; transform: rotate(-30deg); }
 
-        .footer-block {
-            width: 180px;
-            text-align: center;
-        }
+/* Header */
+.top-header {
+    text-align: center;
+    padding-top: 40px;
+    z-index: 5;
+}
 
-        .footer-line {
-            border-bottom: 2px solid #ccc;
-            margin-bottom: 8px;
-        }
+.school-name {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--primary-blue);
+}
 
-        /* Medal */
-        .medal-box {
-            width: 120px;
-            height: 120px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-        }
+/* Content */
+.main-content {
+    text-align: center;
+    margin-top: 15px;
+    z-index: 5;
+}
 
-        .medal-ribbon {
-            position: absolute;
-            width: 30px;
-            height: 35px;
-            background: var(--primary-blue);
-            top: 110px;
-            z-index: -1;
-            clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 50% 80%, 0% 100%);
-        }
+.title-pill {
+    background: var(--accent-yellow);
+    font-size: 30px;
+    font-weight: 900;
+    padding: 5px 60px;
+    border-radius: 60px;
+    display: inline-block;
+}
 
-        .ribbon-l { left: 25px; transform: rotate(30deg); }
-        .ribbon-r { right: 25px; transform: rotate(-30deg); }
+.subtitle {
+    letter-spacing: 5px;
+    font-weight: bold;
+}
 
-        .medal-gold {
-            width: 100px;
-            height: 100px;
-            /* background: var(--accent-yellow); */
-            border-radius: 50%;
-            border: 5px solid white;
-            box-shadow: 0 0 0 5px var(--accent-yellow);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 80px;
-        }
-    </style>
+.student-photo {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 10px auto;
+    background: #eee;
+}
+
+.student-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.recipient-name {
+    font-size: 36px;
+    font-weight: 800;
+    width: 80%;
+    margin: 10px auto;
+    border-bottom: 2px solid #ccc;
+}
+
+.description {
+    max-width: 650px;
+    margin: 10px auto;
+    line-height: 1.6;
+}
+
+/* Footer */
+.footer {
+    position: absolute;
+    bottom: 70px;
+    left: 0;
+    right: 0;
+    padding: 0 100px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    z-index: 5;
+}
+
+.footer-block {
+    width: 180px;
+    text-align: center;
+}
+
+.footer-line {
+    border-bottom: 2px solid #ccc;
+    margin-bottom: 8px;
+}
+</style>
 </head>
 
 <body ng-controller="myCtrl">
 
-<!-- Toolbar -->
 <div class="toolbar">
     <button class="btn" onclick="document.getElementById('photoInput').click()">Upload Photo</button>
     <input type="file" id="photoInput" hidden onchange="previewImage(this,'studentImg')">
@@ -220,7 +241,6 @@
         <option ng-repeat="bg in bgImages" value="{{bg.url}}">{{bg.name}}</option>
     </select>
 
-    <!-- ✅ ICON DROPDOWN -->
     <select class="btn" ng-model="selectedIcon">
         <option ng-repeat="icon in sportsIcons" value="{{icon}}">{{icon}}</option>
     </select>
@@ -230,65 +250,58 @@
     </select>
 
     <button class="btn" ng-click="downloadImage(userInfo.FullName)">Save as Image</button>
-    <button class="btn" onclick="window.print()">Print</button>
 </div>
 
 <div id="poster" class="certificate">
-    <div class="shape red-sq">
-        <div class="medal-box">
-            <div class="medal-gold">{{selectedIcon}}</div>
-        </div>
-    </div>
-    <div class="shape bars-r">
-        <div class="medal-box">
-            <div class="medal-gold">{{positionSelectedIcon}}</div>
-        </div>
-    </div>
-
-    <div class="top-header">
-        <!-- <div class="school-logo">
-            <img ng-src="{{orgInfo.Image}}">
-        </div> -->
-
-        <div class="school-name">{{orgInfo.Name}}</div>
-
-        <!-- <div class="student-photo">
-            <img id="studentImg" ng-src="{{userInfo.Image}}">
-        </div> -->
-    </div>
-
-    <div class="main-content">
-        <div class="title-pill">CERTIFICATE</div>
-        <div class="subtitle">OF APPRECIATION</div>
-
-        <div class="student-photo">
-            <img id="studentImg" ng-src="{{userInfo.Image}}">
+    <div class="certificate-inner">
+        <div class="shape red-sq">
+            <div class="medal-box">
+                <div class="medal-gold">{{selectedIcon}}</div>
+            </div>
         </div>
 
-        <div>This certificate is proudly awarded to</div>
-        <div class="recipient-name">{{userInfo.FullName}}</div>
-
-        <div class="description">
-            For outstanding performance and dedication in academics.
-        </div>
-    </div>
-
-    <div class="footer">
-        <div class="footer-block">
-            <div class="footer-line">&nbsp;</div>
-            <div><b>Principal Signature</b></div>
+        <div class="shape bars-r">
+            <div class="medal-box">
+                <div class="medal-gold">{{positionSelectedIcon}}</div>
+            </div>
         </div>
 
-        <!-- ✅ MEDAL ICON BOUND HERE -->
-        <div class="medal-box">
-            <div class="medal-ribbon ribbon-l"></div>
-            <div class="medal-ribbon ribbon-r"></div>
-            <div class="medal-gold">🏆</div>
+        <div class="top-header">
+            <div class="school-name">{{orgInfo.Name}}</div>
         </div>
 
-        <div class="footer-block">
-            <div class="footer-line">Dec 26, 2025</div>
-            <div><b>Date</b></div>
+        <div class="main-content">
+            <div class="title-pill">CERTIFICATE</div>
+            <div class="subtitle">OF APPRECIATION</div>
+
+            <div class="student-photo">
+                <img id="studentImg" ng-src="{{userInfo.Image}}">
+            </div>
+
+            <div>This certificate is proudly awarded to</div>
+            <div class="recipient-name">{{userInfo.FullName}}</div>
+
+            <div class="description">
+                For outstanding performance and dedication in academics.
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="footer-block">
+                <div class="footer-line"></div>
+                <b>Principal Signature</b>
+            </div>
+
+            <div class="medal-box">
+                <!-- <div class="medal-ribbon ribbon-l"></div> -->
+                <!-- <div class="medal-ribbon ribbon-r"></div> -->
+                <div class="medal-gold">🏆</div>
+            </div>
+
+            <div class="footer-block">
+                <div class="footer-line">{{today}}</div>
+                <b>Date</b>
+            </div>
         </div>
     </div>
 </div>
@@ -299,11 +312,9 @@ function previewImage(input, imgId) {
     reader.onload = e => document.getElementById(imgId).src = e.target.result;
     reader.readAsDataURL(input.files[0]);
 }
-</script>
 
-<script>
 var app = angular.module("myApp", []);
-app.controller("myCtrl", function ($scope, $http) {
+app.controller("myCtrl", function ($scope, $http, $timeout) {
 
     const basePath = 'https://schoolvertex.github.io/Pages/Appreciation/images/';
     $scope.bgImages = [
@@ -311,61 +322,57 @@ app.controller("myCtrl", function ($scope, $http) {
         { name: 'BG 2', url: basePath + 'bg-2.jpg' },
         { name: 'BG 3', url: basePath + 'bg-3.png' },
         { name: 'BG 4', url: basePath + 'bg-4.jpg' },
-        { name: 'BG 5', url: basePath + 'bg-5.jpg' },
-        { name: 'BG 6', url: basePath + 'bg-6.jpg' },
-        { name: 'BG 7', url: basePath + 'bg-7.jpg' }
+        { name: 'BG 5', url: basePath + 'bg-5.jpg' }
     ];
 
-    // ✅ ICON LIST
     $scope.sportsIcons = ['⭐','🎖','🏅','📚','📖','📜','✒','🖊','📝'];
     $scope.positionIcons = ['🥇','🥈','🥉'];
     
     $scope.selectedIcon = '⭐';
     $scope.positionSelectedIcon = '🥇';
+    $scope.today = new Date().toDateString();
 
     $scope.changeBackground = function (bg) {
-        const poster = document.getElementById('poster');
-        poster.style.backgroundImage = bg ? `url(${bg})` : '';
+        document.getElementById('poster').style.backgroundImage =
+            bg ? `url(${bg})` : '';
     };
 
     $scope.downloadImage = function (name) {
-        html2canvas(document.getElementById('poster'), { scale: 2, useCORS: true })
-            .then(canvas => {
+        $timeout(() => {
+            html2canvas(document.getElementById('poster'), {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: null
+            }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = (name || 'certificate') + '.png';
-                link.href = canvas.toDataURL();
+                link.href = canvas.toDataURL('image/png');
                 link.click();
             });
+        }, 400);
     };
-    // --- Fetching Data and Controller Logic ---
+
     function getQueryParams() {
         const params = {};
-        location.search
-            .substr(1)
-            .split("&")
-            .forEach(function (item) {
-                const [key, value] = item.split("=");
-                if (key) params[key] = decodeURIComponent(value);
-            });
+        location.search.substring(1).split("&").forEach(p => {
+            const [k, v] = p.split("=");
+            if (k) params[k] = decodeURIComponent(v);
+        });
         return params;
     }
 
-    const baseUrl = 'https://api.schoolvertex.com/api';
-    // const baseUrl = 'http://localhost:62786/api';
-
     const query = getQueryParams();
-    const userId = query.id;
-    const orgId = query.orgid;
+    const baseUrl = 'https://api.schoolvertex.com/api';
 
-    const orgInfoUrl = `${baseUrl}/Organisation/GetInfoForCertificate/${orgId}`;
-    $http.get(orgInfoUrl).then(function (response) {
-        $scope.orgInfo = response.data;
-    });
+    if (query.orgid) {
+        $http.get(`${baseUrl}/Organisation/GetInfoForCertificate/${query.orgid}`)
+            .then(res => $scope.orgInfo = res.data);
+    }
 
-    const userInfoUrl = `${baseUrl}/User/GetPreviewById/${userId}`;
-    $http.get(userInfoUrl).then(function (response) {
-        $scope.userInfo = response.data;
-    });
+    if (query.id) {
+        $http.get(`${baseUrl}/User/GetPreviewById/${query.id}`)
+            .then(res => $scope.userInfo = res.data);
+    }
 });
 </script>
 
