@@ -1,429 +1,283 @@
 <!DOCTYPE html>
 <html lang="en" ng-app="myApp">
-
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>School Admission Confirmation Letter</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
-    <style>
-        :root {
-            --ink: #101114;
-            --muted: #525866;
-            --brand: #1d4ed8;
-            --accent: #0ea5e9;
-            --border: #d6d8de;
-            --bg: #ffffff;
-            --fs-base: 16.5px;
-            --lh: 1.55;
-            --pad-page: 18mm;
-            --pad-block: 12px;
-            --radius: 12px;
-        }
+<meta charset="UTF-8">
+<title>Admission Form</title>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
 
-        * {
-            box-sizing: border-box
-        }
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 
-        html,
-        body {
-            margin: 0;
-            background: #f3f5f7;
-            color: var(--ink);
-            font: var(--fs-base)/var(--lh) system-ui, "Segoe UI", Roboto, Helvetica, Arial
-        }
+    :root {
+        --maroon: #800000;
+        --navy: #1a237e;
+        --beige: #fdf5e6;
+        --border-color: #800000;
+    }
 
-        .page {
-            width: 210mm;
-            min-height: 297mm;
-            margin: 14px auto;
-            background: var(--bg);
-            box-shadow: 0 2px 16px rgba(10, 12, 18, .08)
-        }
+    * { box-sizing: border-box; -webkit-print-color-adjust: exact; }
 
-        .sheet {
-            padding: var(--pad-page)
-        }
+    body {
+        margin: 0; padding: 0;
+        font-family: 'Roboto', sans-serif;
+        font-size: 12px;
+        background: #f0f0f0;
+    }
 
-        .flex {
-            display: flex;
-            gap: 14px;
-            align-items: center
-        }
+    .page {
+        width: 210mm;
+        height: 296mm; /* Slight adjustment for bleed */
+        padding: 10mm;
+        margin: 10mm auto;
+        background: white;
+        border: 8px double var(--maroon);
+        position: relative;
+        overflow: hidden;
+    }
 
-        .grow {
-            flex: 1
-        }
+    @media print {
+        body { background: none; }
+        .page { margin: 0; border: 8px double var(--maroon); page-break-after: always; }
+    }
 
-        .right {
-            text-align: right
-        }
+    /* Header Styles */
+    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+    .logo-container { width: 15%; text-align: center; }
+    .school-info { width: 70%; text-align: center; }
+    .photo-box { 
+        width: 100px; height: 120px; 
+        border: 1px dashed #666; 
+        display: flex; align-items: center; justify-content: center;
+        font-size: 10px; color: #666; font-weight: bold;
+    }
 
-        h1 {
-            font-size: 28px;
-            margin: 0 0 4px;
-            letter-spacing: .2px
-        }
+    .school-info h1 { 
+        color: var(--maroon); font-size: 32px; margin: 0; font-weight: 800; letter-spacing: 1px;
+    }
+    .school-info h2 { font-size: 20px; margin: 5px 0; letter-spacing: 2px; }
+    .tagline { 
+        background: #d4a76a; color: white; display: inline-block; 
+        padding: 2px 15px; font-style: italic; border-radius: 4px; font-size: 14px;
+    }
+    .address { font-size: 11px; margin-top: 8px; color: #333; }
 
-        h2 {
-            font-size: 15px;
-            margin: 0 0 2px;
-            color: var(--muted);
-            font-weight: 600
-        }
+    /* Titles */
+    .main-title { 
+        background: var(--navy); color: white; text-align: center; 
+        padding: 6px; font-weight: bold; font-size: 16px; margin: 15px 0;
+        letter-spacing: 1px;
+    }
 
-        .letter-title {
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: .5px;
-            margin: 8px 0 12px;
-            font-size: 18px
-        }
+    /* Forms & Layout */
+    .row { display: flex; gap: 15px; margin-bottom: 20px; align-items: center; }
+    .field { display: flex; flex: 1; align-items: flex-end; }
+    .label { font-weight: bold; white-space: nowrap; margin-right: 5px; }
+    .value-box { 
+        border-bottom: 1px solid #ccc; flex-grow: 1; min-height: 18px; 
+        padding-left: 5px; color: #1a237e; font-weight: bold;
+    }
 
-        .muted {
-            color: var(--muted)
-        }
+    .grid-box { 
+        display: inline-flex; border: 1px solid #999; margin-left: 5px;
+    }
+    .grid-cell { 
+        width: 20px; height: 20px; border-right: 1px solid #999; 
+        text-align: center; line-height: 20px; 
+    }
+    .grid-cell:last-child { border-right: none; }
 
-        .brand {
-            color: var(--brand)
-        }
+    /* Beige Sections */
+    .beige-section { 
+        background: var(--beige); border-radius: 15px; padding: 15px; margin-bottom: 15px; 
+    }
+    .section-header { font-weight: bold; text-decoration: underline; margin-bottom: 30px; display: block; }
 
-        .divider {
-            height: 2px;
-            background: grey;
-            margin: 12px 0 14px
-        }
+    /* Checkboxes */
+    .checkbox-container { display: flex; gap: 50px; margin: 10px 0; flex-wrap: wrap; }
+    .checkbox-item { display: flex; align-items: center; gap: 5px; }
+    .check-sq { width: 14px; height: 14px; border: 1px solid #666; background: white; }
 
-        .badge {
-            display: inline-block;
-            border: 1px solid var(--border);
-            border-radius: 999px;
-            padding: 5px 10px;
-            font-size: 13px;
-            color: var(--muted)
-        }
+    /* Page 2 Specific */
+    .declaration { margin-top: 30px; line-height: 1.6; text-align: justify; }
+    .signature-row { display: flex; justify-content: space-between; margin-top: 60px; font-weight: bold; border-top: 1px solid transparent; }
+    .sign-line { border-top: 1px solid #000; width: 200px; text-align: center; padding-top: 5px; }
 
-        .meta {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px 18px;
-            margin: 6px 0 12px;
-            font-size: 15px
-        }
-
-        .meta div {
-            display: flex;
-            gap: 8px
-        }
-
-        .meta label {
-            min-width: 142px;
-            color: var(--muted)
-        }
-
-        .block {
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: var(--pad-block);
-            margin: 10px 0
-        }
-
-        table.details {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 4px 0;
-            font-size: 15.5px
-        }
-
-        .details th,
-        .details td {
-            border: 1px solid var(--border);
-            padding: 10px 12px;
-            text-align: left
-        }
-
-        .details th {
-            background: #f7f9fc;
-            font-weight: 700
-        }
-
-        .sign-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-            margin-top: 14px
-        }
-
-        .sign {
-            border: 1px dashed var(--border);
-            border-radius: var(--radius);
-            padding: 10px
-        }
-
-        .sign .line {
-            border-bottom: 1px solid var(--border);
-            height: 28px;
-            margin: 8px 0 6px
-        }
-
-        .note {
-            font-size: 13px;
-            color: var(--muted)
-        }
-
-        .footer {
-            font-size: 12.5px;
-            color: var(--muted);
-            margin-top: 14px
-        }
-
-        .watermark {
-            position: absolute;
-            inset: auto 0 24mm;
-            text-align: center;
-            opacity: .2;
-            font-weight: 800;
-            font-size: 64px;
-            color: var(--brand)
-        }
-
-        .toolbar {
-            position: sticky;
-            top: 0;
-            z-index: 5;
-            background: #0b1220;
-            color: #fff;
-            padding: 10px 12px;
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            border-bottom: 1px solid #0f172a;
-            font-size: 14px
-        }
-
-        .toolbar button {
-            border: 0;
-            border-radius: 10px;
-            padding: 10px 14px;
-            cursor: pointer;
-            font-weight: 700;
-            background: #1f2937;
-            color: #e5e7eb;
-        }
-
-        .toolbar button.primary {
-            background: #1d4ed8
-        }
-
-        .toolbar .group {
-            display: flex;
-            gap: 6px
-        }
-
-        [data-edit] {
-            padding: 2px 4px;
-            border-radius: 6px;
-            transition: .2s
-        }
-
-        .editing [data-edit] {
-            outline: 1px dashed #60a5fa;
-            background: #eff6ff
-        }
-
-        .logo {
-            width: 120px;
-            height: 120px;
-            border-radius: 14px;
-            display: grid;
-            place-items: center;
-            /* background: conic-gradient(from 180deg, var(--brand), var(--accent)); */
-            color: #fff;
-            box-shadow: inset 0 0 0 4px rgba(255, 255, 255, .25)
-        }
-
-        .crest {
-            width: 36px;
-            height: 36px
-        }
-
-        @page {
-            size: A4;
-            margin: 12mm 12mm 16mm 12mm
-        }
-
-        @media print {
-            .page {
-                box-shadow: none;
-                margin: 0
-            }
-
-            .sheet {
-                padding: 0
-            }
-
-            .toolbar {
-                display: none !important
-            }
-
-            :root {
-                --fs-base: 15.6px;
-                --pad-page: 0mm;
-                --pad-block: 10px
-            }
-        }
-    </style>
+</style>
 </head>
 
 <body ng-controller="myCtrl">
 
-    <div class="toolbar">
-        <div class="group">
-            <button id="toggleEdit">Edit fields</button>
-            <button id="printBtn" class="primary">Lock & Print</button>
+<div class="page">
+    <div class="header">
+        <div class="logo-container">
+            <img ng-src="{{orgInfo.Image}}" width="115" ng-if="orgInfo.Image">
+            <img src="https://via.placeholder.com/80?text=LOGO" width="80" ng-if="!orgInfo.Image">
+        </div>
+        <div class="school-info">
+            <h1>{{orgInfo.Name}}</h1>
+            <div class="tagline">{{orgInfo.Description}}</div>
+            <div class="address">{{orgInfo.FullAddress}}</div>
+        </div>
+        <div class="photo-box">PHOTO</div>
+    </div>
+
+    <div class="main-title">ADMISSION FORM</div>
+
+    <div class="row">
+        <div class="field"><span class="label">Application Form No.:</span><span class="value-box">{{admInfo.AdmisssionId}}</span></div>
+        <div class="field">
+            <span class="label">Date of Admission:</span>
+            <span class="value-box">{{admInfo.CreatedDate | date:'dd-MM-yyyy'}}</span>
         </div>
     </div>
 
-    <div class="page">
-        <div class="sheet">
+    <div class="row">
+        <div class="field"><span class="label">Class of Admission:</span><span class="value-box">{{GradeName}}</span></div>
+        <div class="field"><span class="label">Academic Year:</span><span class="value-box">{{admInfo.YearId}}</span></div>
+    </div>
 
-            <div class="flex">
-                <div class="logo">
-                    <img ng-src="{{orgInfo.Image}}" alt="School Logo" style="height: 100%; width: 100%;">
-                </div>
-                <div class="grow" style="text-align: center;">
-                    <h1 class="brand" data-edit>{{orgInfo.Name}}</h1>
-                    <div class="muted" data-edit ng-if="orgInfo.AffiliationInfo">{{orgInfo.Description}} - {{orgInfo.AffiliationInfo}}</div>
-                    <div class="muted" data-edit ng-if="orgInfo.FullAddress">{{orgInfo.FullAddress}}</div>
-                </div>
-                <!-- <div class="right">
-        <span class="badge" data-edit>Academic Year: 2025–2026</span>
-        <div class="muted" style="margin-top:6px">Document ID: <span data-edit>ADM-2025-00173</span></div>
-      </div> -->
-            </div>
-
-            <div class="divider"></div>
-
-            <div class="letter-title" style="text-align: center;">
-                <span>Admission Confirmation Letter</span>
-            </div>
-
-            <!-- <div class="meta">
-      <div><label>Date:</label> <span data-edit>08 November 2025</span></div>
-      <div><label>Place:</label> <span data-edit>Springfield</span></div>
-      <div><label>Parent/Guardian:</label> <span data-edit>Mrs. Ananya Rao</span></div>
-      <div><label>Contact:</label> <span data-edit>+91 90000 11111</span></div>
-      <div><label>Address:</label> <span data-edit>12, Maple Residency, Sector 5</span></div>
-      <div><label>Student Name:</label> <span data-edit>Aarav Rao</span></div>
-    </div> -->
-
-            <div class="block">
-                <p>Dear Parent/Guardian,</p>
-                <p>We are pleased to formally confirm the admission of <strong data-edit>{{admInfo.FullName}}</strong> to <strong
-                        data-edit>{{GradeName}}</strong> at <strong>{{orgInfo.Name}}</strong> for the academic year <strong
-                        data-edit>{{admInfo.YearId}}</strong>.
-                    Your decision to choose {{orgInfo.Name}} reflects a thoughtful commitment to providing a strong academic
-                    foundation and a supportive learning environment for your child.
-                </p>
-                <p>At {{orgInfo.Name}}, we are dedicated to maintaining high standards of academic excellence, discipline,
-                    and holistic development. We look forward to partnering with you in guiding Ananya toward a
-                    successful and enriching educational journey.</p>
-
-                <p>Please find the admission details below.</p>
-
-            </div>
-
-            <table class="details">
-                <tr>
-                    <th>Father Name</th>
-                    <td data-edit>{{admInfo.FatherName}}</td>
-                    <th>Mother Name</th>
-                    <td data-edit>{{admInfo.MotherName}}</td>
-                </tr>
-                <tr>
-                    <th>Address</th>
-                    <td data-edit colspan="3">{{admInfo.Address}}</td>
-                </tr>
-                <tr>
-                    <th>Date Of Birth</th>
-                    <td data-edit>{{admInfo.CreatedDate | date:'dd-MM-yyyy'}}</td>
-                    <th>Date of Admission</th>
-                    <td data-edit>{{admInfo.CreatedDate | date:'dd-MM-yyyy'}}</td>
-                </tr>
-                <tr>
-                    <th>Fees Received</th>
-                    <td data-edit>₹ 42,000 (Term I)</td>
-                    <th>Payment Mode</th>
-                    <td data-edit>UPI</td>
-                </tr>
-                <!-- <tr>
-                    <th>Transport</th>
-                    <td data-edit>Route 7 (Blue)</td>
-                    <th>Meal Plan</th>
-                    <td data-edit>Not opted</td>
-                </tr> -->
-            </table>
-
-            <div class="block">
-                <strong>Documents Received:</strong>
-                <ul style="margin:8px 0 0 18px">
-                    <li><span data-edit>Birth Certificate</span></li>
-                    <li><span data-edit>Previous Report Card</span></li>
-                    <li><span data-edit>Transfer Certificate</span></li>
-                    <li><span data-edit>4 Passport Photos</span></li>
-                </ul>
-            </div>
-
-            <!-- Instructions -->
-            <div class="block">
-                <strong>Important Information:</strong>
-                <ol style="margin:8px 0 0 18px">
-                    <li>School reopening for new students: <span data-edit>Monday, 17 November 2025</span>.</li>
-                    <li>Orientation and textbook distribution: <span data-edit>14 November 2025, 9:30 AM</span>.</li>
-                    <li>School timing for Grade 3: <span data-edit>8:15 AM – 2:45 PM</span> (Mon–Fri).</li>
-                    <li>Kindly display the parent ID at the gate during the first week.</li>
-                </ol>
-            </div>
-
-            <div class="sign-row" style="text-align: center;">
-                <!-- <div class="sign">
-                    <div class="muted">Admissions Officer</div>
-                    <div class="line"></div>
-                    <strong data-edit>Officer Name</strong>
-                </div> -->
-                <div class="sign">
-                    <div class="muted">Principal</div>
-                    <div class="line"></div>
-                    <strong data-edit>Principal Name</strong>
-                </div>
-                <div class="sign">
-                    <div class="muted">Parent/Guardian</div>
-                    <div class="line"></div>
-                    <strong data-edit>{{admInfo.FatherName}}</strong>
+    <div class="beige-section">
+        <div class="row">
+            <div class="field"><span class="label">Student PEN No.:</span><span class="value-box"></span></div>
+            <div class="field">
+                <span class="label">Student Aadhar No.:</span>
+                <div class="grid-box">
+                    <div class="grid-cell" style="width:20px" ng-repeat="x in [1,2,3,4,5,6,7,8,9,10,11,12]"></div>
                 </div>
             </div>
+        </div>
 
-            <!-- <div class="footer">
-      For any clarification, contact <span data-edit>+91 98765 43210</span>.
-    </div> -->
+        <div class="field" style="margin: 10px 0;">
+            <span class="label">Name of the Student:</span>
+            <span class="value-box">{{admInfo.FullName | uppercase}}</span>
+        </div>
+        <small style="display:block; text-align:center; font-size:9px; margin-top:-8px;">(NAME SHOULD BE FIELD IN BLOCK LETTERS)</small>
 
-            <div class="watermark">ADMITTED</div>
+        <div class="row" style="margin-top:10px;">
+            <div class="field"><span class="label">Date of Birth:</span><span class="value-box">{{admInfo.DateOfBirth | date:'dd-MM-yyyy'}}</span></div>
+            <div class="field"><span class="label">Gender:</span><span class="value-box">{{gender}}</span></div>
+        </div>
 
+        <div class="row">
+            <div class="field"><span class="label">Nationality:</span><span class="value-box">Indian</span></div>
+            <div class="field"><span class="label">Religion:</span><span class="value-box">{{admInfo.Religion}}</span></div>
+            <div class="field"><span class="label">Mother Tongue:</span><span class="value-box">{{admInfo.MotherTougue}}</span></div>
+        </div>
+
+        <div class="row">
+            <div class="field"><span class="label">Caste (OC/BC/SC/ST/Other):</span><span class="value-box">{{admInfo.Caste}}</span></div>
+            <div class="field"><span class="label">Sub caste (BC-A/B/C/D/E):</span><span class="value-box">{{admInfo.SubCaste}}</span></div>
+        </div>
+
+        <div class="field" style="margin:10px 0;"><span class="label">Name of the School Last Studied:</span><span class="value-box"></span></div>
+        
+        <div class="row">
+            <div class="field" style="flex:2"><span class="label">Last Class Attended:</span><span class="value-box"></span></div>
+            <div class="field"><span class="label">% of Marks:</span><span class="value-box"></span></div>
+        </div>
+
+        <span class="section-header">STUDENT IDENTIFICATION MARKS (MOLES) :</span>
+        <div class="field" style="margin:5px 0;"><span class="label">1. A Mole on the</span><span class="value-box"></span></div>
+        <div class="field" style="margin:5px 0;"><span class="label">2. A Mole on the</span><span class="value-box"></span></div>
+
+        <span class="section-header" style="margin-top:15px;">STUDENT HEALTH PROFILE :</span>
+        <div class="checkbox-container">
+            <div class="checkbox-item"><div class="check-sq"></div> Allergies</div>
+            <div class="checkbox-item"><div class="check-sq"></div> Health Chronic</div>
+            <div class="checkbox-item"><div class="check-sq"></div> Under Medication</div>
+            <div class="checkbox-item"><div class="check-sq"></div> Under Gone any Surgeries</div>
+        </div>
+        <div class="field" style="margin-top:10px;">
+            <div style="width:100%; border:1px solid #ccc; height:60px; padding:5px; background:white;">
+                <small>Student Health Concerns if any (Brief Description and Measures to be taken in such a case by the school) :</small>
+            </div>
         </div>
     </div>
 
-    <script>
-        const root = document.body, btnEdit = document.getElementById('toggleEdit'), btnPrint = document.getElementById('printBtn');
-        let isEditing = false;
-        function editable() { return document.querySelectorAll('[data-edit]'); }
-        function setEditable(f) { editable().forEach(e => e.contentEditable = f ? "true" : "false"); root.classList.toggle('editing', f); btnEdit.textContent = f ? "Finish Editing" : "Edit fields"; }
-        btnEdit.onclick = () => { isEditing = !isEditing; setEditable(isEditing); }
-        btnPrint.onclick = () => { setEditable(false); window.getSelection()?.removeAllRanges(); window.print(); }
-        setEditable(false);
-    </script>
+    <div class="main-title">FATHER'S PROFILE</div>
+    <div class="row">
+        <div class="field"><span class="label">Father's Name:</span><span class="value-box">{{admInfo.FatherName}}</span></div>
+        <div class="field"><span class="label">Qualification:</span><span class="value-box"></span></div>
+    </div>
+    <div class="row">
+        <div class="field"><span class="label">Occupation:</span><span class="value-box">{{admInfo.FatherOccupation}}</span></div>
+        <div class="field"><span class="label">Designation:</span><span class="value-box"></span></div>
+    </div>
+    <div class="row">
+        <div class="field"><span class="label">E-Mail ID:</span><span class="value-box"></span></div>
+        <div class="field">
+            <span class="label">Aadhar No.:</span>
+            <div class="grid-box"><div class="grid-cell" style="width:20px" ng-repeat="x in [1,2,3,4,5,6,7,8,9,10,11,12]"></div></div>
+        </div>
+    </div>
+    <div class="field" style="margin:8px 0;"><span class="label">Residential Address:</span><span class="value-box">{{admInfo.Address}}</span></div>
+    <div class="field" style="margin:8px 0;"><span class="label">Work Place Address:</span><span class="value-box"></span></div>
+    <div class="field"><span class="label">Father Contact No.:</span><span class="value-box">{{admInfo.FatherMobile}}</span></div>
+</div>
 
-    <script src="https://gitcdnsv.github.io/SchoolSettings/Admission/admission.js"></script>
+<div class="page">
+    <div class="main-title">MOTHER'S PROFILE</div>
+    <div class="row">
+        <div class="field"><span class="label">Mother's Name:</span><span class="value-box">{{admInfo.MotherName}}</span></div>
+        <div class="field"><span class="label">Qualification:</span><span class="value-box"></span></div>
+    </div>
+    <div class="row">
+        <div class="field"><span class="label">Occupation:</span><span class="value-box">{{admInfo.MotherOccupation}}</span></div>
+        <div class="field"><span class="label">Designation:</span><span class="value-box"></span></div>
+    </div>
+    <div class="row">
+        <div class="field"><span class="label">Ph. No.:</span><span class="value-box">{{admInfo.MotherMobile}}</span></div>
+        <div class="field">
+            <span class="label">Aadhar No.:</span>
+            <div class="grid-box"><div class="grid-cell" style="width:20px" ng-repeat="x in [1,2,3,4,5,6,7,8,9,10,11,12]"></div></div>
+        </div>
+    </div>
+
+    <div class="main-title" style="margin-top:30px;">GUARDIAN'S PROFILE</div>
+    <div class="field" style="margin:10px 0;"><span class="label">Guardian's Name:</span><span class="value-box"></span></div>
+    <div class="row">
+        <div class="field"><span class="label">Contact No.:</span><span class="value-box"></span></div>
+        <div class="field"><span class="label">Aadhar No.:</span><div class="grid-box"><div class="grid-cell" style="width:20px" ng-repeat="x in [1,2,3,4,5,6,7,8,9,10,11,12]"></div></div></div>
+    </div>
+
+    <div class="beige-section" style="margin-top:30px;">
+        <div class="main-title" style="width:120px; margin: -25px auto 15px auto;">OFFICE USE</div>
+        <div class="row">
+            <div class="field"><span class="label">Admission No:</span><span class="value-box"></span></div>
+            <div class="field"><span class="label">Class of Admission:</span><span class="value-box"></span></div>
+        </div>
+        <div class="field" style="margin:10px 0;"><span class="label">Transport Requirement from Area:</span><span class="value-box"></span></div>
+        <div style="background:white; border:1px solid #ccc; height:40px; margin-bottom:15px;"></div>
+
+        <span class="section-header">DOCUMENT'S SUBMITTED</span>
+        <div class="checkbox-container">
+            <div class="checkbox-item"><div class="check-sq"></div> Student Birth Certificate</div>
+            <div class="checkbox-item"><div class="check-sq"></div> Student Aadhar Copy</div>
+            <div class="checkbox-item"><div class="check-sq"></div> Father Aadhar Copy</div>
+            <div class="checkbox-item"><div class="check-sq"></div> Mother Aadhar Copy</div>
+            <div class="checkbox-item"><div class="check-sq"></div> Original TC/Record Sheet</div>
+            <div class="checkbox-item"><div class="check-sq"></div> Bonafide/Conduct Certificate</div>
+        </div>
+    </div>
+
+    <div class="main-title" style="margin-top:40px;">DECLARATION FROM THE PARENT</div>
+    <p class="declaration">
+        I <span style="display:inline-block; border-bottom:1px solid #000; width:300px;"></span> do solemnly declare & certify that the particulars given by me are accurate. I have understood the rules and Regulations of the school and it shall be my responsibility to see that my ward shall unquestionably abide by the decision of the Head Master / Management and render all Co-operation to the school.
+    </p>
+
+    <div class="row" style="margin-top:30px;">
+        <span class="label">Date :</span>
+        <div class="grid-box"><div class="grid-cell" style="width:25px; height: 25px;" ng-repeat="x in [1,2,3,4,5,6,7,8]"></div></div>
+    </div>
+
+    <div class="signature-row">
+        <div class="sign-line">Signature of the Parent / Guardian</div>
+        <div class="sign-line">Head of the Institution</div>
+    </div>
+</div>
+
+ <script src="https://schoolVertex.github.io/Pages/Admission/admission.js"></script>
 </body>
 
-
+</body>
 </html>
