@@ -167,7 +167,7 @@
     <div class="row">
       <div class="form-group">
         <label>Mobile *</label>
-        <input ng-model="model.Mobile" ng-pattern="/^[0-9]{10}$/" required>
+        <input ng-model="model.Mobile" ng-pattern="/^[0-9]{10}$/" required type="number">
       </div>
 
       <div class="form-group">
@@ -231,7 +231,7 @@
 
       <div class="form-group">
         <label>Father Mobile *</label>
-        <input ng-model="model.FatherMobile" ng-pattern="/^[0-9]{10}$/" required>
+        <input ng-model="model.FatherMobile" ng-pattern="/^[0-9]{10}$/" required type="number">
       </div>
 
       <div class="form-group">
@@ -248,7 +248,7 @@
 
       <div class="form-group">
         <label>Mother Mobile</label>
-        <input ng-model="model.MotherMobile" ng-pattern="/^[0-9]{10}$/">
+        <input ng-model="model.MotherMobile" ng-pattern="/^[0-9]{10}$/" type="number">
       </div>
 
       <div class="form-group">
@@ -395,4 +395,3 @@ function toDateOnly(date) {
 
 </body>
 </html>
-
