@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student ID Card - All Previews</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- <link rel="stylesheet" href="https://reports.schoolvertex.com/IdCard/student.css"> -->
+
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-sanitize.min.js"></script>
+
+  <style>
+    *,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f4f7f6;
+}
+
+.id-card {
+    width: 2.125in;
+    height: 3.375in;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.main-content {
+    height: 325px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 4mm;
+    border-radius: 10px;
+    position: relative;
+}
+
+.school-info {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    width: 100%;
+    color: #2c3e50;
+    border-bottom: 1px solid #3498db;
+    text-align: center;
+}
+
+.school-logo {
+    height: 47px;
+}
+
+.school-logo img {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    /* border: 1px solid #3498db; */
+    object-fit: cover;
+}
+
+.school-name {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.school-caption,
+.school-affliate,
+.school-address {
+    font-size: 7px;
+    font-weight: 600;
+    font-style: italic;
+}
+
+.school-address {
+    font-size: 5px;
+    font-weight: bold;
+}
+
+.student-photo-area {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+    overflow: hidden;
+    margin-top: 3px;
+}
+
+.student-photo-area img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.student-name {
+    margin-top: 2px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #212121;
+    text-align: center;
+}
+
+.student-info {
+    text-align: left;
+    padding-top: 2px;
+    width: 90%;
+}
+
+.info-row {
+    display: flex;
+    margin-bottom: 3px;
+    font-size: 8px;
+    color: #000;
+    font-weight: 600;
+}
+
+.info-label {
+    font-weight: 600;
+    width: 42px;
+    color: #673AB7;
+    flex-shrink: 0;
+}
+
+.info-devider {
+    margin-right: 3px;
+}
+
+.principal-signature-area {
+    color: #000;
+    padding-bottom: 0px;
+    text-align: center;
+    margin-top: auto;
+}
+
+.principal-sign {
+    margin: -5px;
+}
+
+.principal-sign img {
+    height: 20px;
+}
+
+.principal-label {
+    font-size: 8px;
+    letter-spacing: 0.5px;
+    border-top: 1px solid #000;
+}
+
+.bg-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('./bg/1.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 0;
+}
+
+.school-color {
+    color: #673AB7;
+}
+
+body {
+    display: block !important;
+}
+@media print {
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    .id-card {
+        page-break-after: always;
+        break-after: page;
+    }
+}
+
+@page {
+    size: 2.125in 3.375in;
+    margin: 0;
+}
+  </style>
+
+  <!-- 🔒 STYLES — UNCHANGED -->
+  <style>
+    :root {
+      --school-color: blue;
+      --text-color: black;
+       --school-name-font-size: 12px; /* ✅ NEW */
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #e9eef2;
+      margin: 0;
+      padding: 0;
+    }
+
+    .control-bar {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      background: #fff;
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .control-group label {
+      font-size: 14px;
+      margin-right: 6px;
+      font-weight: 600;
+    }
+
+    select {
+      padding: 4px;
+      font-size: 14px;
+      min-width: 150px;
+    }
+
+    #id-card-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 40px;
+      justify-content: center;
+      padding: 20px;
+      max-width: 1800px;
+      margin: 0 auto;
+    }
+
+    .id-card {
+      position: relative;
+      transform: scale(0.95);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .id-card:hover {
+      transform: scale(1);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-identifier {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 20px;
+      height: 20px;
+      color: black;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      z-index: 10;
+    }
+
+    .school-caption,
+    .school-affliate,
+    .school-address {
+      font-size: 6px;
+    }
+
+    .principal-signature-area {
+      padding-bottom: 25px;
+    }
+
+    .school-color {
+      color: var(--school-color);
+    }
+
+    .school-name-dynamic {
+      font-size: var(--school-name-font-size);
+    }
+
+    .text-color {
+      color: var(--text-color);
+    }
+  </style>
+</head>
+
+<body ng-controller="IdCardCtrl">
+
+  <!-- CONTROL BAR (UNCHANGED) -->
+  <div class="control-bar">
+    <div class="control-group">
+      <label>Primary Color</label>
+      <select id="school-color-picker"></select>
+    </div>
+    <div class="control-group">
+      <label>Text Color</label>
+      <select id="text-color-picker"></select>
+    </div>
+    <div class="control-group">
+      <label>School Name Size</label>
+      <input
+        type="number"
+        id="school-name-fontsize"
+        min="6"
+        max="40"
+        step="1"
+        style="width:70px" />
+    </div>
+
+    <!-- <div style="font-size:13px;color:#666;">(changes apply instantly and persist)</div> -->
+  </div>
+
+  <!-- CARD GRID -->
+  <div id="id-card-grid" ng-bind-html="cardsHtml"></div>
+
+<!-- ================= COLOR PICKER SCRIPT (UNCHANGED) ================= -->
+<script>
+const LS_KEYS = { school: "schoolColor", text: "textColor", schoolNameSize: "schoolNameFontSize" };
+
+const commonColors = [
+  "Black","White","Gray","Silver","Red","Maroon","Yellow","Olive","Lime","Green",
+  "Aqua","Teal","Blue","Navy","Fuchsia","Purple","AliceBlue","AntiqueWhite",
+  "Aquamarine","Azure","Beige","Bisque","BlanchedAlmond","BlueViolet","Brown",
+  "BurlyWood","CadetBlue","Chartreuse","Chocolate","Coral","CornflowerBlue",
+  "Cornsilk","Crimson","Cyan","DarkBlue","DarkCyan","DarkGoldenRod","DarkGray",
+  "DarkGreen","DarkKhaki","DarkMagenta","DarkOliveGreen","DarkOrange","DarkOrchid",
+  "DarkRed","DarkSalmon","DarkSeaGreen","DarkSlateBlue","DarkSlateGray",
+  "DarkTurquoise","DarkViolet","DeepPink","DeepSkyBlue","DimGray","DodgerBlue",
+  "FireBrick","FloralWhite","ForestGreen","Gainsboro","GhostWhite","Gold",
+  "GoldenRod","GreenYellow","HoneyDew","HotPink","IndianRed","Indigo","Ivory",
+  "Khaki","Lavender","LavenderBlush","LawnGreen","LemonChiffon","LightBlue",
+  "LightCoral","LightCyan","LightGoldenRodYellow","LightGray","LightGreen",
+  "LightPink","LightSalmon","LightSeaGreen","LightSkyBlue","LightSlateGray",
+  "LightSteelBlue","LightYellow","LimeGreen","Linen","Magenta","MediumAquaMarine",
+  "MediumBlue","MediumOrchid","MediumPurple","MediumSeaGreen","MediumSlateBlue",
+  "MediumSpringGreen","MediumTurquoise","MediumVioletRed","MidnightBlue","MintCream"
+];
+
+function populateColorDropdown(selectId, savedValue, defaultColor) {
+  const select = document.getElementById(selectId);
+  commonColors.forEach(name => {
+    const opt = document.createElement("option");
+    opt.value = name;
+    opt.textContent = name;
+    opt.style.backgroundColor = name;
+    opt.style.color = ["White","Ivory","LightYellow","Beige"].includes(name) ? "black" : "white";
+    select.appendChild(opt);
+  });
+  select.value = savedValue || defaultColor;
+}
+
+function setupPickers() {
+  const savedSchool = localStorage.getItem(LS_KEYS.school) || "Blue";
+  const savedText = localStorage.getItem(LS_KEYS.text) || "Black";
+
+  populateColorDropdown("school-color-picker", savedSchool, "Blue");
+  populateColorDropdown("text-color-picker", savedText, "Black");
+
+  document.documentElement.style.setProperty("--school-color", savedSchool);
+  document.documentElement.style.setProperty("--text-color", savedText);
+
+  document.getElementById("school-color-picker").addEventListener("input", e => {
+    document.documentElement.style.setProperty("--school-color", e.target.value);
+  });
+  document.getElementById("school-color-picker").addEventListener("change", e => {
+    localStorage.setItem(LS_KEYS.school, e.target.value);
+  });
+
+  document.getElementById("text-color-picker").addEventListener("input", e => {
+    document.documentElement.style.setProperty("--text-color", e.target.value);
+  });
+  document.getElementById("text-color-picker").addEventListener("change", e => {
+    localStorage.setItem(LS_KEYS.text, e.target.value);
+  });
+
+  const fontInput = document.getElementById("school-name-fontsize");
+  const savedSize = localStorage.getItem(LS_KEYS.schoolNameSize) || "12";
+
+  fontInput.value = savedSize;
+  document.documentElement.style.setProperty("--school-name-font-size", savedSize + "px");
+
+  fontInput.addEventListener("input", e => {
+    document.documentElement.style.setProperty(
+      "--school-name-font-size",
+      e.target.value + "px"
+    );
+  });
+
+  fontInput.addEventListener("change", e => {
+    localStorage.setItem(LS_KEYS.schoolNameSize, e.target.value);
+  });
+}
+
+document.addEventListener("DOMContentLoaded", setupPickers);
+</script>
+
+<!-- ================= ANGULAR LOGIC ================= -->
+<script>
+angular.module('myApp', ['ngSanitize'])
+.controller('IdCardCtrl', function ($scope, $http, $sce) {
+
+  const baseUrl = "https://cdn.jsdelivr.net/gh/gitcdnsv/svcdn/IdCardBg/";
+
+  const backgrounds = Array.from({ length: 102 }, (_, i) => ({
+    index: i + 1,
+    url: baseUrl + (i + 1) + ".jpg",
+    opacity: 1,
+    size: "cover"
+  }));
+
+  const orgId = new URLSearchParams(location.search).get("orgid") || 1;
+  const apiUrl = `https://api.schoolvertex.com/api/Organisation/GetInfoForCertificate/${orgId}`;
+
+  $http.get(apiUrl).then(res => buildCards(res.data));
+
+  function buildCards(org) {
+    let html = "";
+
+    backgrounds.forEach(bg => {
+      html += `
+      <div class="id-card">
+        <div class="card-identifier">${bg.index}</div>
+        <div class="bg-image" style="background-image:url('${bg.url}');opacity:${bg.opacity};background-size:${bg.size};"></div>
+        <div class="main-content">
+          <div class="school-info">
+            <div class="school-logo">
+              <img src="${org.Image}">
+            </div>
+            <div class="school-name">
+              <span class="school-color school-name-dynamic">${org.Name}</span>
+              <p class="school-caption text-color">${org.Caption || ''}</p>
+              <p class="school-affliate text-color">${org.Affiliation || ''}</p>
+              <p class="school-address text-color">${org.FullAddress || ''}</p>
+            </div>
+          </div>
+
+          <div class="student-photo-area">
+            <img src="https://www.w3schools.com/html/img_girl.jpg">
+          </div>
+
+          <div class="student-name school-color">MATLURU JOSHITHA REDDY</div>
+
+          <div class="student-info">
+            <div class="info-row"><div class="info-label school-color">Grade</div><div class="info-devider">:</div><div class="info-value text-color">Grade 6 Sec B</div></div>
+            <div class="info-row"><div class="info-label school-color">Adm' No</div><div class="info-devider">:</div><div class="info-value text-color">872</div></div>
+            <div class="info-row"><div class="info-label school-color">D.O.B</div><div class="info-devider">:</div><div class="info-value text-color">26 Jun 2013</div></div>
+            <div class="info-row"><div class="info-label school-color">P' Name</div><div class="info-devider">:</div><div class="info-value text-color">MATLURU AMARNA</div></div>
+            <div class="info-row"><div class="info-label school-color">Address</div><div class="info-devider">:</div><div class="info-value text-color">Flat No 502, Block Sri Lakshmi Krishna Paradise, Wid Colony, Miyapur</div></div>
+          </div>
+
+          <div class="principal-signature-area">
+            <div class="principal-sign">
+              <img src="https://cdn.jsdelivr.net/gh/gitcdnsv/svcdn/SchoolLogo/150-p-sign.png">
+            </div>
+            <div class="principal-label text-color">Principal Signature</div>
+          </div>
+        </div>
+      </div>`;
+    });
+
+    $scope.cardsHtml = $sce.trustAsHtml(html);
+  }
+});
+</script>
+
+</body>
+</html>
