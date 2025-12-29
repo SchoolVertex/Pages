@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editable School Flyer</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --purple: #5c2d91;
+            --green: #4CAF50;
+            --white: #ffffff;
+            --text-color: black;
+        }
+
+        #controls {
+            background: #333;
+            color: white;
+            padding: 20px;
+            font-family: sans-serif;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-right: 1px solid #555;
+            padding-right: 15px;
+        }
+
+        button, select {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+            font-size: 14px;
+        }
+
+        select {
+            background: #fdfdfd;
+            color: #333;
+            outline: none;
+        }
+
+        .btn-edit { background: #ff9800; color: white; }
+        .btn-print { background: #2196f3; color: white; }
+        .btn-image { background: #e91e63; color: white; }
+
+        #flyer-container {
+            width: 210mm;
+            height: 297mm;
+            margin: 20px auto;
+            
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            overflow: hidden;
+            position: relative;
+            background-image: url('https://schoolvertex.github.io/Pages/Admission/images/bg-11.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        [contenteditable="true"] {
+            outline: 2px dashed #ff9800;
+            background-color: rgba(255, 152, 0, 0.2);
+        }
+
+        .top-section {
+            /* Semi-transparent gradient allows BG to peek through */
+            /* background: linear-gradient(135deg, rgba(106, 27, 154, 0.9), rgba(74, 20, 140, 0.9)); */
+            color: black;
+            height: 35%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 0 40px;
+            z-index: 2;
+        }
+
+        .header-main-row {
+            /* display: flex; */
+            text-align: center;
+            justify-content: center;
+            width: 100%;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+
+        .logo-box img {
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
+            background: white;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .school-details-col {
+            text-align: center;
+            flex: 1;
+        }
+
+        .middle-section {
+            height: 45%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            /* Light overlay for background image visibility */
+            /* background: rgba(253, 253, 253, 0.85); */
+            z-index: 2;
+        }
+
+        .qr-wrap {
+            padding: 20px;
+            background: white;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+            border: 2px solid green;
+        }
+
+        .quotation {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--purple);
+            text-align: center;
+            border-top: 4px solid var(--green);
+            padding-top: 20px;
+        }
+
+        .quotation span { color: var(--green); }
+
+        .bottom-section {
+            /* height: 20%; */
+            display: flex;
+            justify-content: space-around;
+            /* align-items: center; */
+            /* border-top: 2px solid #eee; */
+            /* background: rgba(255, 255, 255, 0.95); */
+            z-index: 2;
+        }
+
+        .contact-col { text-align: center; }
+        .contact-col label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--purple);
+            font-weight: bold;
+        }
+        .contact-col p { font-size: 18px; margin: 5px 0; font-weight: 600; }
+
+        .white-bg-with-space {
+            background: white;
+            border-radius: 20px;
+            padding: 10px;
+            color: var(--text-color);
+        }
+
+        @media print {
+            #controls { display: none; }
+            #flyer-container { margin: 0; box-shadow: none; }
+        }
+    </style>
+</head>
+
+<body ng-controller="myCtrl">
+
+    <div id="controls">
+        <div class="control-group">
+            <span>Editor:</span>
+            <button class="btn-edit" onclick="toggleEdit()">Toggle Edit Mode</button>
+        </div>
+
+        <div class="control-group">
+            <span>Background:</span>
+            <select class="btn" ng-model="selectedBg" onchange="updateBackground(this.value)">
+                <option value="">Default BG</option>
+                <option ng-repeat="bg in bgImages" value="{{bg.url}}">{{bg.name}}</option>
+            </select>
+        </div>
+
+        <!-- <div class="control-group">
+        <span>Text Color</span>
+        <select onchange="updateTextColor(this.value)">
+            <option value="#000000">Black</option>
+            <option value="#ffffff">White</option>
+            <option value="#1a237e">Navy</option>
+            <option value="#4CAF50">Green</option>
+            <option value="#5c2d91">Purple</option>
+        </select>
+    </div> -->
+
+    <div class="control-group">
+      <label>Text Color</label>
+      <select id="school-color-picker" onchange="updateTextColor(this.value)"></select>
+    </div>
+        
+
+        <div class="control-group" style="border:none">
+            <button class="btn-print" onclick="window.print()">Print / PDF</button>
+            <button class="btn-image" onclick="downloadImage()">Save as PNG</button>
+        </div>
+    </div>
+
+    <div id="flyer-container">
+        <div class="top-section">
+            <div class="header-main-row">
+                <div class="logo-box" id="school-logo" contenteditable="false">
+                    <img ng-src="{{orgInfo.Image}}" />
+                </div>
+                <div class="school-details-col  white-bg-with-space">
+                    <h1 id="school-name" contenteditable="false" style="margin:0; font-size: 38px;">{{orgInfo.Name}}</h1>
+                    <p contenteditable="false" style="margin: 5px 0; font-size: 16px; opacity: 0.9;" ng-if="orgInfo.Description">{{orgInfo.Description}}</p>
+                    <p contenteditable="false" style="margin: 2px 0; font-size: 15px; opacity: 0.8;" ng-if="orgInfo.AffiliationInfo">{{orgInfo.AffiliationInfo}}</p>
+                    <p id="school-address" contenteditable="false" style="margin: 2px 0; font-size: 15px; opacity: 0.8;" ng-if="orgInfo.FullAddress">{{orgInfo.FullAddress}}</p>
+                </div>
+            </div>
+            
+            <div id="school-caption" contenteditable="false" class="white-bg-with-space"
+                style="font-size: 22px; font-style: italic; padding: 5px 25px; border-radius: 30px;">
+                "Empowering Minds for a Brighter Future"
+            </div>
+        </div>
+
+        <div class="middle-section">
+            <div class="qr-wrap">
+                <img id="qr-code-img" ng-src="{{siteAdmissionFormUrl}}" alt="QR" style="width:250px; height:250px;">
+                <p style="margin: 10px 0 0; font-weight: bold; color: var(--purple);">SCAN TO APPLY</p>
+            </div>
+            <div class="quotation white-bg-with-space" id="main-quote" contenteditable="false">
+                THE BEST GUIDELINE<br>FOR <span>YOUR KIDS</span>
+            </div>
+        </div>
+
+        <div class="bottom-section">
+            <div class="contact-col white-bg-with-space">
+                <label>Phone</label>
+                <p id="school-phone" contenteditable="false">+00 123 456 789</p>
+            </div>
+            <div class="contact-col white-bg-with-space">
+                <label>Email</label>
+                <p id="school-email" contenteditable="false">info@school.com</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateBackground(val) {
+            const container = document.getElementById('flyer-container');
+            if (val === 'none') {
+                container.style.background = 'grey';
+            } else {
+                container.style.backgroundImage = `url('${val}')`;
+                container.style.backgroundSize = `100% 100%`;
+            }
+        }
+
+        function toggleEdit() {
+            const elements = document.querySelectorAll('[contenteditable]');
+            const isEditing = elements[0].getAttribute('contenteditable') === 'true';
+
+            elements.forEach(el => {
+                el.setAttribute('contenteditable', !isEditing);
+            });
+
+            const btn = document.querySelector('.btn-edit');
+            btn.innerText = !isEditing ? "Finish Editing" : "Toggle Edit Mode";
+            btn.style.background = !isEditing ? "#4CAF50" : "#ff9800";
+        }
+
+        function updateTextColor(val) {
+            document.documentElement.style.setProperty('--text-color', val);
+        }
+
+        function downloadImage() {
+            const elements = document.querySelectorAll('[contenteditable]');
+            elements.forEach(el => el.setAttribute('contenteditable', 'false'));
+
+            const container = document.getElementById("flyer-container");
+
+            html2canvas(container, {
+                scale: 2,
+                useCORS: true,
+                allowTaint: true
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'school-flyer.png';
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", populateColorDropdown);
+        function populateColorDropdown() {
+               const commonColors = [
+            "Black","White","Gray","Silver","Red","Maroon","Yellow","Olive","Lime","Green",
+            "Aqua","Teal","Blue","Navy","Fuchsia","Purple","AliceBlue","AntiqueWhite",
+            "Aquamarine","Azure","Beige","Bisque","BlanchedAlmond","BlueViolet","Brown",
+            "BurlyWood","CadetBlue","Chartreuse","Chocolate","Coral","CornflowerBlue",
+            "Cornsilk","Crimson","Cyan","DarkBlue","DarkCyan","DarkGoldenRod","DarkGray",
+            "DarkGreen","DarkKhaki","DarkMagenta","DarkOliveGreen","DarkOrange","DarkOrchid",
+            "DarkRed","DarkSalmon","DarkSeaGreen","DarkSlateBlue","DarkSlateGray",
+            "DarkTurquoise","DarkViolet","DeepPink","DeepSkyBlue","DimGray","DodgerBlue",
+            "FireBrick","FloralWhite","ForestGreen","Gainsboro","GhostWhite","Gold",
+            "GoldenRod","GreenYellow","HoneyDew","HotPink","IndianRed","Indigo","Ivory",
+            "Khaki","Lavender","LavenderBlush","LawnGreen","LemonChiffon","LightBlue",
+            "LightCoral","LightCyan","LightGoldenRodYellow","LightGray","LightGreen",
+            "LightPink","LightSalmon","LightSeaGreen","LightSkyBlue","LightSlateGray",
+            "LightSteelBlue","LightYellow","LimeGreen","Linen","Magenta","MediumAquaMarine",
+            "MediumBlue","MediumOrchid","MediumPurple","MediumSeaGreen","MediumSlateBlue",
+            "MediumSpringGreen","MediumTurquoise","MediumVioletRed","MidnightBlue","MintCream"
+            ];
+
+            const select = document.getElementById('school-color-picker');
+            commonColors.forEach(name => {
+                const opt = document.createElement("option");
+                opt.value = name;
+                opt.textContent = name;
+                opt.style.backgroundColor = name;
+                opt.style.color = ["White","Ivory","LightYellow","Beige"].includes(name) ? "black" : "white";
+                select.appendChild(opt);
+            });
+        
+        }
+    </script>
+
+    <script>
+        var app = angular.module("myApp", []);
+        app.controller("myCtrl", function ($scope, $http) {
+            function getQueryParams() {
+                const params = {};
+                location.search.substr(1).split("&").forEach(function (item) {
+                    const [key, value] = item.split("=");
+                    if (key) params[key] = decodeURIComponent(value);
+                });
+                return params;
+            }
+
+            const basePath = 'https://schoolvertex.github.io/Pages/Admission/images/';
+            $scope.bgImages = [
+                { name: 'BG 1', url: basePath + 'bg-1.jpg' },
+                { name: 'BG 2', url: basePath + 'bg-2.jpg' },
+                { name: 'BG 3', url: basePath + 'bg-3.jpg' },
+                { name: 'BG 4', url: basePath + 'bg-4.jpg' },
+                { name: 'BG 5', url: basePath + 'bg-5.jpg' },
+                { name: 'BG 6', url: basePath + 'bg-6.jpg' },
+                { name: 'BG 7', url: basePath + 'bg-7.jpg' },
+                { name: 'BG 8', url: basePath + 'bg-8.jpg' },
+                { name: 'BG 9', url: basePath + 'bg-9.jpg' },
+                { name: 'BG 10', url: basePath + 'bg-10.jpg' },
+                { name: 'BG 11', url: basePath + 'bg-11.jpg' },
+                { name: 'BG 12', url: basePath + 'bg-12.jpg' }
+            ];
+
+            const baseUrl = 'https://api.schoolvertex.com/api';
+            const query = getQueryParams();
+            const orgId = query.id;
+
+            const orgInfoUrl = `${baseUrl}/Organisation/GetInfoForCertificate/${orgId}`;
+            $http.get(orgInfoUrl).then(function (response) {
+                $scope.orgInfo = response.data;
+                const url = 'https://schoolvertex.com/#/user/admission-form/' + orgId;
+                $scope.siteAdmissionFormUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(url)}`;
+            });
+
+         });
+    </script>
+</body>
+</html>
