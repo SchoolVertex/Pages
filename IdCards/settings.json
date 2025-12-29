@@ -1,0 +1,12 @@
+{
+    "All": {
+        "PrimaryColor": "Black",
+        "TextColor": "Black",
+        "SchoolNameSize": 12
+    },
+    "120": {
+        "PrimaryColor": "Black",
+        "TextColor": "Black",
+        "SchoolNameSize": 12
+    }
+}
