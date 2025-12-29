@@ -373,12 +373,12 @@
 
             const baseUrl = 'https://api.schoolvertex.com/api';
             const query = getQueryParams();
-            const orgId = query.id;
+            const orgId = query.orgid;
 
             const orgInfoUrl = `${baseUrl}/Organisation/GetInfoForCertificate/${orgId}`;
             $http.get(orgInfoUrl).then(function (response) {
                 $scope.orgInfo = response.data;
-                const url = 'https://schoolvertex.com/#/user/admission-form/' + orgId;
+                const url = 'https://schoolVertex.github.io/Pages/Admission/Inquiry-Form.html?orgid=' + orgId;
                 $scope.siteAdmissionFormUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(url)}`;
             });
 
