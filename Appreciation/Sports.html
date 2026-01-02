@@ -461,8 +461,8 @@
             }
 
             const query = getQueryParams();
-            // const baseUrl = 'https://api.schoolvertex.com/api';
-            const baseUrl = 'http://localhost:62786/api';
+            const baseUrl = 'https://api.schoolvertex.com/api';
+            // const baseUrl = 'http://localhost:62786/api';
 
             if (query.orgid) {
                 $http.get(`${baseUrl}/Organisation/GetInfoForCertificate/${query.orgid}`)
@@ -512,3 +512,4 @@
 </body>
 
 </html>
+
