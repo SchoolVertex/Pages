@@ -243,6 +243,37 @@
                 box-shadow: none;
             }
         }
+
+        /* Modal */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 2000;
+        }
+
+        .parent-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            padding: 20px;
+            width: 360px;
+            border-radius: 10px;
+            z-index: 2001;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .parent-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 
@@ -250,7 +281,7 @@
 
     <!-- Toolbar -->
     <div class="toolbar">
-        <button class="btn" onclick="document.getElementById('file-input').click()">Upload Photo</button>
+        <button class="btn btn-save" onclick="document.getElementById('file-input').click()">Upload Photo</button>
         <input type="file" id="file-input" accept="image/*" onchange="updatePhoto(event)">
 
         <select class="btn" ng-model="selectedBg" ng-change="changeBackground(selectedBg)">
@@ -260,6 +291,7 @@
 
         <button class="btn btn-save" ng-click="downloadImage(userInfo.FullName)">Save as Image</button>
         <button class="btn" onclick="window.print()">Print</button>
+        <button class="btn btn-save" ng-click="shareWhatsApp()">Share</button>
     </div>
 
     <!-- Poster -->
@@ -295,6 +327,36 @@
         </div>
     </div>
 
+    <!-- Parent Share Modal -->
+    <div class="modal-backdrop" ng-show="showParentModal"></div>
+
+    <div class="parent-modal" ng-show="showParentModal">
+        <h3>Share With</h3>
+
+        <div class="parent-card" ng-repeat="p in parentList">
+            <div>
+                <strong>
+                    {{
+                    p.RelationId == 3101 ? 'Mother' :
+                    p.RelationId == 3102 ? 'Father' :
+                    'Other'
+                    }}
+                </strong><br>
+                {{ p.Name }}<br>
+                <small>{{ p.Mobile }}</small>
+            </div>
+        
+            <button class="btn btn-save" ng-click="shareToParent(p.Mobile)">
+                Share
+            </button>
+        </div>
+
+        <div style="text-align:right;margin-top:10px;">
+            <button class="btn" ng-click="closeParentModal()">Close</button>
+        </div>
+    </div>
+
+
     <script>
         function updatePhoto(event) {
             const img = document.getElementById('student-img');
@@ -302,8 +364,6 @@
             reader.onload = () => img.src = reader.result;
             reader.readAsDataURL(event.target.files[0]);
         }
-
-
     </script>
 
     <script>
@@ -353,8 +413,8 @@
                 return params;
             }
 
-            const baseUrl = 'https://api.schoolvertex.com/api';
-            // const baseUrl = 'http://localhost:62786/api';
+            // const baseUrl = 'https://api.schoolvertex.com/api';
+            const baseUrl = 'http://localhost:62786/api';
 
             const query = getQueryParams();
             const userId = query.id;
@@ -369,6 +429,40 @@
             $http.get(userInfoUrl).then(function (response) {
                 $scope.userInfo = response.data;
             });
+
+            // Share button click
+            $scope.shareWhatsApp = function () {
+                const url = `${baseUrl}/UserParentInfo/GetList/${userId}`;
+
+                $http.get(url).then(function (response) {
+                    $scope.parentList = response.data || [];
+                    $scope.showParentModal = true;
+                });
+            };
+
+            // Close modal
+            $scope.closeParentModal = function () {
+                $scope.showParentModal = false;
+            };
+
+            // Open WhatsApp for selected parent
+            $scope.shareToParent = function (mobile) {
+                const message = encodeURIComponent(
+                    `Warm birthday wishes from ${$scope.orgInfo?.Name || 'School'} 🎉`
+                );
+
+                const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+                if (isMobile) {
+                    window.location.href = `whatsapp://send?phone=${mobile}&text=${message}`;
+                } else {
+                    // SAME TAB – no duplicates ever
+                    window.location.href =
+                        `https://web.whatsapp.com/send?phone=${mobile}&text=${message}`;
+                }
+            };
+
+
         });
     </script>
 
