@@ -1,4 +1,4 @@
-    var app = angular.module("myApp", []);
+var app = angular.module("myApp", []);
     app.controller("myCtrl", function ($scope, $http, $window) {
 
         // --- Fetching Data and Controller Logic ---
@@ -35,12 +35,21 @@
             $scope.gender = $scope.admInfo.GenderId == 501 ? 'Male' : $scope.admInfo.GenderId == 502 ? 'Female' : '';
             $scope.admInfo.DateOfBirth = new Date(response.data.DateOfBirth);
             $scope.admInfo.CreatedDate = new Date(response.data.CreatedDate);
-            $scope.admInfo.YearId = 9 ? '2026-27' : $scope.admInfo.YearId == 10 ? '2027-28' : '2025-26';
+            $scope.YearName = $scope.admInfo.YearId == 9 ? '2026-27' : $scope.admInfo.YearId == 10 ? '2027-28' : '2025-26';
 
             $scope.GradeName = 'Class/Grade';
             const classInfoUrl = `${baseUrl}/Batch/GetClassNumber/${$scope.admInfo.BatchId}`;
             $http.get(classInfoUrl).then(function (resp) {
-                const classNumber = resp.data;
+                let classNumber = resp.data;
+                if($scope.admInfo.YearId == 9) {
+                    classNumber = classNumber + 1;
+                }
+                if($scope.admInfo.YearId == 10) {
+                    classNumber = classNumber + 2;
+                }
+                if(classNumber == 0) {
+                    classNumber = 1;
+                }
                 if (classNumber > 0) {
                     $scope.GradeName = 'Class ' + classNumber;
                 } else if(classNumber == -1) {
