@@ -2,5 +2,6 @@
   "Admission": [],
   "ThermalReceipt": [30, 139, 151],
   "FeeDeclaration": [],
-  "IDCards": []
+  "IDCards": [],
+  "Payslips": []
 }
