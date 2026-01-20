@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+<head>
+<meta charset="UTF-8">
+<title>Teacher Salary Pay Slip</title>
+
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+
+<style>
+body{font-family:Segoe UI,Arial;background:#eef2f7;margin:0}
+
+.toolbar{
+    text-align:center;
+    padding:10px;
+    background:#2c3e50;
+}
+.toolbar button{
+    background:#1abc9c;
+    color:#fff;
+    border:none;
+    padding:8px 16px;
+    margin:0 5px;
+    border-radius:4px;
+    cursor:pointer;
+}
+
+.payslip-container{
+    width:800px;
+    margin:20px auto;
+    background:#fff;
+    padding:35px;
+    border-radius:6px;
+    box-shadow:0 0 10px rgba(0,0,0,.1)
+}
+
+.editable{
+    border-bottom:1px dashed #aaa;
+    padding:2px 4px;
+}
+
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    border-bottom:2px solid #2c3e50;
+    padding-bottom:10px;
+    margin-bottom:20px
+}
+.header-left{
+    display:flex;
+    align-items:center
+}
+.school-logo{
+    width:70px;
+    height:70px;
+    margin-right:15px
+}
+.school-logo img{
+    width:100%;
+    height:100%;
+    object-fit:contain
+}
+.school-name{
+    font-size:24px;
+    font-weight:bold;
+    color:#2c3e50
+}
+
+.title{
+    text-align:center;
+    font-size:22px;
+    font-weight:bold;
+    margin:20px 0;
+    text-decoration:underline
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-bottom:15px;
+    font-size:14px
+}
+th,td{
+    border:1px solid #444;
+    padding:6px;
+    text-align:center
+}
+th{
+    background:#f2f4f8
+}
+
+.net-salary{
+    text-align:right;
+    font-size:16px;
+    font-weight:bold
+}
+
+.signature-section{
+    display:flex;
+    justify-content:space-between;
+    margin-top:60px
+}
+.signature-box{
+    width:250px;
+    text-align:center;
+    border-top:1px solid #000;
+    padding-top:5px
+}
+
+@media print{
+    .toolbar{display:none}
+    .editable{border:none}
+    body{background:#fff}
+}
+</style>
+</head>
+
+<body ng-controller="myCtrl">
+
+<div class="toolbar">
+    <button ng-click="toggleEdit()">✏ Edit</button>
+    <button onclick="window.print()">🖨 Print</button>
+</div>
+
+<div class="payslip-container">
+
+<div class="header">
+    <div class="header-left">
+        <div class="school-logo">
+            <img ng-src="{{orgInfo.Image}}">
+        </div>
+        <div>
+            <div class="school-name editable" contenteditable="false">{{orgInfo.Name}}</div>
+            <div class="editable" contenteditable="false">{{orgInfo.FullAddress}}</div>
+        </div>
+    </div>
+
+    <div class="editable" contenteditable="false">
+        Month: <b>{{month}}</b> <br>
+        Year: <b>{{year}}</b>
+    </div>
+</div>
+
+<div class="title">Salary Pay Slip</div>
+
+<table>
+<tr>
+    <td>Employee Name</td>
+    <td class="editable" contenteditable="false">{{userInfo.FullName}}</td>
+    <td>Employee ID</td>
+    <td class="editable" contenteditable="false">{{userInfo.EmployeeId}}</td>
+</tr>
+<tr>
+    <td>Designation</td>
+    <td class="editable" contenteditable="false">{{userInfo.Designation}}</td>
+    <td>Pay Date</td>
+    <td class="editable" contenteditable="false">{{userInfo.PayDate}}</td>
+</tr>
+</table>
+
+<table>
+<tr>
+    <th>Earnings</th><th>Amount (₹)</th>
+    <th>Deductions</th><th>Amount (₹)</th>
+</tr>
+<tr>
+    <td>Basic</td>
+    <td class="editable" contenteditable="false">{{userInfo.Basic}}</td>
+    <td>PF</td>
+    <td class="editable" contenteditable="false">{{userInfo.PF}}</td>
+</tr>
+<tr>
+    <td>HRA</td>
+    <td class="editable" contenteditable="false">{{userInfo.HRA}}</td>
+    <td>Tax</td>
+    <td class="editable" contenteditable="false">{{userInfo.Tax}}</td>
+</tr>
+<tr>
+    <td>Allowances</td>
+    <td class="editable" contenteditable="false">{{userInfo.Allowances}}</td>
+    <td>Other</td>
+    <td class="editable" contenteditable="false">0</td>
+</tr>
+<tr>
+    <th>Total Earnings</th>
+    <th class="editable" contenteditable="false">{{totalEarnings}}</th>
+    <th>Total Deductions</th>
+    <th class="editable" contenteditable="false">{{totalDeductions}}</th>
+</tr>
+</table>
+
+<div class="net-salary editable" contenteditable="false">
+Net Salary : ₹ {{netSalary}}
+</div>
+
+<div class="signature-section">
+    <div class="signature-box">Employee Signature</div>
+    <div class="signature-box">Authorized Signatory</div>
+</div>
+
+</div>
+
+<script>
+var app = angular.module("myApp", []);
+
+app.controller("myCtrl", function ($scope, $http) {
+
+$scope.isEdit = false;
+
+$scope.toggleEdit = function(){
+    $scope.isEdit = !$scope.isEdit;
+    var fields = document.querySelectorAll('.editable');
+    fields.forEach(f=>{
+        f.contentEditable = $scope.isEdit;
+        f.style.background = $scope.isEdit ? "#fff9c4" : "transparent";
+    });
+};
+
+const baseUrl = "https://api.schoolvertex.com/api";
+
+function getQueryParams(){
+    const p={};
+    location.search.substr(1).split("&").forEach(i=>{
+        const t=i.split("=");
+        if(t[0]) p[t[0]]=decodeURIComponent(t[1]);
+    });
+    return p;
+}
+
+const query = getQueryParams();
+const userId = query.id;
+const orgId = query.orgid;
+
+/* Organisation Info */
+$http.get(`${baseUrl}/Organisation/GetInfoForCertificate/${orgId}`)
+.then(res=>{
+    $scope.orgInfo = res.data;
+});
+
+/* Teacher Info */
+$http.get(`${baseUrl}/User/GetPreviewById/${userId}`)
+.then(res=>{
+    $scope.userInfo = res.data;
+
+    $scope.totalEarnings = 0;
+
+    $scope.totalDeductions = 0;
+
+    $scope.netSalary = 0;
+});
+
+/* Month & Year */
+const d=new Date();
+$scope.month=d.toLocaleString('default',{month:'long'});
+$scope.year=d.getFullYear();
+
+});
+</script>
+
+</body>
+</html>
