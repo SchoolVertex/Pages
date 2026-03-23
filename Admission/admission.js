@@ -1,4 +1,4 @@
-var app = angular.module("myApp", []);
+    var app = angular.module("myApp", []);
     app.controller("myCtrl", function ($scope, $http, $window) {
 
         // --- Fetching Data and Controller Logic ---
@@ -14,14 +14,15 @@ var app = angular.module("myApp", []);
             return params;
         }
 
-        const baseUrl = 'https://api.schoolvertex.com/api';
-        // const baseUrl = 'http://localhost:62786/api';
+        // const baseUrl = 'https://api.schoolvertex.com/api';
+        const baseUrl = 'http://localhost:62786/api';
         
         const query = getQueryParams();
         const admId = query.id;
         const orgId = query.orgid;
 
         $scope.gender = '';
+        $scope.today = new Date();
 
         const orgInfoUrl = `${baseUrl}/Organisation/GetInfoForCertificate/${orgId}`;
         $http.get(orgInfoUrl).then(function (response) {
@@ -35,21 +36,12 @@ var app = angular.module("myApp", []);
             $scope.gender = $scope.admInfo.GenderId == 501 ? 'Male' : $scope.admInfo.GenderId == 502 ? 'Female' : '';
             $scope.admInfo.DateOfBirth = new Date(response.data.DateOfBirth);
             $scope.admInfo.CreatedDate = new Date(response.data.CreatedDate);
-            $scope.YearName = $scope.admInfo.YearId == 9 ? '2026-27' : $scope.admInfo.YearId == 10 ? '2027-28' : '2025-26';
+            $scope.admInfo.YearId = 9 ? '2026-27' : $scope.admInfo.YearId == 10 ? '2027-28' : '2025-26';
 
             $scope.GradeName = 'Class/Grade';
             const classInfoUrl = `${baseUrl}/Batch/GetClassNumber/${$scope.admInfo.BatchId}`;
             $http.get(classInfoUrl).then(function (resp) {
-                let classNumber = resp.data;
-                if($scope.admInfo.YearId == 9) {
-                    classNumber = classNumber + 1;
-                }
-                if($scope.admInfo.YearId == 10) {
-                    classNumber = classNumber + 2;
-                }
-                if(classNumber == 0) {
-                    classNumber = 1;
-                }
+                const classNumber = resp.data;
                 if (classNumber > 0) {
                     $scope.GradeName = 'Class ' + classNumber;
                 } else if(classNumber == -1) {
@@ -59,6 +51,11 @@ var app = angular.module("myApp", []);
                 } else if(classNumber == -3) {
                     $scope.GradeName = 'NURSERY';
                 }
+            });
+
+            const feeInfoUrl = `${baseUrl}/Fee/GetUserFeeItemSummary/${$scope.admInfo.UserId}/${$scope.admInfo.YearId}`;
+            $http.get(feeInfoUrl).then(function (feeResp) {
+                $scope.feeInfo = feeResp.data;
             });
         });
 
