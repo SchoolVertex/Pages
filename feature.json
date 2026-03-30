@@ -3,5 +3,7 @@
   "ThermalReceipt": [30, 139, 151],
   "FeeDeclaration": [],
   "IDCards": [],
-  "Payslips": []
+  "Payslips": [],
+  "OfferLetter": [],
+  "ExperienceLetter": []
 }
