@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="en" ng-app="payslipApp">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>School Staff Pay Slip</title>
+    <style>
+        :root {
+            --border: #444;
+            --light: #f3f4f6;
+            --text: #111827;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 24px;
+            font-family: Arial, Helvetica, sans-serif;
+            color: var(--text);
+            background: #fff;
+        }
+
+        .wrap {
+            position: relative;
+            max-width: 900px;
+            margin: 0 auto;
+            border: 1px solid var(--border);
+            padding: 18px;
+            min-height: 260mm;
+            overflow: hidden;
+        }
+
+        .page-watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70%;
+            max-width: 520px;
+            opacity: 0.08;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .page-watermark img {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .content-layer {
+            position: relative;
+            z-index: 1;
+        }
+
+        h1,
+        h2,
+        h3 {
+            margin: 0;
+        }
+
+        .top {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .school-head {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo-box {
+            width: 90px;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.55);
+        }
+
+        .logo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .logo-placeholder {
+            font-size: 12px;
+            color: #6b7280;
+            text-align: center;
+            padding: 6px;
+        }
+
+        .school h1 {
+            font-size: 26px;
+            margin-bottom: 4px;
+        }
+
+        .school p {
+            margin: 0;
+            color: #374151;
+        }
+
+        .meta {
+            min-width: 220px;
+            border: 1px solid var(--border);
+            padding: 8px;
+        }
+
+        .meta-row {
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            gap: 8px;
+            margin-bottom: 6px;
+            align-items: center;
+        }
+
+        .meta-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .label {
+            font-weight: bold;
+        }
+
+        .edit {
+            border: 1px dashed #9ca3af;
+            padding: 2px 6px;
+            min-height: 24px;
+            border-radius: 4px;
+            background: transparent;
+        }
+
+        .staff-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px 14px;
+            border: 1px solid var(--border);
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+        .staff-item {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 8px;
+            align-items: center;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 14px;
+        }
+
+        th,
+        td {
+            border: 1px solid var(--border);
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background: rgba(243, 244, 246, 0.55);
+        }
+
+        .serial-col {
+            width: 60px;
+            text-align: center;
+            border: none !important;
+            background: transparent;
+        }
+
+        .num {
+            text-align: right;
+            width: 160px;
+        }
+
+        th.num {
+            border: none !important;
+            background: transparent;
+        }
+
+        .total-row td {
+            font-weight: bold;
+            background: rgba(238, 242, 255, 0.55);
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        button {
+            border: 1px solid #374151;
+            background: #111827;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button.secondary {
+            background: white;
+            color: #111827;
+        }
+
+        .sign {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+            margin-top: 54px;
+        }
+
+        .sign-box {
+            border-top: 1px solid var(--border);
+            padding-top: 8px;
+            text-align: center;
+            color: #374151;
+        }
+
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 8mm;
+            }
+
+            body {
+                padding: 0;
+            }
+
+            .wrap {
+                /* border: none; */
+                max-width: none;
+                min-height: 279mm;
+            }
+
+            .actions {
+                display: none;
+            }
+
+            .edit {
+                border: none;
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+
+<body ng-controller="PayslipController">
+    <div class="wrap">
+        <div class="page-watermark" ng-if="getLogoSrc()">
+            <img ng-src="{{ getLogoSrc() }}" alt="School Watermark" />
+        </div>
+        <div class="content-layer">
+            <div class="top">
+                <div class="school">
+                    <div class="school-head">
+                        <div class="logo-box" title="School Logo">
+                            <img ng-if="getLogoSrc()" ng-src="{{ getLogoSrc() }}" alt="School Logo" />
+                            <div ng-if="!getLogoSrc()" class="logo-placeholder">School Logo</div>
+                        </div>
+                        <div>
+                            <h1 class="edit">{{ school.Name || "ABC Public School" }}</h1>
+                            <p class="edit">{{ school.FullAddress || "School Address, City" }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="meta">
+                    <div class="meta-row">
+                        <div class="label">Month</div>
+                        <div contenteditable="true" class="edit">March 2026</div>
+                    </div>
+                    <div class="meta-row">
+                        <div class="label">Slip No.</div>
+                        <div contenteditable="true" class="edit">PS-001</div>
+                    </div>
+                    <div class="meta-row">
+                        <div class="label">Date</div>
+                        <div contenteditable="true" class="edit">27-03-2026</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="staff-grid">
+                <div class="staff-item">
+                    <div class="label">Staff Name</div>
+                    <div contenteditable="true" class="edit">{{userInfo.FullName}}</div>
+                </div>
+                <div class="staff-item">
+                    <div class="label">Employee ID</div>
+                    <div contenteditable="true" class="edit">EMP-1001</div>
+                </div>
+                <div class="staff-item">
+                    <div class="label">Designation</div>
+                    <div contenteditable="true" class="edit">Teacher</div>
+                </div>
+                <div class="staff-item">
+                    <div class="label">Department</div>
+                    <div contenteditable="true" class="edit">Science</div>
+                </div>
+                <div class="staff-item">
+                    <div class="label">Account No.</div>
+                    <div contenteditable="true" class="edit">XXXXXX1234</div>
+                </div>
+                <div class="staff-item">
+                    <div class="label">IFSC</div>
+                    <div contenteditable="true" class="edit">ABCD0001234</div>
+                </div>
+            </div>
+
+            <table id="earningsTable">
+                <thead>
+                    <tr>
+                        <th class="serial-col">#</th>
+                        <th contenteditable="true" class="edit">Earning Head</th>
+                        <th class="num" contenteditable="true" class="edit">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="serial-col">1</td>
+                        <td contenteditable="true" class="edit">Basic Pay</td>
+                        <td contenteditable="true" class="edit num amount">10000</td>
+                    </tr>
+                    <tr>
+                        <td class="serial-col">2</td>
+                        <td contenteditable="true" class="edit">House Rent Allowance</td>
+                        <td contenteditable="true" class="edit num amount">2000</td>
+                    </tr>
+                    <tr>
+                        <td class="serial-col">3</td>
+                        <td contenteditable="true" class="edit">Transport Allowance</td>
+                        <td contenteditable="true" class="edit num amount">2500</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td colspan="2">Total Earnings</td>
+                        <td id="totalEarnings" class="num">0</td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <table id="deductionsTable">
+                <thead>
+                    <tr>
+                        <th class="serial-col">#</th>
+                        <th contenteditable="true" class="edit">Deduction Head</th>
+                        <th class="num" contenteditable="true" class="edit">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="serial-col">1</td>
+                        <td contenteditable="true" class="edit">Provident Fund</td>
+                        <td contenteditable="true" class="edit num amount">1800</td>
+                    </tr>
+                    <tr>
+                        <td class="serial-col">2</td>
+                        <td contenteditable="true" class="edit">Professional Tax</td>
+                        <td contenteditable="true" class="edit num amount">200</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td colspan="2">Total Deductions</td>
+                        <td id="totalDeductions" class="num">0</td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <table>
+                <tbody>
+                    <tr class="total-row">
+                        <td style="width: 70%;">Net Pay (Earnings - Deductions)</td>
+                        <td id="netPay" class="num">0</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="actions">
+                <input type="number" min="1" ng-model="orgId" style="width: 90px; padding: 8px;"
+                    title="Organisation ID" />
+                <button type="button" class="secondary" ng-click="loadSchoolData()">Load School Data</button>
+                <button type="button" onclick="addRow('earningsTable')">Add Earning Row</button>
+                <button type="button" onclick="addRow('deductionsTable')">Add Deduction Row</button>
+                <button type="button" class="secondary" onclick="window.print()">Print Slip</button>
+            </div>
+
+            <div class="sign">
+                <div class="sign-box edit" contenteditable="true">Staff Signature</div>
+                <div class="sign-box edit" contenteditable="true">Authorized Signatory</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+    <script>
+        const app = angular.module("payslipApp", []);
+
+        app.controller("PayslipController", ["$scope", "$http", function ($scope, $http) {
+            $scope.school = {};
+            $scope.orgId = 1;
+
+            function getOrgIdFromQuery() {
+                const params = new URLSearchParams(window.location.search);
+                const orgId = Number(params.get("orgId"));
+                return Number.isFinite(orgId) && orgId > 0 ? orgId : 1;
+            }
+
+            function getUserIdFromQuery() {
+                const params = new URLSearchParams(window.location.search);
+                const userId = Number(params.get("userId"));
+                return Number.isFinite(userId) && userId > 0 ? userId : 1;
+            }
+
+            $scope.getLogoSrc = function () {
+                return $scope.school.Image || "";
+            };
+
+            $scope.loadSchoolData = function () {
+                const orgApiUrl = "https://api.schoolvertex.com/api/Organisation/GetInfoForCertificate/" + $scope.orgId;
+                $http.get(orgApiUrl).then(function (response) {
+                    if (response && response.data) {
+                        $scope.school = response.data;
+                    }
+                }).catch(function (error) {
+                    console.error("School API error:", error);
+                    alert("Unable to load school data for ID " + $scope.orgId + ".");
+                });
+
+                const userApiUrl = "https://api.schoolvertex.com/api/User/GetPreviewById/" + $scope.userId;
+                $http.get(userApiUrl).then(function (response) {
+                    if (response && response.data) {
+                        $scope.userInfo = response.data;
+                    }
+                }).catch(function (error) {
+                    console.error("User API error:", error);
+                    alert("Unable to load User data for ID " + $scope.userId + ".");
+                });
+            };
+
+            $scope.orgId = getOrgIdFromQuery();
+            $scope.userId = getUserIdFromQuery();
+            $scope.loadSchoolData();
+        }]);
+
+        function parseAmount(text) {
+            const cleaned = String(text).replace(/[^0-9.-]/g, "");
+            const value = parseFloat(cleaned);
+            return Number.isFinite(value) ? value : 0;
+        }
+
+        function sumTable(tableId, totalId) {
+            const table = document.getElementById(tableId);
+            const amounts = table.querySelectorAll("tbody .amount");
+            let total = 0;
+            amounts.forEach((cell) => {
+                total += parseAmount(cell.textContent);
+            });
+            document.getElementById(totalId).textContent = total.toFixed(2);
+            return total;
+        }
+
+        function updateTotals() {
+            const earnings = sumTable("earningsTable", "totalEarnings");
+            const deductions = sumTable("deductionsTable", "totalDeductions");
+            document.getElementById("netPay").textContent = (earnings - deductions).toFixed(2);
+        }
+
+        function renumberRows(tableId) {
+            const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+            rows.forEach((row, index) => {
+                row.cells[0].textContent = index + 1;
+            });
+        }
+
+        function addRow(tableId) {
+            const tbody = document.querySelector(`#${tableId} tbody`);
+            const row = document.createElement("tr");
+            row.innerHTML = `
+        <td class="serial-col"></td>
+        <td contenteditable="true" class="edit">New Head</td>
+        <td contenteditable="true" class="edit num amount">0</td>
+      `;
+            tbody.appendChild(row);
+            renumberRows(tableId);
+            updateTotals();
+        }
+
+        document.addEventListener("input", (event) => {
+            if (event.target.classList.contains("amount")) {
+                updateTotals();
+            }
+        });
+
+        renumberRows("earningsTable");
+        renumberRows("deductionsTable");
+        updateTotals();
+    </script>
+</body>
+
+</html>
