@@ -75,6 +75,13 @@
             display: flex;
             align-items: center;
             gap: 14px;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .school {
+            text-align: center;
+            flex: 1 1 auto;
         }
 
         .logo-box {
@@ -182,6 +189,19 @@
             margin: 14px 0;
         }
 
+        /* To block + subject + offer paragraphs: editable = bold, all other text normal */
+        .offer-letter-main {
+            font-weight: normal;
+        }
+
+        .offer-letter-main .edit {
+            font-weight: bold;
+        }
+
+        .offer-letter-main .to-row .lead {
+            font-weight: normal;
+        }
+
         .table {
             width: 100%;
             border-collapse: collapse;
@@ -202,6 +222,10 @@
         .table td.right {
             text-align: right;
             width: 180px;
+        }
+
+        .table td.pay-detail {
+            width: 50%;
         }
 
         .actions {
@@ -289,52 +313,60 @@
                     </div>
                 </div>
 
-                <div class="meta">
+                <!-- <div class="meta">
                     <div class="meta-row">
                         <div class="label">Date</div>
                         <div contenteditable="true" class="edit">{{ letterDate }}</div>
                     </div>
-                </div>
+                </div> -->
             </div>
 
             <div class="letter-title">
-                <h2>Offer Letter</h2>
-                <p>For Teacher Appointment</p>
+                <h2 contenteditable="true">Offer Letter</h2>
+                <p contenteditable="true">For Teacher Appointment</p>
             </div>
 
             <div class="body">
-                <div class="to-block">
-                    <div class="to-row">
-                        <div class="lead">To,</div>
-                        <div contenteditable="true" class="edit" style="min-width: 280px;">{{ userInfo.FullName || "Teacher Name" }}</div>
-                    </div>
-                    <div class="section" style="margin-top: 10px;">
+                <div class="offer-letter-main">
+                    <div class="to-block">
                         <div class="to-row">
-                            <div class="lead">Employee ID</div>
-                            <div contenteditable="true" class="edit">{{ userInfo.EmployeeId || userInfo.EmpId || "EMP-1001" }}</div>
+                            <div class="lead">To,</div>
+                            <div contenteditable="true" class="edit" style="min-width: 280px;">{{ userInfo.FullName || "Teacher Name" }}</div>
+                        </div>
+                        <div class="section" style="margin-top: 10px;">
+                            <div class="to-row">
+                                <div class="lead">Employee ID</div>
+                                <div contenteditable="true" class="edit">{{ userInfo.EmployeeId || userInfo.EmpId || "EMP-1001" }}</div>
+                            </div>
+                        </div>
+                        <div class="section" style="margin-top: 10px;">
+                            <div class="to-row">
+                                <div class="lead">Date</div>
+                                <div contenteditable="true" class="edit">{{ letterDate }}</div>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="section">
-                    <p>
-                        Subject: <span class="edit" contenteditable="true">Offer of Employment as Teacher</span>
-                    </p>
-                    <p>
-                        We, <span class="edit" contenteditable="true">{{ school.Name || "ABC Public School" }}</span>, are pleased to
-                        offer you the position of <span class="edit" contenteditable="true">{{ userInfo.Designation || "Teacher" }}</span>
-                        at our school. This offer is effective from <span class="edit" contenteditable="true">01-04-2026</span>,
-                        subject to your acceptance and completion of required formalities.
-                    </p>
-                    <p>
-                        You will report to the <span class="edit" contenteditable="true">Principal</span> and perform duties
-                        consistent with your role, as per the school’s policies and academic requirements.
-                    </p>
+                    <div class="section">
+                        <p>
+                            Subject: <span class="edit" contenteditable="true">Offer of Employment as Teacher</span>
+                        </p>
+                        <p>
+                            We, <span class="edit" contenteditable="true">{{ school.Name || "ABC Public School" }}</span>, are pleased to
+                            offer you the position of <span class="edit" contenteditable="true">{{ userInfo.Designation || "Teacher" }}</span>
+                            at our school. This offer is effective from <span class="edit" contenteditable="true">01-04-2026</span>,
+                            subject to your acceptance and completion of required formalities.
+                        </p>
+                        <p>
+                            You will report to the <span class="edit" contenteditable="true">Principal</span> and perform duties
+                            consistent with your role, as per the school’s policies and academic requirements.
+                        </p>
+                    </div>
                 </div>
 
                 <div class="section">
                     <h3 style="font-size: 16px; margin-bottom: 6px;">Compensation</h3>
-                    <table class="table">
+                    <table id="compensationTable" class="table">
                         <thead>
                             <tr>
                                 <th>Pay Details</th>
@@ -343,15 +375,11 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td>
-                                    Monthly Salary (Gross)
-                                </td>
+                                <td class="pay-detail edit" contenteditable="true">Monthly Salary (Gross)</td>
                                 <td class="right edit num" contenteditable="true">50000.00</td>
                             </tr>
                             <tr>
-                                <td>
-                                    Allowances (if any)
-                                </td>
+                                <td class="pay-detail edit" contenteditable="true">Allowances (if any)</td>
                                 <td class="right edit num" contenteditable="true">5000.00</td>
                             </tr>
                         </tbody>
@@ -383,6 +411,7 @@
             <div class="actions">
                 <input type="number" min="1" ng-model="orgId" style="width: 90px; padding: 8px;" title="Organisation ID" />
                 <button type="button" class="secondary" ng-click="loadSchoolData()">Load School Data</button>
+                <button type="button" onclick="addCompensationRow()">Add Compensation Row</button>
                 <button type="button" class="secondary" onclick="window.print()">Print Offer Letter</button>
             </div>
         </div>
@@ -450,6 +479,19 @@
             $scope.userId = getUserIdFromQuery();
             $scope.loadSchoolData();
         }]);
+
+        function addCompensationRow() {
+            const table = document.getElementById("compensationTable");
+            if (!table) return;
+            const tbody = table.querySelector("tbody");
+            if (!tbody) return;
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td class="pay-detail edit" contenteditable="true">New Pay Item</td>
+                <td class="right edit num" contenteditable="true">0.00</td>
+            `;
+            tbody.appendChild(row);
+        }
     </script>
 </body>
 
