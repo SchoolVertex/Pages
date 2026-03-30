@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en" ng-app="offerLetterApp">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teacher Offer Letter</title>
+    <style>
+        :root {
+            --border: #444;
+            --light: #f3f4f6;
+            --text: #111827;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 24px;
+            font-family: Arial, Helvetica, sans-serif;
+            color: var(--text);
+            background: #fff;
+        }
+
+        .wrap {
+            position: relative;
+            max-width: 900px;
+            margin: 0 auto;
+            border: 1px solid var(--border);
+            padding: 18px;
+            min-height: 279mm;
+            overflow: hidden;
+        }
+
+        .page-watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70%;
+            max-width: 520px;
+            opacity: 0.08;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .page-watermark img {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .content-layer {
+            position: relative;
+            z-index: 1;
+        }
+
+        h1,
+        h2,
+        h3 {
+            margin: 0;
+        }
+
+        .top {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .school-head {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo-box {
+            width: 90px;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.55);
+        }
+
+        .logo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .logo-placeholder {
+            font-size: 12px;
+            color: #6b7280;
+            text-align: center;
+            padding: 6px;
+        }
+
+        .school h1 {
+            font-size: 26px;
+            margin-bottom: 4px;
+        }
+
+        .school p {
+            margin: 0;
+            color: #374151;
+        }
+
+        .meta {
+            min-width: 220px;
+            border: 1px solid var(--border);
+            padding: 8px;
+        }
+
+        .meta-row {
+            display: grid;
+            grid-template-columns: 110px 1fr;
+            gap: 8px;
+            margin-bottom: 6px;
+            align-items: center;
+        }
+
+        .meta-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .label {
+            font-weight: bold;
+        }
+
+        .edit {
+            border: 1px dashed #9ca3af;
+            padding: 2px 6px;
+            min-height: 24px;
+            border-radius: 4px;
+            background: transparent;
+            outline: none;
+        }
+
+        .letter-title {
+            text-align: center;
+            margin: 6px 0 18px;
+        }
+
+        .letter-title h2 {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .letter-title p {
+            margin: 0;
+            color: #374151;
+        }
+
+        .to-block {
+            margin-bottom: 14px;
+        }
+
+        .to-row {
+            display: flex;
+            gap: 12px;
+            align-items: baseline;
+            flex-wrap: wrap;
+        }
+
+        .to-row .lead {
+            font-weight: bold;
+            min-width: 56px;
+        }
+
+        .body {
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .section {
+            margin: 14px 0;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+
+        .table th,
+        .table td {
+            border: 1px solid var(--border);
+            padding: 8px;
+            text-align: left;
+        }
+
+        .table th {
+            background: rgba(243, 244, 246, 0.55);
+        }
+
+        .table td.right {
+            text-align: right;
+            width: 180px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        button {
+            border: 1px solid #374151;
+            background: #111827;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button.secondary {
+            background: white;
+            color: #111827;
+        }
+
+        .sign {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+            margin-top: 50px;
+        }
+
+        .sign-box {
+            border-top: 1px solid var(--border);
+            padding-top: 8px;
+            text-align: center;
+            color: #374151;
+        }
+
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 8mm;
+            }
+
+            body {
+                padding: 0;
+            }
+
+            .wrap {
+                max-width: none;
+                border: none;
+                min-height: 279mm;
+            }
+
+            .actions {
+                display: none;
+            }
+
+            .edit {
+                border: none;
+                padding: 0;
+                min-height: unset;
+            }
+        }
+    </style>
+</head>
+
+<body ng-controller="OfferLetterController">
+    <div class="wrap">
+        <div class="page-watermark" ng-if="getLogoSrc()">
+            <img ng-src="{{ getLogoSrc() }}" alt="School Watermark" />
+        </div>
+
+        <div class="content-layer">
+            <div class="top">
+                <div class="school">
+                    <div class="school-head">
+                        <div class="logo-box" title="School Logo">
+                            <img ng-if="getLogoSrc()" ng-src="{{ getLogoSrc() }}" alt="School Logo" />
+                            <div ng-if="!getLogoSrc()" class="logo-placeholder">School Logo</div>
+                        </div>
+                        <div>
+                            <h1 class="edit">{{ school.Name || "ABC Public School" }}</h1>
+                            <p class="edit">{{ school.FullAddress || "School Address, City" }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="meta">
+                    <div class="meta-row">
+                        <div class="label">Date</div>
+                        <div contenteditable="true" class="edit">{{ letterDate }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="letter-title">
+                <h2>Offer Letter</h2>
+                <p>For Teacher Appointment</p>
+            </div>
+
+            <div class="body">
+                <div class="to-block">
+                    <div class="to-row">
+                        <div class="lead">To,</div>
+                        <div contenteditable="true" class="edit" style="min-width: 280px;">{{ userInfo.FullName || "Teacher Name" }}</div>
+                    </div>
+                    <div class="section" style="margin-top: 10px;">
+                        <div class="to-row">
+                            <div class="lead">Employee ID</div>
+                            <div contenteditable="true" class="edit">{{ userInfo.EmployeeId || userInfo.EmpId || "EMP-1001" }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <p>
+                        Subject: <span class="edit" contenteditable="true">Offer of Employment as Teacher</span>
+                    </p>
+                    <p>
+                        We, <span class="edit" contenteditable="true">{{ school.Name || "ABC Public School" }}</span>, are pleased to
+                        offer you the position of <span class="edit" contenteditable="true">{{ userInfo.Designation || "Teacher" }}</span>
+                        at our school. This offer is effective from <span class="edit" contenteditable="true">01-04-2026</span>,
+                        subject to your acceptance and completion of required formalities.
+                    </p>
+                    <p>
+                        You will report to the <span class="edit" contenteditable="true">Principal</span> and perform duties
+                        consistent with your role, as per the school’s policies and academic requirements.
+                    </p>
+                </div>
+
+                <div class="section">
+                    <h3 style="font-size: 16px; margin-bottom: 6px;">Compensation</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Pay Details</th>
+                                <th class="right">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    Monthly Salary (Gross)
+                                </td>
+                                <td class="right edit num" contenteditable="true">50000.00</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    Allowances (if any)
+                                </td>
+                                <td class="right edit num" contenteditable="true">5000.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="section">
+                    <h3 style="font-size: 16px; margin-bottom: 6px;">Terms & Conditions</h3>
+                    <p class="edit" contenteditable="true">
+                        1) This employment is subject to school rules and applicable labour laws.<br/>
+                        2) Your continuation will depend on satisfactory performance and conduct.<br/>
+                        3) You agree to follow the school’s code of conduct and policies.<br/>
+                        4) Notice period and other terms will be as per the official agreement.<br/>
+                    </p>
+                </div>
+
+                <div class="section">
+                    <p>
+                        Please sign and return a copy of this letter to confirm your acceptance.
+                    </p>
+                </div>
+
+                <div class="sign">
+                    <div class="sign-box edit" contenteditable="true">Teacher Signature</div>
+                    <div class="sign-box edit" contenteditable="true">Authorized Signatory (Principal)</div>
+                </div>
+            </div>
+
+            <div class="actions">
+                <input type="number" min="1" ng-model="orgId" style="width: 90px; padding: 8px;" title="Organisation ID" />
+                <button type="button" class="secondary" ng-click="loadSchoolData()">Load School Data</button>
+                <button type="button" class="secondary" onclick="window.print()">Print Offer Letter</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+    <script>
+        const app = angular.module("offerLetterApp", []);
+
+        app.controller("OfferLetterController", ["$scope", "$http", function ($scope, $http) {
+            $scope.school = {};
+            $scope.userInfo = {};
+            $scope.orgId = 1;
+            $scope.userId = 1;
+
+            function formatDate(date) {
+                const d = new Date(date);
+                const dd = String(d.getDate()).padStart(2, "0");
+                const mm = String(d.getMonth() + 1).padStart(2, "0");
+                const yyyy = d.getFullYear();
+                return dd + "-" + mm + "-" + yyyy;
+            }
+
+            $scope.letterDate = formatDate(new Date());
+
+            function getOrgIdFromQuery() {
+                const params = new URLSearchParams(window.location.search);
+                const orgId = Number(params.get("orgId"));
+                return Number.isFinite(orgId) && orgId > 0 ? orgId : 1;
+            }
+
+            function getUserIdFromQuery() {
+                const params = new URLSearchParams(window.location.search);
+                const userId = Number(params.get("userId"));
+                return Number.isFinite(userId) && userId > 0 ? userId : 1;
+            }
+
+            $scope.getLogoSrc = function () {
+                return $scope.school.Image || "";
+            };
+
+            $scope.loadSchoolData = function () {
+                const orgApiUrl = "https://api.schoolvertex.com/api/Organisation/GetInfoForCertificate/" + $scope.orgId;
+                $http.get(orgApiUrl).then(function (response) {
+                    if (response && response.data) {
+                        $scope.school = response.data;
+                    }
+                }).catch(function (error) {
+                    console.error("School API error:", error);
+                    alert("Unable to load school data for ID " + $scope.orgId + ".");
+                });
+
+                const userApiUrl = "https://api.schoolvertex.com/api/User/GetPreviewById/" + $scope.userId;
+                $http.get(userApiUrl).then(function (response) {
+                    if (response && response.data) {
+                        $scope.userInfo = response.data;
+                    }
+                }).catch(function (error) {
+                    console.error("User API error:", error);
+                    alert("Unable to load User data for ID " + $scope.userId + ".");
+                });
+            };
+
+            $scope.orgId = getOrgIdFromQuery();
+            $scope.userId = getUserIdFromQuery();
+            $scope.loadSchoolData();
+        }]);
+    </script>
+</body>
+
+</html>
+
