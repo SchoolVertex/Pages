@@ -5,5 +5,8 @@
   "IDCards": [],
   "Payslips": [],
   "OfferLetter": [],
-  "ExperienceLetter": []
+  "ExperienceLetter": [],
+  "Cloudinary": {
+    "1": { "CloudName": "deylencm8", "UploadPreset": "janavani_test" }
+  }
 }
