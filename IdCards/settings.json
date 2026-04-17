@@ -2,12 +2,13 @@
     "All": {
         "PrimaryColor": "black",
         "TextColor": "black",
-        "SchoolNameSize": 12
+        "SchoolNameSize": 12,
+        "BackgroundImage": 8
     },
     "120": {
         "PrimaryColor": "black",
         "TextColor": "black",
-        "SchoolNameSize": 12
+        "SchoolNameSize": 12,
+        "BackgroundImage": 8
     }
-
 }
