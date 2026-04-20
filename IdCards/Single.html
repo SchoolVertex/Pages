@@ -276,23 +276,24 @@
             });
 
             // ── Fetch Design Config from API ──
-            var designApiUrl = "https://api.schoolvertex.com/api/Organisation/GetIdCardDesign/" + orgId;
+            var designApiUrl = "https://schoolvertex.github.io/Pages/IdCards/settings.json";
             $http.get(designApiUrl).then(function (response) {
-                var config = response.data;
+                var config = response;
+                config = config[orgId.toString()] || config["All"];
                 if (config) {
-                    if (config.designNumber && designMap[config.designNumber]) {
+                    if (config.BackgroundImage && designMap[config.BackgroundImage]) {
                         $scope.bgStyle = {
-                            'background-image': "url('" + designMap[config.designNumber] + "')"
+                            'background-image': "url('" + designMap[config.BackgroundImage] + "')"
                         };
                     }
-                    if (config.primaryColor) {
-                        $scope.primaryColor = config.primaryColor;
+                    if (config.PrimaryColor) {
+                        $scope.primaryColor = config.PrimaryColor;
                     }
-                    if (config.secondaryColor) {
-                        $scope.secondaryColor = config.secondaryColor;
+                    if (config.TextColor) {
+                        $scope.secondaryColor = config.TextColor;
                     }
-                    if (config.schoolNameFontSize) {
-                        $scope.schoolNameFontSize = config.schoolNameFontSize + "px";
+                    if (config.SchoolNameSize) {
+                        $scope.schoolNameFontSize = config.SchoolNameSize + "px";
                     }
                     console.log("Design config loaded:", config);
                 }
