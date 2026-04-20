@@ -22,7 +22,7 @@
         }
 
         .school-name {
-            font-size: 14px; /* fallback; overridden by API via ng-style */
+            font-size: 12px; /* fallback; overridden by API via ng-style */
         }
 
         .student-photo-area img {
@@ -112,8 +112,10 @@
     <!-- Unified AngularJS Controller -->
     <script>
         var app = angular.module("myApp", []);
+        const baseApiUrl = "https://api.schoolvertex.com/api";
         app.controller("myCtrl", function ($scope, $http) {
             $scope.userList = [];
+
 
             // ── Design Map: designNumber → background image URL (1–102) ──
             var designBaseUrl = "https://cdn.jsdelivr.net/gh/gitcdnsv/svcdn/IdCardBg/";
@@ -257,7 +259,7 @@
 
             // ── Fetch Organisation Info from API ──
             $scope.org = {};
-            var orgApiUrl = "https://api.schoolvertex.com/api/Organisation/GetInfoForCertificate/" + orgId;
+            var orgApiUrl = baseApiUrl + "/Organisation/GetInfoForCertificate/" + orgId;
             $http.get(orgApiUrl).then(function (response) {
                 var data = response.data;
                 if (data) {
@@ -278,7 +280,7 @@
             // ── Fetch Design Config from API ──
             var designApiUrl = "https://schoolvertex.github.io/Pages/IdCards/settings.json";
             $http.get(designApiUrl).then(function (response) {
-                var config = response;
+                var config = response.data;
                 config = config[orgId.toString()] || config["All"];
                 if (config) {
                     if (config.BackgroundImage && designMap[config.BackgroundImage]) {
@@ -303,16 +305,16 @@
 
             // ── Student Data (UNCHANGED) ──
             if (userId) {
-                var url = "https://api.schoolvertex.com/api/Fee/GetIdCardInfo/" + orgId + "/" + userId;
+                var url = baseApiUrl + "/Fee/GetIdCardInfo/" + orgId + "/" + userId;
                 $http.get(url).then(function (response) {
                     $scope.userInfo = response.data;
                 });
             } else if (sectionId > 0 || classId > 0) {
                 var bulkUrl = null;
                 if (sectionId > 0) {
-                    bulkUrl = "https://api.schoolvertex.com/api/Fee/GetSectionIdCardInfo/" + sectionId;
+                    bulkUrl = baseApiUrl + "/Fee/GetSectionIdCardInfo/" + sectionId;
                 } else if (classId > 0) {
-                    bulkUrl = "https://api.schoolvertex.com/api/Fee/GetBatchIdCardInfo/" + classId;
+                    bulkUrl = baseApiUrl + "/Fee/GetBatchIdCardInfo/" + classId;
                 }
 
                 if (bulkUrl) {
