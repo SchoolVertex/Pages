@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student ID Card</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <link rel="stylesheet" href="https://reports.schoolvertex.com/IdCard/student.css" />
+  <style>
+    /* .bg-image {
+      background-image: url('https://cdn.jsdelivr.net/gh/gitcdnsv/svcdn/IdCardBg/8.jpg');
+      opacity: 0.6;
+    } */
+
+    .school-name {
+      line-height: 120%;
+      text-transform: uppercase;
+    }
+
+    .student-photo-area {
+      width: 80px;
+      height: 80px;
+    }
+
+    .school-color {
+      color: #5800f5;
+    }
+    .principal-signature-area {
+      height: 65px;
+    }
+    .principal-label {
+      font-size: 7px;
+      letter-spacing: 0;
+    }
+  </style>
+</head>
+
+<body ng-controller="myCtrl">
+
+  <!-- Single Card -->
+  <div class="id-card" ng-if="userInfo && !userList.length">
+    <div ng-include="'id-card-template.html'" ng-init="user=userInfo"></div>
+  </div>
+
+  <!-- Bulk Cards -->
+  <div class="id-card" ng-repeat="user in userList">
+    <div ng-include="'id-card-template.html'"></div>
+  </div>
+
+  <!-- Shared Card Template -->
+  <script type="text/ng-template" id="id-card-template.html">
+    <div class="bg-image" id="div-bg-image"></div>
+    <div class="main-content">
+      <div class="school-info">
+        <div class="school-logo">
+          <img src="https://res.cloudinary.com/dwdamoo2e/image/upload/v1751440797/krishnaveni_school_atlbwg.jpg" alt="School Logo" />
+        </div>
+        <div class="school-name">
+          <span class="school-color">Sri Krishnaveni Concept School</span>
+          <p class="school-affliate">(Recognised by Govt Of TS)</p>
+        </div>
+      </div>
+
+      <div class="student-photo-area">
+        <img ng-src="{{user.Image}}" alt="Student Photo" />
+      </div>
+
+      <div class="student-name school-color">{{user.StudentName}}</div>
+
+      <div class="student-info">
+        <div class="info-row" ng-if="user.ClassName">
+          <div class="info-label">Grade</div>
+          <div class="info-devider">:</div>
+          <div class="info-value">{{user.ClassName}} <span ng-if="user.SectionName"> / {{user.SectionName}}</span></div>
+        </div>
+        <!-- <div class="info-row" ng-if="user.AdmissionNumber">
+          <div class="info-label">Adm' No</div>
+          <div class="info-devider">:</div>
+          <div class="info-value">{{user.AdmissionNumber}}</div>
+        </div> -->
+        <div class="info-row" ng-if="user.DateOfBirth">
+          <div class="info-label">D.O.B</div>
+          <div class="info-devider">:</div>
+          <div class="info-value">{{user.DateOfBirth | date:'dd.MM.yyyy'}}</div>
+        </div>
+        <div class="info-row" ng-if="user.ParentName">
+          <div class="info-label">P' Name</div>
+          <div class="info-devider">:</div>
+          <div class="info-value">{{user.ParentName}}</div>
+        </div>
+        <div class="info-row" ng-if="user.Mobile">
+          <div class="info-label">Phone No</div>
+          <div class="info-devider">:</div>
+          <div class="info-value">{{user.Mobile}}</div>
+        </div>
+        <div class="info-row" ng-if="user.Address">
+          <div class="info-label">Address</div>
+          <div class="info-devider">:</div>
+          <div class="info-value">{{user.Address}}</div>
+        </div>
+      </div>
+
+      <div class="principal-signature-area">
+        <div class="principal-label">
+          <b>School Address:</b>
+           20-169, Rahman Nagar, Rallaguda Road
+Near Canara Bank, Shamshabad,
+RR Dist-501218. Cell: 85822050883</div>
+      </div>
+    </div>
+  </script>
+
+  <!-- Unified AngularJS Controller -->
+  <script>
+    var app = angular.module("myApp", []);
+    app.controller("myCtrl", function ($scope, $http) {
+      $scope.userList = [];
+
+      function getQueryParams() {
+        const params = {};
+        location.search
+          .substr(1)
+          .split("&")
+          .forEach(function (item) {
+            const [key, value] = item.split("=");
+            if (key) params[key] = decodeURIComponent(value);
+          });
+        return params;
+      }
+
+      const query = getQueryParams();
+      const userId = query.userId;
+      const classId = parseInt(query.classId || 0);
+      const sectionId = parseInt(query.sectionId || 0);
+
+      function updateBg(classNumber) {
+        setTimeout(() => {
+          let elements = document.getElementsByClassName('bg-image');
+          if (classNumber < 6) {
+            for (let i = 0; i < elements.length; i++) {
+              elements[i].style.backgroundImage = "url('https://cdn.jsdelivr.net/gh/gitcdnsv/svcdn/IdCardBg/8.jpg')";
+              elements[i].style.opacity = 0.6;
+              elements[i].style.backgroundSize = "115%";
+            }
+          } else {
+            for (let i = 0; i < elements.length; i++) {
+              elements[i].style.backgroundImage = "url('https://cdn.jsdelivr.net/gh/gitcdnsv/svcdn/IdCardBg/2.jpg')";
+            }
+          }
+        }, 100);
+      }
+
+      if (userId) {
+        // Single mode
+        const url = `https://api.schoolvertex.com/api/Fee/GetIdCardInfo/135/${userId}`;
+        $http.get(url).then(function (response) {
+          $scope.userInfo = response.data;
+          updateBg($scope.userInfo.ClassNumber);
+        });
+      } else if (sectionId > 0 || classId > 0) {
+        // Bulk mode
+        let bulkUrl = null;
+        if (sectionId > 0) {
+          bulkUrl = `https://api.schoolvertex.com/api/Fee/GetSectionIdCardInfo/${sectionId}`;
+        } else if (classId > 0) {
+          bulkUrl = `https://api.schoolvertex.com/api/Fee/GetBatchIdCardInfo/${classId}`;
+        }
+
+        if (bulkUrl) {
+          $http.get(bulkUrl).then(function (response) {
+            $scope.userList = response.data;
+            updateBg($scope.userList[0].ClassNumber);
+          });
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>

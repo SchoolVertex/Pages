@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student ID Card</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <link rel="stylesheet" href="https://reports.schoolvertex.com/IdCard/student.css">
+    <style>
+        .bg-image {
+            background-image: url('https://cdn.jsdelivr.net/gh/gitcdnsv/svcdn/IdCardBg/8.jpg');
+            background-size: 115%;
+            opacity: 0.6;
+        }
+        .main-content {
+            margin: 0;
+            padding: 5px;
+        }
+
+        .school-name {
+            font-size: 14px;
+        }
+        
+        .student-photo-area img {
+            object-fit: fill;
+        }
+
+    </style>
+
+
+</head>
+
+<body ng-controller="myCtrl">
+
+    <!-- Single Card -->
+    <div class="id-card" ng-if="userInfo && !userList.length">
+        <div ng-include="'id-card-template.html'" ng-init="userInfo=userInfo"></div>
+    </div>
+
+    <!-- Bulk Cards -->
+    <div class="id-card" ng-repeat="userInfo in userList">
+        <div ng-include="'id-card-template.html'"></div>
+    </div>
+
+    <!-- Shared Card Template -->
+    <script type="text/ng-template" id="id-card-template.html">
+            <div class="bg-image" id="div-bg-image"></div>
+        <div class="main-content">
+            <div class="school-info">
+                <div class="school-logo">
+                    <img src="https://cdn.jsdelivr.net/gh/gitcdnsv/svcdn/SchoolLogo/150-logo-color.jpg"
+                        alt="School Logo">
+                </div>
+                <div class="school-name">
+                    <span class="school-color">St. Rita High School</span>
+                    <p class="school-caption">Trusted School for Quality Education</p>
+                    <p class="school-affliate">Recognized by the Govt of TS</p>
+                    <p class="school-address">Adithya Nagar, New Hafeezpet, Hyderabad-500049</p>
+                    <p class="school-address">PHONE: 6303638388</p>
+                </div>
+
+            </div>
+
+            <div class="student-photo-area">
+                <img src="{{userInfo.Image}}" alt="Student Photo">
+            </div>
+
+            <div class="student-name school-color">{{userInfo.StudentName}}</div>
+
+            <div class="student-info">
+                <div class="info-row">
+                    <div class="info-label">Grade</div>
+                    <div class="info-devider">:</div>
+                    <div class="info-value">{{userInfo.ClassName}} <span ng-if="userInfo.SectionName"> /
+                            {{userInfo.SectionName}}</span></div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Adm' No</div>
+                    <div class="info-devider">:</div>
+                    <div class="info-value">{{userInfo.AdmissionNumber}}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">D.O.B</div>
+                    <div class="info-devider">:</div>
+                    <div class="info-value">{{userInfo.DateOfBirth | date:'dd-MMM-yyyy'}}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">P' Name</div>
+                    <div class="info-devider">:</div>
+                    <div class="info-value">{{userInfo.ParentName}}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Phone No</div>
+                    <div class="info-devider">:</div>
+                    <div class="info-value">{{userInfo.Mobile}}</div>
+                </div>
+                <div class="info-row">
+                    <div class="info-label">Address</div>
+                    <div class="info-devider">:</div>
+                    <div class="info-value">{{userInfo.Address}}</div>
+                </div>
+            </div>
+
+            <div class="principal-signature-area">
+                <div class="principal-sign">
+                    <img src="https://cdn.jsdelivr.net/gh/gitcdnsv/svcdn/SchoolLogo/150-p-sign.png" alt="Signature">
+                </div>
+                <div class="principal-label">Principal Signature</div>
+            </div>
+        </div>
+  </script>
+
+    <!-- Unified AngularJS Controller -->
+    <script>
+        var app = angular.module("myApp", []);
+        app.controller("myCtrl", function ($scope, $http) {
+            $scope.userList = [];
+
+            function getQueryParams() {
+                const params = {};
+                location.search
+                    .substr(1)
+                    .split("&")
+                    .forEach(function (item) {
+                        const [key, value] = item.split("=");
+                        if (key) params[key] = decodeURIComponent(value);
+                    });
+                return params;
+            }
+
+            const query = getQueryParams();
+            const userId = query.userId;
+            const classId = parseInt(query.classId || 0);
+            const sectionId = parseInt(query.sectionId || 0);
+
+            if (userId) {
+                // Single mode
+                const url = `https://api.schoolvertex.com/api/Fee/GetIdCardInfo/154/${userId}`;
+                $http.get(url).then(function (response) {
+                    $scope.userInfo = response.data;
+                });
+            } else if (sectionId > 0 || classId > 0) {
+                // Bulk mode
+                let bulkUrl = null;
+                if (sectionId > 0) {
+                    bulkUrl = `https://api.schoolvertex.com/api/Fee/GetSectionIdCardInfo/${sectionId}`;
+                } else if (classId > 0) {
+                    bulkUrl = `https://api.schoolvertex.com/api/Fee/GetBatchIdCardInfo/${classId}`;
+                }
+
+                if (bulkUrl) {
+                    $http.get(bulkUrl).then(function (response) {
+                        $scope.userList = response.data;
+                    });
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
