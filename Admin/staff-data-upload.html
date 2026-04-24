@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="staffApp">
+<head>
+  <meta charset="UTF-8">
+  <title>Staff Excel Upload</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.2/angular.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <style>
+    body { font-family: Arial; background:#f4f7f9; padding:20px; }
+    .container { max-width:700px; margin:auto; background:#fff; padding:20px; border-radius:8px; }
+    input, button { width:100%; padding:10px; margin-top:10px; }
+    button { background:#3498db; color:#fff; border:none; cursor:pointer; }
+    button:disabled { background:#ccc; }
+    .log { margin-top:15px; max-height:300px; overflow:auto; border:1px solid #ddd; padding:10px; }
+    .success { color:green; }
+    .error { color:red; }
+  </style>
+</head>
+
+<body ng-controller="Ctrl">
+
+<div class="container">
+  <h2>Upload Staff Excel</h2>
+
+  <input type="number" ng-model="orgId" placeholder="Organisation ID" />
+  <input type="file" onchange="angular.element(this).scope().setFile(this.files)" />
+
+  <button ng-click="process()" ng-disabled="loading">
+    {{loading ? 'Processing...' : 'Start Upload'}}
+  </button>
+
+  <div class="log">
+    <div ng-repeat="l in logs track by $index" ng-class="l.type">
+      {{l.msg}}
+    </div>
+  </div>
+</div>
+
+<script>
+var app = angular.module('staffApp', []);
+
+app.controller('Ctrl', function($scope, $http, $q) {
+
+  const baseUrl = "https://api.schoolvertex.com/api";
+
+  $scope.logs = [];
+  $scope.loading = false;
+  $scope.file = null;
+
+  $scope.setFile = function(files) {
+    $scope.file = files[0];
+    $scope.logs = [];
+    $scope.$apply();
+  };
+
+  function log(msg, type='') {
+    $scope.logs.push({msg, type});
+    $scope.$applyAsync();
+  }
+
+  $scope.process = function() {
+
+    if (!$scope.file || !$scope.orgId) {
+      alert("Select file and orgId");
+      return;
+    }
+
+    $scope.loading = true;
+
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+      const wb = XLSX.read(e.target.result, { type: 'binary' });
+
+      let chain = $q.when();
+
+      wb.SheetNames.forEach(sheetName => {
+
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { defval: "" });
+
+        log(`--- Processing Sheet: ${sheetName} ---`);
+
+        rows.forEach(row => {
+          chain = chain.then(() => processRow(row, sheetName));
+        });
+
+      });
+
+      chain.finally(() => {
+        $scope.loading = false;
+        log("Upload Completed");
+      });
+    };
+
+    reader.readAsBinaryString($scope.file);
+  };
+
+  function processRow(row, sheetName) {
+
+    const staff = mapRow(row, sheetName);
+
+    if (!staff) return $q.when();
+
+    log(`➡ ${staff.Name}`);
+
+    return $http.post(baseUrl + "/Account/AddStaff", staff)
+      .then(res => {
+        if (parseInt(res.data) > 0) {
+          log(`✅ Success: ${staff.Name}`, 'success');
+        } else {
+          log(`❌ Failed: ${staff.Name}`, 'error');
+        }
+      })
+      .catch(() => {
+        log(`🔥 Error: ${staff.Name}`, 'error');
+      });
+  }
+
+  function mapRow(r, sheetName) {
+
+    let mobile = (r["Mobile Number"] || "").toString().replace(/\s/g,'');
+
+    if (!r["Full Name"] || mobile.length !== 10) {
+      log(`❌ Invalid row skipped`);
+      return null;
+    }
+
+    let batchId = 0;
+    let sectionId = 0;
+
+    if (sheetName.includes('-')) {
+        const parts = sheetName.split('-');
+
+        // BatchId (mandatory after '-')
+        if (parts.length >= 2 && !isNaN(parts[1])) {
+            batchId = parseInt(parts[1]);
+        }
+
+        // SectionId (optional)
+        if (parts.length >= 3 && !isNaN(parts[2])) {
+            sectionId = parseInt(parts[2]);
+        }
+    }
+
+    return {
+      OrganisationId: $scope.orgId,
+      UserId: 112233,
+      BatchId: batchId,
+      SectionId: sectionId,
+
+      Name: r["Full Name"],
+      Mobile: mobile,
+      Email: r["Email"] || "",
+      GenderId: parseGender(r["Gender"]),
+      DateOfBirth: parseDate(r["DateOfBirth"]),
+      AadharNumber: r["Aadhar Number"] || "",
+      Address: r["Address"] || "",
+      Designation: r["Qualification"] || ""
+    };
+  }
+
+  function parseGender(g) {
+    if (!g) return 0;
+    g = g.toString().toUpperCase();
+    if (g === 'M' || g === 'MALE') return 1;
+    if (g === 'F' || g === 'FEMALE') return 2;
+    return 0;
+  }
+
+  function parseDate(d) {
+    if (!d) return null;
+
+    if (typeof d === 'number') {
+      const utc = (d - 25569) * 86400 * 1000;
+      return new Date(utc).toISOString();
+    }
+
+    if (typeof d === 'string') {
+      const parts = d.split(/[-\/.]/);
+      if (parts.length === 3) {
+        return new Date(parts[2], parts[1]-1, parts[0]).toISOString();
+      }
+    }
+
+    return null;
+  }
+
+});
+</script>
+
+</body>
+</html>
