@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="excelApp">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Excel Upload</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.2/angular.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      padding: 1em;
+      background-color: #f4f7f9;
+      color: #333;
+      line-height: 1.5;
+      font-size: 14px;
+    }
+    h2 {
+      color: #2c3e50;
+      font-size: 1.5em;
+      margin-top: 0;
+    }
+    .container {
+      max-width: 750px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 1.5em;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .form-group {
+        margin-bottom: 1em;
+    }
+    label {
+        display: block;
+        margin-bottom: .4em;
+        font-weight: bold;
+        color: #555;
+    }
+    input[type="file"], input[type="number"], select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+      font-size: 1em;
+    }
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: background-color 0.3s;
+      width: 100%;
+    }
+    button:disabled {
+      background-color: #a9cce3;
+      cursor: not-allowed;
+    }
+    button:hover:not(:disabled) {
+      background-color: #2980b9;
+    }
+    .log-area {
+      margin-top: 15px;
+      border: 1px solid #ddd;
+      padding: 10px;
+      border-radius: 5px;
+      background: #fdfdfd;
+      max-height: 350px;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+    }
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    li {
+      padding: 6px 8px;
+      border-bottom: 1px solid #eee;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.9em;
+    }
+    li:last-child {
+      border-bottom: none;
+    }
+    .record-success { color: #27ae60; font-weight: bold; }
+    .record-failure { color: #c0392b; font-weight: bold; }
+    .record-log { color: #7f8c8d; font-style: italic; }
+    .sheet-log {
+      background-color: #eaf2f8;
+      color: #34495e;
+      font-weight: bold;
+      text-align: center;
+      margin: 4px 0;
+      border-top: 1px solid #d4e6f1;
+      border-bottom: 1px solid #d4e6f1;
+    }
+    .summary {
+        background-color: #ecf0f1;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #bdc3c7;
+        margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body ng-controller="ExcelCtrl">
+
+  <div class="container">
+    <h2>Upload Student Excel File</h2>
+    
+    <div class="form-group">
+      <label for="orgId">Organisation ID:</label>
+      <input type="number" id="orgId" ng-model="orgId"/>
+    </div>
+
+    <div class="form-group">
+      <label for="fileInput">Select Excel File:</label>
+      <input type="file" id="fileInput" onchange="angular.element(this).scope().selectFile(this.files)" />
+    </div>
+
+    <div class="form-group" ng-if="selectedFile">
+      <button ng-click="handleFile()" ng-disabled="isProcessing">
+        {{ isProcessing ? 'Processing...' : 'Start Processing' }}
+      </button>
+    </div>
+
+    <!-- Summary section - visible during and after processing -->
+    <div class="summary" ng-if="allRecords.length > 0">
+      <strong>Summary:</strong>
+      <span class="record-success">✅ Success: {{summary.success}}</span> |
+      <span class="record-failure">❌ Failure: {{summary.failure}}</span> |
+      <span class="record-log">📝 Logs: {{summary.log}}</span>
+    </div>
+
+    <!-- Filter section - visible only after processing is complete -->
+    <div class="form-group" ng-if="allRecords.length > 0 && !isProcessing">
+      <label for="recordFilter"><strong>Filter Records:</strong></label>
+      <select id="recordFilter" ng-model="filterType">
+        <option value="">All</option>
+        <option value="success">Success</option>
+        <option value="failure">Failure</option>
+        <option value="log">Logs</option>
+      </select>
+    </div>
+
+    <div class="log-area" id="log-area" ng-if="allRecords.length > 0">
+      <h3>Processing Log</h3>
+      <ul>
+        <!-- Changed ng-repeat to use Angular's standard filter with a custom function -->
+        <li ng-repeat="r in allRecords | filter:customFilter track by $index" ng-class="{
+            'record-success': r.type === 'success',
+            'record-failure': r.type === 'failure',
+            'record-log': r.type === 'log',
+            'sheet-log': r.type === 'sheet-event'
+          }">
+          <span ng-if="r.type === 'success' || r.type === 'failure'">{{r.Field3}} - {{r.FullName}} - {{r.Mobile}}</span>
+          <span ng-if="r.type === 'log' || r.type === 'sheet-event'">{{r.message}}</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    var app = angular.module('excelApp', []);
+
+    app.controller('ExcelCtrl', ['$scope', '$http', '$q', '$timeout', function($scope, $http, $q, $timeout) {
+      $scope.orgId = null;
+      $scope.allRecords = [];
+      $scope.filterType = "";
+      $scope.selectedFile = null;
+      $scope.isProcessing = false;
+      $scope.summary = { success: 0, failure: 0, log: 0 };
+
+      // Function to handle file selection from the input
+      $scope.selectFile = function(files) {
+        if (files && files[0]) {
+          $scope.selectedFile = files[0];
+          // Reset previous results
+          $scope.allRecords = [];
+          $scope.summary = { success: 0, failure: 0, log: 0 };
+          $scope.$apply();
+        }
+      };
+
+      // Custom filter function for the ng-repeat directive.
+      // This is a more robust way to filter in AngularJS.
+      $scope.customFilter = function(record) {
+        // If no filter is selected (value is ""), show all records.
+        if (!$scope.filterType) {
+          return true;
+        }
+        // If "Logs" is selected, show both 'log' and 'sheet-event' types.
+        if ($scope.filterType === 'log') {
+          return record.type === 'log' || record.type === 'sheet-event';
+        }
+        // Otherwise, perform a strict match on the selected type.
+        return record.type === $scope.filterType;
+      };
+
+      // Helper to safely get a value from a row, trying multiple possible keys and trimming strings.
+      function getValue(row, keys) {
+          for (const key of keys) {
+              const value = row[key];
+              if (value !== undefined && value !== null) {
+                  return typeof value === 'string' ? value.trim() : value;
+              }
+          }
+          return "";
+      }
+
+      // Unified helper to add any record (log, success, failure) to the list and auto-scroll.
+      function addRecordToList(record) {
+          $scope.allRecords.push(record);
+          $scope.$applyAsync();
+
+          // Use $timeout to scroll after the digest cycle completes and DOM is updated
+          $timeout(function() {
+              var logArea = document.getElementById('log-area');
+              if (logArea) {
+                  logArea.scrollTop = logArea.scrollHeight;
+              }
+          }, 0);
+      }
+
+      // Main function to handle the file processing
+      $scope.handleFile = function() {
+        if (!$scope.selectedFile || !$scope.orgId) {
+            alert("Please select a file and provide an Organisation ID.");
+            return;
+        }
+
+        $scope.isProcessing = true;
+        $scope.allRecords = [];
+        $scope.summary = { success: 0, failure: 0, log: 0 };
+
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var data = e.target.result;
+          var workbook = XLSX.read(data, { type: 'binary' });
+          var sheetNames = workbook.SheetNames;
+
+          addRecordToList({ type: 'log', message: `Found ${sheetNames.length} sheets to process.` });
+
+          // Create a promise chain to process each sheet sequentially
+          sheetNames.reduce(function(sheetPromise, sheetName) {
+            return sheetPromise.then(function() {
+              addRecordToList({ type: 'sheet-event', message: `--- Processing Sheet: [${sheetName}] ---` });
+              
+              var rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "" });
+              
+              // Create a promise chain for rows within this sheet
+              var rowPromiseChain = rows.reduce(function(rowPromise, row) {
+                return rowPromise.then(function() {
+                  return processSingleRecord(row, sheetName);
+                });
+              }, $q.when());
+
+              // After all rows in the sheet are done, log completion
+              return rowPromiseChain.then(function() {
+                addRecordToList({ type: 'sheet-event', message: `--- Finished Sheet: [${sheetName}] ---` });
+              });
+            });
+          }, $q.when()) // Start with a resolved promise
+          .finally(function() {
+              $scope.isProcessing = false;
+              addRecordToList({ type: 'log', message: 'All sheets processed.' });
+              $scope.$apply();
+          });
+        };
+        reader.readAsBinaryString($scope.selectedFile);
+      };
+
+      // Processes a single student record and their parents sequentially
+      function processSingleRecord(row, sheetName) {
+          const student = mapRowToStudent(row, sheetName);
+          
+          if (!student) {
+              addRecordToList({ type: 'log', message: `Skipping invalid row in sheet [${sheetName}]. Missing Name or Mobile.` });
+              return $q.when(); // Continue to the next record
+          }
+
+          // addRecordToList({ type: 'log', message: `Processing: ${student.FullName}` });
+          $scope.summary.log++;
+
+          return $http.post('https://api.schoolvertex.com/api/Account/SystemAdmission', student)
+              .then(function(response) {
+                  const studentId = response.data;
+                  student.Field3 = sheetName; // Add sheetName for display
+                  
+                  // Push the actual data record for success
+                  addRecordToList({ type: 'success', ...student });
+                  $scope.summary.success++;
+                  
+                  // Start sequential parent creation
+                  return createParent(studentId, 'Father', row, student.Mobile, student.FullName)
+                      .then(function() {
+                          // After father is done, create mother
+                          return createParent(studentId, 'Mother', row, student.Mobile, student.FullName);
+                      });
+              })
+              .catch(function(err) {
+                  student.Field3 = sheetName; // Add sheetName for display
+                  
+                  // Push the actual data record for failure
+                  addRecordToList({ type: 'failure', ...student });
+                  $scope.summary.failure++;
+
+                  const errorMessage = `FAILED: Could not create student ${student.FullName} — ${err.statusText || 'Unknown Error'}`;
+                  addRecordToList({ type: 'log', message: errorMessage }); // Log the error details as a separate log message
+              });
+      }
+
+      // Creates a single parent record and logs the outcome
+      function createParent(studentId, type, row, primaryMobile, studentName) {
+          const name = getValue(row, [`${type}Name`, `${type} Name`]);
+          if (!name) {
+              return $q.when(); // No parent name, resolve immediately to continue.
+          }
+
+          const mobile = (type === 'Mother') ? (getValue(row, ['MotherMobile', 'Mother Mobile']) || primaryMobile) : primaryMobile;
+          
+          const parent = {
+              UserId: studentId, Name: name, Mobile: mobile,
+              RelationId: (type === 'Father') ? 3102 : 3101,
+              IsPrimaryContact: (type === 'Father'),
+              UserParentInfoId: 112233
+          };
+          
+          // addRecordToList({ type: 'log', message: `- Adding ${type} details for ${studentName}...` });
+          return $http.post('https://api.schoolvertex.com/api/UserParentInfo/AddBySystem', parent)
+              .then(function() {
+                  addRecordToList({ type: 'log', message: `- SUCCESS: Added ${type} (${name})` });
+              })
+              .catch(function(err) {
+                  addRecordToList({ type: 'log', message: `- FAILED: Could not add ${type} (${name}): ${err.statusText || 'Error'}` });
+              });
+      }
+
+      // Helper function to map an Excel row to a student object
+      function mapRowToStudent(row, sheetName) {
+        const fullName = getValue(row, ['StudentFullName', 'Student FullName']);
+        const mobile = getValue(row, ['FatherMobile', 'Father Mobile']);
+
+        if (!fullName || !mobile) return null;
+
+        try {
+          const info = sheetName.split('-');
+          const batchId = parseInt(info[1], 10);
+          const sectionId = info.length > 2 ? parseInt(info[2], 10) : null;
+
+          return {
+            FullName: fullName, Mobile: mobile,
+            GenderId: parseGender(getValue(row, ['Gender'])),
+            DateOfBirth: parseExcelDate(getValue(row, ['DateOfBirth', 'Date Of Birth'])),
+            Address: getValue(row, ['Address']),
+            AadharNumber: getValue(row, ['AadharNumber', 'Aadhar Number']),
+            UserTypeId: parseUserType(getValue(row, ['DayResidential', 'Day/Residential'])),
+            RollNumber: getValue(row, ['RollNumber', 'Roll Number']),
+            ChildId: getValue(row, ['PEN', 'Govt Child Id(PEN)']),
+            ApaarNumber: getValue(row, ['ApaarNumber', 'Apaar Number']),
+            Caste: getValue(row, ['Caste']),
+            SubCaste: getValue(row, ['SubCaste', 'Sub Caste']),
+            Field1: getValue(row, ['OtherField1', 'Other Field1']),
+            Field2: getValue(row, ['OtherField2', 'Other Field2']),
+            Field3: getValue(row, ['OtherFiled3']),
+            Religion: getValue(row, ['Religion']),
+            MotherTougue: getValue(row, ['MotherTongue', 'Mother Tongue']),
+            AdmissionNumber: getValue(row, ['AdmissionNumber', 'Admission Number']),
+            AdmissionDate: parseExcelDate(getValue(row, ['AdmissionDate', 'Admission Date'])),
+            OrganisationId: $scope.orgId, DeptId: 112233, BatchId: batchId, SectionId: sectionId,
+            YearId: 8, IsJoiningPending: false
+          };
+        } catch (e) {
+          addRecordToList({ type: 'failure', message: `Row parsing error in sheet [${sheetName}]: ${e.message}` });
+          $scope.summary.failure++;
+          return null;
+        }
+      }
+
+      // --- Parsing Helpers ---
+      function parseGender(value) {
+        if (!value) return 503;
+        switch (String(value).toUpperCase()) {
+          case 'M': case 'MALE': case 'BOY': case 'B': return 501;
+          case 'F': case 'FEMALE': case 'GIRL': case 'G': return 502;
+          default: return 503;
+        }
+      }
+      function parseUserType(value) {
+        if (!value) return null;
+        switch (String(value).toUpperCase()) {
+          case 'D': case 'DAYSCHOLAR': return 4001;
+          case 'R': case 'H': case 'HOSTEL': case 'RESIDENTIAL': return 4002;
+          default: return null;
+        }
+      }
+      function parseExcelDate(excelDate) {
+        if (!excelDate) return null;
+        if (typeof excelDate === 'number') {
+          const utcDays = excelDate - 25569;
+          const utcValue = utcDays * 86400 * 1000;
+          const dateInfo = new Date(utcValue);
+          return new Date(Date.UTC(dateInfo.getUTCFullYear(), dateInfo.getUTCMonth(), dateInfo.getUTCDate())).toISOString();
+        }
+        if (typeof excelDate === 'string') {
+          const cleaned = excelDate.trim().replace(/[\/.]/g, "-");
+          const parts = cleaned.split("-");
+          if (parts.length === 3) {
+            const [day, month, year] = parts.map(p => parseInt(p, 10));
+            if (!isNaN(day) && !isNaN(month) && !isNaN(year) && year > 1900 && year < 2100) {
+              return new Date(Date.UTC(year, month - 1, day)).toISOString();
+            }
+          }
+        }
+        return null;
+      }
+    }]);
+  </script>
+</body>
+</html>
