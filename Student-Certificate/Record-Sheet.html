@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Record Sheet</title>
+
+    <!-- Bootstrap 3 CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+        xintegrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Google Fonts: Lora (Serif) & Lato (Sans-serif) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=Lato:wght@400;700&display=swap"
+        rel="stylesheet">
+
+    <!-- AngularJS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+
+    <style>
+        /* Custom Styles */
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: #fdfdfa;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4 {
+            font-family: 'Lora', serif;
+        }
+
+        .certificate-container {
+            background-color: #fff;
+            border-radius: 4px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .certificate-border {
+            border: 8px double #a08c5b;
+            padding: 2rem;
+            padding-top: 5px;
+        }
+
+        .field-label {
+            color: #555;
+            font-size: 12px;
+        }
+
+        .field-value {
+            font-weight: bold;
+            color: #333;
+            border-bottom: 1px dotted #888;
+            padding-bottom: 2px;
+            font-size: 14px;
+        }
+
+        .header-bordered {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .footer-bordered {
+            border-top: 2px solid #eee;
+            padding-top: 100px;
+            /* margin-top: 40px; */
+        }
+
+        .signature-line {
+            border-top: 2px solid #333;
+            padding-top: 5px;
+        }
+
+        [contenteditable="true"] {
+            cursor: text;
+            outline: none;
+            min-height: 1.15em;
+        }
+
+        [contenteditable="true"]:focus {
+            background-color: rgba(255, 248, 220, 0.45);
+            border-radius: 2px;
+        }
+
+        /* Custom styles for printing */
+        @media print {
+            @page {
+                size: A4;
+                margin: 0.7cm;
+            }
+
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                background-color: #fff;
+            }
+
+            .no-print {
+                display: none;
+            }
+
+            .certificate-container {
+                box-shadow: none;
+            }
+
+            .certificate-border {
+                border-width: 6px;
+                padding: 1.5rem;
+            }
+
+            [contenteditable="true"] {
+                background: transparent !important;
+            }
+        }
+    </style>
+</head>
+
+<body ng-controller="myCtrl">
+    <div class="container">
+        <div class="certificate-container">
+            <div class="certificate-border">
+                <!-- Header Section -->
+                <header class="text-center header-bordered">
+                    <h1 style="font-size: 28px; font-weight: bold; color: #2c522d;" contenteditable="true">
+                        {{orgInfo.Name}}</h1>
+                    <p style="font-size: 12px;" contenteditable="true">{{orgInfo.FullAddress}}</p>
+                    <h2 style="font-size: 22px; font-weight: bold; letter-spacing: 1px; margin-top: 10px;"
+                        contenteditable="true">RECORD SHEET</h2>
+                    <p class="text-muted" style="font-size: 12px;" contenteditable="true">(As per RULE 43 and 46 Chapter
+                        - II, T.S.E.R.)</p>
+                </header>
+
+                <!-- Student Information Section -->
+                <section>
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <p><span class="field-label" contenteditable="true">Date:</span> <span class="field-value"
+                                    contenteditable="true">{{ today |
+                                    date:'dd-MMM-yyyy' }}</span></p>
+                        </div>
+                        <div class="col-xs-4">
+                            <p><span class="field-label" contenteditable="true">RC No:</span> <span class="field-value"
+                                    contenteditable="true">{{userInfo.PEN}}</span>
+                            </p>
+                        </div>
+                        <div class="col-xs-4">
+                            <p><span class="field-label" contenteditable="true">Record Sheet No:</span> <span
+                                    class="field-value" contenteditable="true">{{userInfo.PEN}}</span></p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <p><span class="field-label" contenteditable="true">School UDISE Code:</span> <span
+                                    class="field-value" contenteditable="true">UDISE98765</span></p>
+                        </div>
+                        <div class="col-xs-4">
+                            <p><span class="field-label" contenteditable="true">PEN ID:</span> <span class="field-value"
+                                    contenteditable="true">{{userInfo.PEN}}</span></p>
+                        </div>
+                        <div class="col-xs-4">
+                            <p><span class="field-label" contenteditable="true">Admission No:</span> <span
+                                    class="field-value" contenteditable="true">{{userInfo.AdmissionNumber}}</span></p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <p><span class="field-label" contenteditable="true">Pupil Aadhar No:</span> <span
+                                    class="field-value" contenteditable="true">{{userInfo.AadharNumber}}</span></p>
+                        </div>
+                        <div class="col-xs-12">
+                            <p><span class="field-label" contenteditable="true">Name of the Pupil:</span> <span
+                                    class="field-value" contenteditable="true">{{userInfo.FullName}}</span></p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <p><span class="field-label" contenteditable="true">Date of Birth:</span> <span
+                                    class="field-value" contenteditable="true">{{userInfo.DateOfBirth |
+                                    date:'dd-MMM-yyyy'}}</span></p>
+                        </div>
+                        <div class="col-xs-4">
+                            <p><span class="field-label" contenteditable="true">Sex:</span> <span class="field-value"
+                                    contenteditable="true">{{userInfo.GenderId ==
+                                    501 ? 'Male' :'Female'}}</span></p>
+                        </div>
+                        <div class="col-xs-4">
+                            <p><span class="field-label" contenteditable="true">Religion:</span> <span
+                                    class="field-value" contenteditable="true">{{userInfo.Religion}}</span></p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <p><span class="field-label" contenteditable="true">Caste / Sub Caste:</span> <span
+                                    class="field-value" contenteditable="true">{{userInfo.Caste}}</span></p>
+                        </div>
+                        <div class="col-xs-12">
+                            <p><span class="field-label" contenteditable="true">Father's / Guardian's Name:</span> <span
+                                    class="field-value" contenteditable="true">{{userInfo.FatherName}}</span></p>
+                        </div>
+                        <div class="col-xs-12">
+                            <p><span class="field-label" contenteditable="true">Mother's Name:</span> <span
+                                    class="field-value" contenteditable="true">{{userInfo.MotherName}}</span></p>
+                        </div>
+                        <div class="col-xs-12">
+                            <p><span class="field-label" contenteditable="true">Address:</span> <span
+                                    class="field-value" contenteditable="true">{{userInfo.Address}}</span></p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Academic and Attendance Record -->
+                <section class="mt-4">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <table class="table table-bordered table-condensed">
+                                <thead>
+                                    <tr class="active">
+                                        <th class="text-center" contenteditable="true">Quarter</th>
+                                        <th class="text-center" contenteditable="true">Class</th>
+                                        <th class="text-center" contenteditable="true">Working Days</th>
+                                        <th class="text-center" contenteditable="true">Days Present</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="text-center field-value" contenteditable="true">1st Qtr (June-Aug)
+                                        </td>
+                                        <td class="field-value" contenteditable="true"></td>
+                                        <td class="field-value" contenteditable="true"></td>
+                                        <td class="field-value" contenteditable="true"></td>
+                                    </tr>
+                                    <tr class="active">
+                                        <td class="text-center field-value" contenteditable="true">2nd Qtr (Sept-Nov)
+                                        </td>
+                                        <td class="field-value" contenteditable="true"></td>
+                                        <td class="field-value" contenteditable="true"></td>
+                                        <td class="field-value" contenteditable="true"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-center field-value" contenteditable="true">3rd Qtr (Dec-Feb)
+                                        </td>
+                                        <td class="field-value" contenteditable="true"></td>
+                                        <td class="field-value" contenteditable="true"></td>
+                                        <td class="field-value" contenteditable="true"></td>
+                                    </tr>
+                                    <tr class="active">
+                                        <td class="text-center field-value" contenteditable="true">4th Qtr (Mar-May)
+                                        </td>
+                                        <td class="field-value" contenteditable="true"></td>
+                                        <td class="field-value" contenteditable="true"></td>
+                                        <td class="field-value" contenteditable="true"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </section>
+
+
+                <div class="row">
+                    <div class="col-xs-6">
+                        <p><span class="field-label" contenteditable="true">Date of Admission:</span> <span
+                                class="field-value" contenteditable="true">{{userInfo.AdmissionDate |
+                                date:'dd-MMM-yyyy'}}</span></p>
+                    </div>
+                    <div class="col-xs-6">
+                        <p><span class="field-label" contenteditable="true">Progress:</span> <span class="field-value"
+                                contenteditable="true"></span></p>
+
+                    </div>
+                    <div class="col-xs-6">
+                        <p><span class="field-label" contenteditable="true">Date of leaving:</span> <span
+                                class="field-value" contenteditable="true">{{userInfo.TcDate |
+                                date:'dd-MMM-yyyy'}}</span></p>
+                    </div>
+                    <div class="col-xs-6">
+                        <p><span class="field-label" contenteditable="true">Conduct:</span> <span class="field-value"
+                                contenteditable="true"></span></p>
+                    </div>
+                </div>
+
+                <!-- Final Details & Signatures -->
+                <section>
+                    <p><span class="field-label" contenteditable="true">Attained the age prescribed:</span> <span
+                            class="field-value" contenteditable="true">Yes</span></p>
+                    <p><span class="field-label" contenteditable="true">Completed the FIFTH class on:</span> <span
+                            class="field-value" contenteditable="true">{{userInfo.TcDate | date:'dd-MMM-yyyy'}}</span>
+                    </p>
+                    <p><span class="field-label" contenteditable="true">Identification Marks:</span> <span
+                            class="field-value" contenteditable="true">{{userInfo.IdentificationMarks}}</span></p>
+                </section>
+
+                <!-- Footer & Final Signatures -->
+                <footer class="footer-bordered">
+                    <div class="row">
+                        <div class="col-xs-6 text-center">
+                            <div class="signature-line">
+                                <p class="font-semibold" contenteditable="true">Signature of the Pupil</p>
+                            </div>
+                        </div>
+                        <div class="col-xs-6 text-center">
+                            <div class="signature-line">
+                                <p class="font-semibold" contenteditable="true">Signature of the H.M.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- <p class="text-center text-muted small" style="margin-top: 20px;"><em>The date of birth should be taken from the admission application.</em></p> -->
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var app = angular.module("myApp", []);
+        app.controller("myCtrl", function ($scope, $http) {
+            $scope.today = new Date();
+            function getQueryParams() {
+                const params = {};
+                location.search
+                    .substr(1)
+                    .split("&")
+                    .forEach(function (item) {
+                        const [key, value] = item.split("=");
+                        if (key) params[key] = decodeURIComponent(value);
+                    });
+                return params;
+            }
+
+            const baseUrl = 'https://api.schoolvertex.com/api';
+            const query = getQueryParams();
+            const userId = query.userId;
+            const orgId = query.orgId;
+            const entityTypeId = query.entityTypeId;
+            const entityId = query.entityId;
+
+            const orgInfoUrl = `${baseUrl}/Organisation/GetInfoForCertificate/${orgId}`;
+            $http.get(orgInfoUrl).then(function (response) {
+                $scope.orgInfo = response.data;
+            });
+
+            const userInfoUrl = `${baseUrl}/User/GetInfoForCertificate/${userId}/${entityTypeId}/${entityId}`;
+            $http.get(userInfoUrl).then(function (response) {
+                $scope.userInfo = response.data;
+            });
+        });
+
+    </script>
+</body>
+
+</html>

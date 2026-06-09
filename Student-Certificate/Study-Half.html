@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study & Conduct Certificate</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            margin: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .certificate-container {
+            width: 800px;
+            /* This will be overridden in print styles */
+            max-width: 95%;
+            /* Adjust for better screen viewing */
+            background-color: #ffffff;
+            padding: 0 20px;
+            border: 6px double #c0a062;
+            border-style: double;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .header img {
+            width: 100px;
+            height: 100px;
+        }
+
+        .header h1 {
+            margin: 10px 0 5px;
+            font-size: 32px;
+            color: #002b5c;
+        }
+
+        .header p {
+            margin: 0;
+            font-size: 16px;
+            color: #555;
+        }
+
+        .title {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .title h2 {
+            display: inline-block;
+            font-size: 22px;
+            font-weight: bold;
+            text-decoration: underline;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            padding-bottom: 5px;
+            margin-block-start: 5px;
+            margin-block-end: 5px;
+        }
+
+        .content {
+            font-size: 18px;
+            line-height: 2;
+            text-align: justify;
+            overflow-wrap: break-word;
+            /* Prevents long words from overflowing */
+        }
+
+        .content .placeholder {
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .content p {
+            margin: 0;
+        }
+
+        .details-section {
+            margin-bottom: 20px;
+            overflow: hidden;
+            font-size: 18px;
+        }
+
+        .details-section .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .details-section .container .center {
+            margin: 0 auto;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: right;
+        }
+
+        .footer .signature {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 2px;
+        }
+
+        .footer .principal-name {
+            margin-top: 5px;
+            font-size: 16px;
+        }
+
+        .controls {
+            padding: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .print-button,
+        .edit-button {
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .print-button {
+            background-color: #1e8e3e;
+        }
+
+        .edit-button {
+            background-color: #4a90e2;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.is-visible {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .modal-body label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .modal-body input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .modal-footer {
+            text-align: right;
+        }
+
+        .save-button {
+            background-color: #4a90e2;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .cancel-button {
+            background-color: #f0f0f0;
+            color: #333;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .div-wish {
+            text-align: center;
+        }
+
+        @media print {
+            @page {
+                size: A4;
+                margin: 0;
+            }
+
+            body {
+                background-color: #fff;
+                padding: 0;
+                margin: 0;
+            }
+
+            .controls {
+                display: none;
+            }
+
+            .certificate-container {
+                box-shadow: none;
+                margin: 10px auto;
+                border: 6px double #c0a062;
+                width: calc(100% - 2cm);
+            }
+
+            .certificate-container+.certificate-container {
+                page-break-before: always;
+            }
+        }
+    </style>
+</head>
+
+<body ng-controller="myCtrl">
+
+    <div class="controls">
+        <button class="print-button" onclick="window.print()">Print</button>
+        <button class="edit-button" ng-click="showEditModal()">Edit</button>
+    </div>
+
+    <div class="certificate-container">
+        <div class="header" style="display: inline-flex; width: 100%;">
+            <div style="width: 15%;">
+                <img ng-src="{{orgInfo.Image}}" alt="School Logo">
+            </div>
+            <div style="width: 85%;">
+                <h1>{{orgInfo.Name}}</h1>
+                <p>{{orgInfo.Description}}</p>
+                <p>{{orgInfo.AffiliationInfo}}</p>
+                <p>{{orgInfo.FullAddress}}</p>
+            </div>
+        </div>
+
+        <div class="title">
+            <h2>{{userInfo.CertTitle}}</h2>
+        </div>
+
+        <div class="details-section">
+            <div class="container">
+                <div class="left">Admission No : <strong>{{userInfo.AdmissionNumber}}</strong></div>
+                <div class="center" ng-if="userInfo.PEN">PEN : <b>{{userInfo.PEN}}</b></div>
+                <div class="right">Date : <b>{{ today | date:'dd-MMM-yyyy' }}</b></div>
+            </div>
+        </div>
+
+        <div class="content">
+            <p>
+                This is to certify that <span class="placeholder">{{userInfo.FullName}}</span>,
+                {{userInfo.GenderId == 501 ? 'son' : 'daughter'}} of
+                <span ng-if="userInfo.FatherName && userInfo.MotherName">
+                    <span class="placeholder">{{userInfo.FatherName}}</span> and
+                    <span class="placeholder">{{userInfo.MotherName}}</span>
+                </span>
+                <span class="placeholder" ng-if="!(userInfo.FatherName && userInfo.MotherName)">{{userInfo.ParentName ||
+                    userInfo.FatherName}}</span>,
+                was a bonafide student of this institution from
+                <strong>{{userInfo.AdmissionDate | date:'dd-MMM-yyyy'}}</strong>
+                <strong ng-if="!userInfo.AdmissionDate">________________</strong>
+                to
+                <strong ng-if="userInfo.TcDate">{{userInfo.TcDate | date:'dd-MMM-yyyy'}}</strong>
+                <strong ng-if="!userInfo.TcDate">________________</strong>.
+                As per our school records, {{userInfo.GenderId == 501 ? 'His' : 'Her'}}
+                date of birth is
+                <span class="placeholder">{{userInfo.DateOfBirth | date:'dd-MMM-yyyy'}}</span> (in words: <span
+                    class="placeholder">{{dateOfBirthWords}}</span>).
+                During her tenure at our school, her character and conduct have been found to be
+                <strong>{{userInfo.Conduct}}</strong>
+
+                <div class="div-wish">
+                    <span>
+                        {{userInfo.WishNote}}
+                    </span>
+                </div>
+            </p>
+            
+
+        </div>
+
+        <div class="footer">
+            <p class="signature">_________________</p>
+            <p class="principal-name">(Signature of Principal)</p>
+        </div>
+    </div>
+
+    <div id="editModal" class="modal" ng-class="{'is-visible': modal.isVisible}">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Certificate Fields</h3>
+                <button class="close-button" ng-click="hideEditModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <label for="CertTitle">Certificate Title:</label>
+                <input type="text" id="CertTitle" ng-model="modal.userInfo.CertTitle">
+
+                <label for="admissionNumber">Admission Number:</label>
+                <input type="text" id="admissionNumber" ng-model="modal.userInfo.AdmissionNumber">
+
+                <label for="fullName">Full Name:</label>
+                <input type="text" id="fullName" ng-model="modal.userInfo.FullName">
+
+                <label for="FatherName">Father Name:</label>
+                <input type="text" id="FatherName" ng-model="modal.userInfo.FatherName">
+
+                <label for="MotherName">Mother Name:</label>
+                <input type="text" id="MotherName" ng-model="modal.userInfo.MotherName">
+
+                <label for="pen">PEN:</label>
+                <input type="text" id="pen" ng-model="modal.userInfo.PEN">
+
+                <label for="admissionDate">Admission Date:</label>
+                <input type="date" id="admissionDate" ng-model="modal.userInfo.AdmissionDate" placeholder="dd-MMM-yyyy">
+
+                <label for="tcDate">Last Date:</label>
+                <input type="date" id="tcDate" ng-model="modal.userInfo.TcDate" placeholder="dd-MMM-yyyy">
+
+                <label for="dateOfBirth">Date of Birth:</label>
+                <input type="date" id="dateOfBirth" ng-model="modal.userInfo.DateOfBirth" placeholder="dd-MMM-yyyy">
+
+                <label for="conduct">Conduct:</label>
+                <input type="text" id="conduct" ng-model="modal.userInfo.Conduct">
+
+                <label for="conduct">Wish Note:</label>
+                <input type="text" id="WishNote" ng-model="modal.userInfo.WishNote">
+
+
+
+            </div>
+            <div class="modal-footer">
+                <button class="cancel-button" ng-click="hideEditModal()">Cancel</button>
+                <button class="save-button" ng-click="saveChanges()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var app = angular.module("myApp", []);
+        app.controller("myCtrl", function ($scope, $http) {
+            $scope.today = new Date();
+            $scope.modal = {
+                isVisible: false,
+                userInfo: {}
+            };
+
+            // Function to convert date to words
+            function convertDateToWords(dateString) {
+                if (!dateString) return '';
+                const date = new Date(dateString);
+
+                const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                const days = [
+                    'First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth', 'Seventh',
+                    'Eighth', 'Ninth', 'Tenth', 'Eleventh', 'Twelfth', 'Thirteenth',
+                    'Fourteenth', 'Fifteenth', 'Sixteenth', 'Seventeenth', 'Eighteenth',
+                    'Nineteenth', 'Twentieth', 'Twenty-First', 'Twenty-Second', 'Twenty-Third',
+                    'Twenty-Fourth', 'Twenty-Fifth', 'Twenty-Sixth', 'Twenty-Seventh',
+                    'Twenty-Eighth', 'Twenty-Ninth', 'Thirtieth', 'Thirty-First'
+                ];
+                const yearWords = function (num) {
+                    if (num < 2000) {
+                        const firstHalf = num.toString().substring(0, 2);
+                        const secondHalf = num.toString().substring(2);
+                        return getNumberWords(parseInt(firstHalf)) + ' ' + getNumberWords(parseInt(secondHalf));
+                    }
+                    if (num >= 2000 && num <= 2029) {
+                        return 'Two Thousand ' + getNumberWords(num - 2000);
+                    }
+                    const firstHalf = num.toString().substring(0, 2);
+                    const secondHalf = num.toString().substring(2);
+                    return getNumberWords(parseInt(firstHalf)) + ' ' + getNumberWords(parseInt(secondHalf));
+                };
+
+                const getNumberWords = function (num) {
+                    const a = [
+                        '', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
+                        'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen',
+                        'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'
+                    ];
+
+                    const b = [
+                        '', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty',
+                        'Seventy', 'Eighty', 'Ninety'
+                    ];
+                    if (num < 20) return a[num];
+                    if (num % 10 === 0) return b[num / 10];
+                    return b[Math.floor(num / 10)] + '-' + a[num % 10];
+                };
+
+                const day = date.getDate();
+                const month = date.getMonth();
+                const year = date.getFullYear();
+
+                // Handle the day part (e.g., "sixth")
+                const dayInWords = days[day - 1];
+
+                // Handle the month part (e.g., "October")
+                const monthInWords = months[month];
+
+                // Handle the year part (e.g., "two thousand thirteen")
+                const yearInWords = yearWords(year);
+
+                return `${dayInWords} ${monthInWords}, ${yearInWords}`;
+            }
+
+            // --- Fetching Data and Controller Logic ---
+            function getQueryParams() {
+                const params = {};
+                location.search
+                    .substr(1)
+                    .split("&")
+                    .forEach(function (item) {
+                        const [key, value] = item.split("=");
+                        if (key) params[key] = decodeURIComponent(value);
+                    });
+                return params;
+            }
+
+            const baseUrl = 'https://api.schoolvertex.com/api';
+            const query = getQueryParams();
+            const userId = query.userId;
+            const orgId = query.orgId;
+            const entityTypeId = query.entityTypeId;
+            const entityId = query.entityId;
+
+            const orgInfoUrl = `${baseUrl}/Organisation/GetInfoForCertificate/${orgId}`;
+            $http.get(orgInfoUrl).then(function (response) {
+                $scope.orgInfo = response.data;
+            });
+
+            const userInfoUrl = `${baseUrl}/User/GetInfoForCertificate/${userId}/${entityTypeId}/${entityId}`;
+            $http.get(userInfoUrl).then(function (response) {
+                $scope.userInfo = response.data;
+                $scope.userInfo.CertTitle = "Study Certificate";
+                $scope.userInfo.Conduct = "satisfactory";
+                const soltation =  $scope.userInfo.GenderId == 501 ? 'him' : 'her';
+                $scope.userInfo.WishNote = "We wish " + soltation +" all the best in " + soltation + " future endeavors";
+                $scope.userInfo.CertificateNumber = $scope.userInfo.UserId;
+                $scope.modal.userInfo = angular.copy($scope.userInfo);
+                if ($scope.userInfo.DateOfBirth) {
+                    $scope.dateOfBirthWords = convertDateToWords($scope.userInfo.DateOfBirth);
+                    $scope.modal.userInfo.DateOfBirth = new Date($scope.userInfo.DateOfBirth);
+                }
+                if ($scope.userInfo.AdmissionDate) {
+                    $scope.modal.userInfo.AdmissionDate = new Date($scope.userInfo.AdmissionDate);
+                }
+                if ($scope.userInfo.TcDate) {
+                    $scope.modal.userInfo.TcDate = new Date($scope.userInfo.TcDate);
+                }
+            });
+
+            // Modal functions
+            $scope.showEditModal = function () {
+                $scope.modal.userInfo = angular.copy($scope.userInfo);
+                if ($scope.modal.userInfo.DateOfBirth) {
+                    $scope.modal.userInfo.DateOfBirth = new Date($scope.modal.userInfo.DateOfBirth);
+                }
+                if ($scope.modal.userInfo.AdmissionDate) {
+                    $scope.modal.userInfo.AdmissionDate = new Date($scope.modal.userInfo.AdmissionDate);
+                }
+                if ($scope.modal.userInfo.TcDate) {
+                    $scope.modal.userInfo.TcDate = new Date($scope.modal.userInfo.TcDate);
+                }
+                $scope.modal.isVisible = true;
+            };
+
+            $scope.hideEditModal = function () {
+                $scope.modal.isVisible = false;
+            };
+
+            $scope.saveChanges = function () {
+                $scope.userInfo = angular.copy($scope.modal.userInfo);
+                // Re-convert the date to words after saving changes
+                if ($scope.userInfo.DateOfBirth) {
+                    $scope.dateOfBirthWords = convertDateToWords($scope.userInfo.DateOfBirth);
+                }
+                $scope.hideEditModal();
+            };
+        });
+
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bonafide Certificate</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+            margin: 0;
+        }
+
+        .certificate-frame {
+            background: #fff;
+            padding: 50px;
+            border: 5px solid #dcdcdc;
+            position: relative;
+            box-sizing: border-box;
+            width: 8.5in;
+            height: 11in;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .certificate-frame::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            bottom: 20px;
+            border: 2px solid #020202;
+            pointer-events: none;
+        }
+
+        .cert-header {
+            text-align: center;
+            margin-bottom: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .cert-header .logo {
+            width: 100px;
+            height: 100px;
+        }
+        
+        .cert-header-text {
+            text-align: left;
+            width: 100%;
+        }
+
+        .cert-header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 38px;
+            color: #1e3a5f;
+            margin: 0;
+            white-space: nowrap;
+        }
+
+        .cert-header p {
+            font-size: 15px;
+            color: #555;
+            margin: 5px 0 0;
+        }
+
+        .cert-title {
+            text-align: center;
+            margin: 50px 0;
+        }
+
+        .cert-title h2 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #333;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            background: #f0f2f5;
+            display: inline-block;
+            padding: 10px 30px;
+            border-radius: 5px;
+            margin-block-start: 5px;
+            margin-block-end: 5px;
+        }
+
+        .cert-body {
+            font-size: 17px;
+            line-height: 1.9;
+            margin-bottom: 40px;
+            padding: 0 20px;
+        }
+
+        .cert-body strong {
+            color: #1e3a5f;
+            font-weight: 600;
+            font-size: 20px;
+        }
+
+        .cert-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 120px;
+        }
+
+        .footer-item {
+            text-align: center;
+            width: 200px;
+        }
+
+        .footer-item .line {
+            border-bottom: 1px solid #888;
+            margin-bottom: 10px;
+            height: 40px;
+        }
+
+        .footer-item p {
+            font-size: 15px;
+            font-weight: 500;
+            margin: 0;
+            color: #444;
+        }
+
+        .ref-section {
+            font-size: 14px;
+            font-weight: bold;
+            overflow: hidden;
+            padding: 0 20px;
+        }
+
+        .ref-section .ref-no {
+            float: left;
+        }
+
+        .ref-section .date {
+            float: right;
+        }
+        
+        .controls {
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .print-button,
+        .edit-button {
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .print-button {
+            background-color: #1e8e3e;
+        }
+
+        .edit-button {
+            background-color: #4a90e2;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.is-visible {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .modal-body label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .modal-body input,
+        .modal-body textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .modal-footer {
+            text-align: right;
+        }
+
+        .save-button {
+            background-color: #4a90e2;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .cancel-button {
+            background-color: #f0f0f0;
+            color: #333;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        
+        @media print {
+            @page {
+                size: A4;
+                margin: 0;
+            }
+            body {
+                background-color: #fff;
+                padding: 0;
+                margin: 0;
+            }
+            .controls {
+                display: none;
+            }
+            .certificate-frame {
+                box-shadow: none;
+                margin: 0;
+                border: 5px solid #dcdcdc;
+                height: 29.7cm;
+                width: 21cm;
+                padding: 3.5cm 2.5cm 2.5cm 2.5cm;
+                position: relative;
+            }
+
+            .certificate-frame::before {
+                top: 1cm;
+                left: 1cm;
+                right: 1cm;
+                bottom: 1cm;
+            }
+            
+            .cert-header, .cert-body, .cert-footer, .ref-section {
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .cert-body {
+                padding: 0;
+            }
+
+            .ref-section {
+                padding: 0;
+            }
+
+            .cert-footer {
+                position: absolute;
+                bottom: 2.5cm;
+                left: 2.5cm;
+                right: 2.5cm;
+                width: auto;
+                margin-top: 0;
+            }
+        }
+    </style>
+</head>
+
+<body ng-controller="myCtrl">
+    <div class="controls">
+        <button class="print-button" onclick="window.print()">Print</button>
+        <button class="edit-button" ng-click="showEditModal()">Edit</button>
+    </div>
+
+    <div class="certificate-frame">
+        <div class="cert-header">
+            <img ng-src="{{orgInfo.Image}}" alt="School Logo" class="logo">
+            <div class="cert-header-text">
+                <h1 ng-style="{'font-size': orgNameFontSize}">{{orgInfo.Name}}</h1>
+                <p>{{orgInfo.Description}}</p>
+                <p>{{orgInfo.FullAddress}}</p>
+            </div>
+        </div>
+
+        <div class="ref-section">
+            <span class="ref-no">Ref./Cert. No: <strong>{{userInfo.CertificateNumber}}</strong></span>
+            <span class="date">Date: <strong>{{ today | date:'dd-MMM-yyyy' }}</strong></span>
+        </div>
+
+        <div class="cert-title">
+            <h2>Bonafide Certificate</h2>
+        </div>
+
+        <div class="cert-body">
+            <p>This is to certify that <strong>{{userInfo.FullName}}</strong>, {{userInfo.GenderId == 501 ? 'son' :
+                'daughter'}} of <strong>{{userInfo.ParentName}}</strong>, is a bonafide student of this institution.</p>
+
+            <p>As per the school's official records {{userInfo.GenderId == 501 ? 'his' : 'her'}} date of birth is
+                <strong>{{userInfo.DateOfBirth | date:'dd-MMM-yyyy'}}</strong> <span ng-if="userInfo.AdmissionDate"> and
+                have been enrolled in this school since <strong>{{userInfo.AdmissionDate | date:'dd-MMM-yyyy'
+                }}</strong></span>. </p>
+
+            <p>Currently, {{userInfo.GenderId == 501 ? 'he' : 'she'}} is studying in
+                <strong>{{userInfo.ClassName}}</strong> <span ng-if="userInfo.AdmissionNumber">bearing Admission Number
+                <strong>{{userInfo.AdmissionNumber}}</strong></span> for the academic year
+                <strong>{{userInfo.AcademicYear}}</strong>. This certificate is issued at the request of the student's
+                parents for the purpose of
+                <strong>{{userInfo.Purpose}}</strong>.
+            </p>
+        </div>
+
+        <div class="cert-footer">
+            <div class="footer-item">
+                <div class="line"
+                    style="display: flex; justify-content: center; align-items: center; font-style: italic; color: #ccc;">
+                    (School Seal)
+                </div>
+                <p>School Seal</p>
+            </div>
+            <div class="footer-item">
+                <div class="line"></div>
+                <p>Principal's Signature</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="editModal" class="modal" ng-class="{'is-visible': modal.isVisible}">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Certificate Fields</h3>
+                <button class="close-button" ng-click="hideEditModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <label for="fullName">Full Name:</label>
+                <input type="text" id="fullName" ng-model="modal.userInfo.FullName">
+
+                <label for="parentName">Parent Name:</label>
+                <input type="text" id="parentName" ng-model="modal.userInfo.ParentName">
+                
+                <label for="className">Class Name:</label>
+                <input type="text" id="className" ng-model="modal.userInfo.ClassName">
+
+                <label for="admissionNumber">Admission Number:</label>
+                <input type="text" id="admissionNumber" ng-model="modal.userInfo.AdmissionNumber">
+
+                <label for="academicYear">Academic Year:</label>
+                <input type="text" id="academicYear" ng-model="modal.userInfo.AcademicYear">
+
+                <label for="dateOfBirth">Date of Birth:</label>
+                <input type="date" id="dateOfBirth" ng-model="modal.userInfo.DateOfBirth">
+
+                <label for="admissionDate">Admission Date:</label>
+                <input type="date" id="admissionDate" ng-model="modal.userInfo.AdmissionDate">
+
+                <label for="certificateNumber">Certificate Number:</label>
+                <input type="text" id="certificateNumber" ng-model="modal.userInfo.CertificateNumber">
+
+                <label for="purpose">Purpose:</label>
+                <textarea id="purpose" ng-model="modal.userInfo.Purpose" style="width: 100%; height: 80px;"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="cancel-button" ng-click="hideEditModal()">Cancel</button>
+                <button class="save-button" ng-click="saveChanges()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    var app = angular.module("myApp", []);
+    app.controller("myCtrl", function ($scope, $http, $window) {
+        $scope.today = new Date();
+        $scope.modal = {
+            isVisible: false,
+            userInfo: {}
+        };
+        $scope.orgNameFontSize = '38px';
+
+        function adjustOrgNameFontSize(name) {
+            const defaultFontSize = 38; // in px
+            const defaultWidth = 350; // default width for 38px in pixels (approx)
+            const padding = 100; // Left padding of the container
+            const containerWidth = 210 * 3.78 - padding; // A4 width in px - padding
+            
+            const tempDiv = document.createElement('div');
+            tempDiv.style.visibility = 'hidden';
+            tempDiv.style.position = 'absolute';
+            tempDiv.style.fontFamily = 'Playfair Display, serif';
+            tempDiv.style.fontSize = `${defaultFontSize}px`;
+            tempDiv.textContent = name;
+            document.body.appendChild(tempDiv);
+            const textWidth = tempDiv.offsetWidth;
+            document.body.removeChild(tempDiv);
+            
+            if (textWidth > containerWidth) {
+                const newSize = (containerWidth / textWidth) * defaultFontSize;
+                return `${newSize}px`;
+            }
+            return `${defaultFontSize}px`;
+        }
+        
+
+        function getQueryParams() {
+            const params = {};
+            location.search
+                .substr(1)
+                .split("&")
+                .forEach(function (item) {
+                    const [key, value] = item.split("=");
+                    if (key) params[key] = decodeURIComponent(value);
+                });
+            return params;
+        }
+
+        const baseUrl = 'https://api.schoolvertex.com/api';
+        const query = getQueryParams();
+        const userId = query.userId;
+        const orgId = query.orgId;
+        const entityTypeId = query.entityTypeId;
+        const entityId = query.entityId;
+
+        const orgInfoUrl = `${baseUrl}/Organisation/GetInfoForCertificate/${orgId}`;
+        $http.get(orgInfoUrl).then(function (response) {
+            $scope.orgInfo = response.data;
+            if ($scope.orgInfo && $scope.orgInfo.Name) {
+                $scope.orgNameFontSize = adjustOrgNameFontSize($scope.orgInfo.Name);
+            }
+        });
+
+        const userInfoUrl = `${baseUrl}/User/GetInfoForCertificate/${userId}/${entityTypeId}/${entityId}`;
+        $http.get(userInfoUrl).then(function (response) {
+            $scope.userInfo = response.data;
+            if (!$scope.userInfo.AcademicYear) {
+                const currentYear = new Date().getFullYear();
+                $scope.userInfo.AcademicYear = `${currentYear}-${currentYear + 1}`;
+            }
+            if (!$scope.userInfo.Purpose) {
+                $scope.userInfo.Purpose = '';
+            }
+            $scope.modal.userInfo = angular.copy($scope.userInfo);
+            if ($scope.modal.userInfo.DateOfBirth) {
+                $scope.modal.userInfo.DateOfBirth = new Date($scope.modal.userInfo.DateOfBirth);
+            }
+            if ($scope.modal.userInfo.AdmissionDate) {
+                $scope.modal.userInfo.AdmissionDate = new Date($scope.modal.userInfo.AdmissionDate);
+            }
+        });
+
+        $scope.showEditModal = function() {
+            $scope.modal.userInfo = angular.copy($scope.userInfo);
+            if ($scope.modal.userInfo.DateOfBirth) {
+                $scope.modal.userInfo.DateOfBirth = new Date($scope.modal.userInfo.DateOfBirth);
+            }
+            if ($scope.modal.userInfo.AdmissionDate) {
+                $scope.modal.userInfo.AdmissionDate = new Date($scope.modal.userInfo.AdmissionDate);
+            }
+            $scope.modal.isVisible = true;
+        };
+
+        $scope.hideEditModal = function() {
+            $scope.modal.isVisible = false;
+        };
+
+        $scope.saveChanges = function() {
+            $scope.userInfo = angular.copy($scope.modal.userInfo);
+            $scope.hideEditModal();
+        };
+    });
+</script>
+
+</body>
+
+</html>

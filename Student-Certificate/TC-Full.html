@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transfer Certificate - A4 Print Optimized</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    
+    <style>
+        /* Base Styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            z-index: 50;
+        }
+        .modal-content {
+            z-index: 51;
+            max-height: 90vh;
+        }
+        
+        /* Hiding button in print mode */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        /* --- START OF A4 PRINT OPTIMIZATIONS (Adjusted for minimal margins and smaller fonts) --- */
+        @media print {
+            body {
+                background-color: #fff;
+                margin: 0;
+                padding: 0;
+            }
+            .certificate-container {
+                box-shadow: none !important;
+                border: none !important;
+                padding: 1rem !important; 
+                margin: 0 auto;
+                width: 100%;
+                max-width: 21cm;
+            }
+            .certificate-container h1 {
+                font-size: 1.15rem !important;
+            }
+            .certificate-container h2 {
+                font-size: 1.05rem !important;
+            }
+            .certificate-container p, .certificate-container div, .certificate-container span, .certificate-container strong {
+                font-size: 0.75rem !important; 
+            }
+            .h-16, .w-16 {
+                height: 2.5rem !important;
+                width: 2.5rem !important;
+            }
+            .w-10, .h-10 {
+                width: 2rem !important;
+                height: 2rem !important;
+            }
+            .pb-4, .py-6, .pt-6, .my-4, .mb-4 {
+                padding-bottom: 0.3rem !important;
+                padding-top: 0.3rem !important;
+                margin-top: 0.3rem !important;
+                margin-bottom: 0.3rem !important;
+            }
+            .py-2 {
+                padding-bottom: 0.2rem !important;
+                padding-top: 0.2rem !important;
+            }
+            .space-y-3 > div + div {
+                margin-top: 0.3rem !important;
+            }
+            .gap-4 {
+                gap: 0.5rem !important;
+            }
+            .meta-data p {
+                margin-top: 0 !important;
+                margin-bottom: 0 !important;
+            }
+            @page {
+                size: A4;
+                margin: 0.5cm; 
+            }
+        }
+        /* --- END OF A4 PRINT OPTIMIZATIONS --- */
+    </style>
+</head>
+<body class="p-4 md:p-8 flex items-start justify-center min-h-screen" ng-controller="myCtrl">
+    
+    <button ng-click="showEditModal()" class="no-print fixed top-4 right-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow-lg transition duration-200">
+        ✏️ Edit Data
+    </button>
+
+    <div class="bg-white p-6 md:p-10 rounded-lg shadow-2xl max-w-4xl w-full border border-gray-300 certificate-container">
+        
+        <header class="flex flex-col items-center justify-between pb-4 border-b border-dashed border-gray-400">
+            <div class="flex items-center space-x-4 mb-4 md:mb-0">
+                <div class="h-16 w-16 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+                    <svg ng-if="!orgInfo.Image" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-gray-500">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9 9 0 0 0 9-9c0-5.5-4.5-9-9-9s-9 3.5-9 9a9 9 0 0 0 9 9Z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 12c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4Z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 16a4 4 0 0 0 4-4" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 16a4 4 0 0 1-4-4" />
+                    </svg>
+                    <img ng-if="orgInfo.Image" ng-src="{{orgInfo.Image}}" alt="School Logo" class="w-full h-full object-cover">
+                </div>
+                <div style="text-align: center;">
+                    <h1 class="text-xl md:text-2xl font-bold text-gray-800" ng-style="{'font-size': orgNameFontSize}">{{orgInfo.Name}}</h1>
+                    <p class="text-sm text-gray-600">{{orgInfo.Description}}</p>
+                    <p class="text-sm text-gray-600">{{orgInfo.FullAddress}}</p>
+                </div>
+            </div>
+            <div class="flex flex-col items-center md:items-end">
+            </div>
+        </header>
+
+        <main class="py-6">
+            <h2 class="text-center text-lg md:text-xl font-semibold my-4 underline">TRANSFER CERTIFICATE </h2>
+            
+            <div class="flex justify-between items-center mb-4 text-sm md:text-base meta-data">
+                <p><strong>TC No : </strong>{{userInfo.TCNr}}</p>
+                <p><strong>Admission No : </strong>{{userInfo.AdmissionNumber}}</p>
+                <p><strong>Date : </strong> <strong>{{ userInfo.DateOfIssue | date:'dd-MMM-yyyy' }}</strong></p>
+            </div>
+
+            <div class="space-y-3">
+                <div class="grid grid-cols-2 gap-4 items-center border-b border-gray-200 py-2">
+                    <div class="font-medium text-gray-700">1. Name of Pupil </div>
+                    <div class="text-gray-900">{{userInfo.FullName}}</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 items-center border-b border-gray-200 py-2">
+                    <div class="font-medium text-gray-700">2. Father </div>
+                    <div class="text-gray-900">{{userInfo.FatherName}}</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 items-center border-b border-gray-200 py-2">
+                    <div class="font-medium text-gray-700">3. Mother/Guardian name </div>
+                    <div class="text-gray-900">{{userInfo.MotherName || userInfo.PatentName}}</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 items-center border-b border-gray-200 py-2">
+                    <div class="font-medium text-gray-700">4. Aadhar Number </div>
+                    <div class="text-gray-900">{{userInfo.AadharNumber}}</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 items-center border-b border-gray-200 py-2">
+                    <div class="font-medium text-gray-700">5. P.E.N Number </div>
+                    <div class="text-gray-900">{{userInfo.PEN}}</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 items-center border-b border-gray-200 py-2">
+                    <div class="font-medium text-gray-700">6. Nationality / Religion </div>
+                    <div class="text-gray-900">{{userInfo.Nationality || 'Indian'}} / {{userInfo.Religion}}</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 items-center border-b border-gray-200 py-2">
+                    <div class="font-medium text-gray-700">7. Whether the pupil belongs to Schedule Caste or Schedule Tribe </div>
+                    <div class="text-gray-900">{{userInfo.Category}}</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 items-center border-b border-gray-200 py-2">
+                    <div class="font-medium text-gray-700">8. Date of First Admission in the School with Class </div>
+                    <div class="text-gray-900">{{userInfo.AdmissionDate | date:'dd-MMM-yyyy'}} (Class: {{userInfo.AdmissionClass}})</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 items-center border-b border-gray-200 py-2">
+                    <div class="font-medium text-gray-700">9. Date of Birth according to Admission Register </div>
+                    <div class="text-gray-900">{{userInfo.DateOfBirth | date:'dd-MMM-yyyy'}}</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 items-center border-b border-gray-200 py-2">
+                    <div class="font-medium text-gray-700">10. Class in which the pupil last studied </div>
+                    <div class="text-gray-900">{{userInfo.LastClass}}</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 items-center border-b border-gray-200 py-2">
+                    <div class="font-medium text-gray-700">11. Annual examination last taken with result </div>
+                    <div class="text-gray-900">{{userInfo.AnnualExamResult}}</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 items-center border-b border-gray-200 py-2">
+                    <div class="font-medium text-gray-700">12. Subjects Studied </div>
+                    <div class="text-gray-900">{{userInfo.SubjectsStudied}}</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 items-center border-b border-gray-200 py-2">
+                    <div class="font-medium text-gray-700">13. Whether qualified for promotion to the higher class </div>
+                    <div class="text-gray-900">{{userInfo.PromotionStatus}}</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 items-center border-b border-gray-200 py-2">
+                    <div class="font-medium text-gray-700">14. Month up to which the pupil has paid school dues </div>
+                    <div class="text-gray-900">{{userInfo.DuesPaidUpTo}}</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 items-center border-b border-gray-200 py-2">
+                    <div class="font-medium text-gray-700">15. Identification Marks </div>
+                    <div class="text-gray-900">{{userInfo.IdentificationMarks}}</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 items-center border-b border-gray-200 py-2">
+                    <div class="font-medium text-gray-700">16. Total No. of Working Days </div>
+                    <div class="text-gray-900">{{userInfo.TotalWorkingDays}}</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 items-center border-b border-gray-200 py-2">
+                    <div class="font-medium text-gray-700">17. Total No. of Working Days Present </div>
+                    <div class="text-gray-900">{{userInfo.DaysPresent}}</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 items-center border-b border-gray-200 py-2">
+                    <div class="font-medium text-gray-700">18. General Conduct </div>
+                    <div class="text-gray-900">{{userInfo.GeneralConduct}}</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 items-center border-b border-gray-200 py-2">
+                    <div class="font-medium text-gray-700">19. Date of Application for Certificate </div>
+                    <div class="text-gray-900">{{userInfo.DateOfApplication | date:'dd-MMM-yyyy'}}</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 items-center border-b border-gray-200 py-2">
+                    <div class="font-medium text-gray-700">20. Date of issue of Certificate </div>
+                    <div class="text-gray-900">{{userInfo.DateOfIssue | date:'dd-MMM-yyyy'}}</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 items-center border-b border-gray-200 py-2">
+                    <div class="font-medium text-gray-700">21. Reasons for leaving the School </div>
+                    <div class="text-gray-900">{{userInfo.ReasonForLeaving}}</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 items-center border-b border-gray-200 py-2">
+                    <div class="font-medium text-gray-700">22. Any other Remarks </div>
+                    <div class="text-gray-900">{{userInfo.Remarks}}</div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="pt-6 border-t border-dashed border-gray-400 mt-6 flex flex-col md:flex-row justify-between items-end text-center md:text-left signatures">
+            <div class="flex flex-col items-center mb-4 md:mb-0">
+                <p class="border-b border-black w-32"></p>
+                <p class="text-xs mt-1">Signature of the Class Teacher </p>
+            </div>
+            <div class="flex flex-col items-center">
+                <h3 class="font-semibold text-gray-800">PRINCIPAL </h3>
+                <h4 class="text-sm font-semibold text-gray-700">{{orgInfo.Name}} </h4>
+                <p class="text-xs text-gray-500">{{orgInfo.FullAddress}}</p>
+            </div>
+        </footer>
+    </div>
+
+
+    <div ng-show="modal.isVisible" class="no-print fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-75 modal-overlay">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6 modal-content overflow-y-auto">
+            <h2 class="text-2xl font-bold mb-4 border-b pb-2">Edit Transfer Certificate Data</h2>
+            
+            <form ng-submit="saveChanges()" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                
+                <div class="sm:col-span-2">
+                    <h3 class="text-lg font-semibold mt-4 mb-2 border-b pb-1">School / Organization</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <label class="block sm:col-span-2">
+                            <span class="text-gray-700">School Name</span>
+                            <input type="text" ng-model="modal.orgInfo.Name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                        </label>
+                        <label class="block sm:col-span-2">
+                            <span class="text-gray-700">Affiliation / Description</span>
+                            <input type="text" ng-model="modal.orgInfo.Description" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                        </label>
+                        <label class="block sm:col-span-2">
+                            <span class="text-gray-700">Full Address</span>
+                            <textarea ng-model="modal.orgInfo.FullAddress" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"></textarea>
+                        </label>
+                        <label class="block sm:col-span-2">
+                            <span class="text-gray-700">Logo Image URL (optional)</span>
+                            <input type="text" ng-model="modal.orgInfo.Image" placeholder="https://..." class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                        </label>
+                    </div>
+                </div>
+
+                <div class="sm:col-span-2">
+                    <h3 class="text-lg font-semibold mt-4 mb-2">TC Details</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <label class="block">
+                            <span class="text-gray-700">TC No.</span>
+                            <input type="text" ng-model="modal.userInfo.TCNr" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                        </label>
+                        <label class="block">
+                            <span class="text-gray-700">Admission No.</span>
+                            <input type="text" ng-model="modal.userInfo.AdmissionNumber" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                        </label>
+                        <label class="block">
+                            <span class="text-gray-700">Date of Issue</span>
+                            <input type="date" ng-model="modal.userInfo.DateOfIssue" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                        </label>
+                    </div>
+                </div>
+
+                <div class="sm:col-span-2">
+                    <h3 class="text-lg font-semibold mt-4 mb-2">Personal & Parent Details</h3>
+                </div>
+                <label class="block">
+                    <span class="text-gray-700">1. Full Name</span>
+                    <input type="text" ng-model="modal.userInfo.FullName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                </label>
+                <label class="block">
+                    <span class="text-gray-700">2. Father's Name</span>
+                    <input type="text" ng-model="modal.userInfo.FatherName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                </label>
+                <label class="block">
+                    <span class="text-gray-700">3. Mother/Guardian</span>
+                    <input type="text" ng-model="modal.userInfo.MotherName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                </label>
+                <label class="block">
+                    <span class="text-gray-700">3b. Guardian (if different / alternate)</span>
+                    <input type="text" ng-model="modal.userInfo.PatentName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border" placeholder="Used if Mother/Guardian name is empty">
+                </label>
+                <label class="block">
+                    <span class="text-gray-700">4. Aadhar Number</span>
+                    <input type="text" ng-model="modal.userInfo.AadharNumber" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                </label>
+                <label class="block">
+                    <span class="text-gray-700">5. P.E.N Number</span>
+                    <input type="text" ng-model="modal.userInfo.PEN" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                </label>
+                <label class="block">
+                    <span class="text-gray-700">6. Nationality / Religion</span>
+                    <input type="text" ng-model="modal.userInfo.Nationality" placeholder="Nationality" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border mb-2">
+                    <input type="text" ng-model="modal.userInfo.Religion" placeholder="Religion" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                </label>
+                <label class="block">
+                    <span class="text-gray-700">7. Caste/Tribe Category</span>
+                    <input type="text" ng-model="modal.userInfo.Category" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                </label>
+                <label class="block">
+                    <span class="text-gray-700">9. Date of Birth</span>
+                    <input type="date" ng-model="modal.userInfo.DateOfBirth" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                </label>
+                <label class="block">
+                    <span class="text-gray-700">15. Identification Marks</span>
+                    <textarea ng-model="modal.userInfo.IdentificationMarks" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"></textarea>
+                </label>
+
+                <div class="sm:col-span-2">
+                    <h3 class="text-lg font-semibold mt-4 mb-2">Academic Record</h3>
+                </div>
+                <label class="block">
+                    <span class="text-gray-700">8. Admission Date</span>
+                    <input type="date" ng-model="modal.userInfo.AdmissionDate" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                </label>
+                <label class="block">
+                    <span class="text-gray-700">8. Admission Class</span>
+                    <input type="text" ng-model="modal.userInfo.AdmissionClass" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                </label>
+                <label class="block">
+                    <span class="text-gray-700">10. Last Class Studied</span>
+                    <input type="text" ng-model="modal.userInfo.LastClass" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                </label>
+                <label class="block sm:col-span-2">
+                    <span class="text-gray-700">11. Annual examination last taken with result</span>
+                    <input type="text" ng-model="modal.userInfo.AnnualExamResult" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                </label>
+                <label class="block sm:col-span-2">
+                    <span class="text-gray-700">12. Subjects Studied (comma separated)</span>
+                    <textarea ng-model="modal.userInfo.SubjectsStudied" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"></textarea>
+                </label>
+                <label class="block sm:col-span-2">
+                    <span class="text-gray-700">13. Qualified for promotion to the higher class</span>
+                    <input type="text" ng-model="modal.userInfo.PromotionStatus" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                </label>
+                <label class="block">
+                    <span class="text-gray-700">14. Dues Paid Up To (Month/Year)</span>
+                    <input type="text" ng-model="modal.userInfo.DuesPaidUpTo" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                </label>
+                <label class="block">
+                    <span class="text-gray-700">18. General Conduct</span>
+                    <input type="text" ng-model="modal.userInfo.GeneralConduct" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                </label>
+                <label class="block">
+                    <span class="text-gray-700">16. Total No. of Working Days</span>
+                    <input type="number" ng-model="modal.userInfo.TotalWorkingDays" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                </label>
+                <label class="block">
+                    <span class="text-gray-700">17. Total No. of Working Days Present</span>
+                    <input type="number" ng-model="modal.userInfo.DaysPresent" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                </label>
+
+                <div class="sm:col-span-2">
+                    <h3 class="text-lg font-semibold mt-4 mb-2">Certificate Dates & Reasons</h3>
+                </div>
+                <label class="block">
+                    <span class="text-gray-700">19. Date of Application</span>
+                    <input type="date" ng-model="modal.userInfo.DateOfApplication" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                </label>
+                <label class="block">
+                    <span class="text-gray-700">20. Date of issue of Certificate</span>
+                    <input type="date" ng-model="modal.userInfo.DateOfIssue" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                </label>
+                <label class="block">
+                    <span class="text-gray-700">21. Reasons for leaving the School</span>
+                    <input type="text" ng-model="modal.userInfo.ReasonForLeaving" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                </label>
+                <label class="block sm:col-span-2">
+                    <span class="text-gray-700">22. Any other Remarks</span>
+                    <textarea ng-model="modal.userInfo.Remarks" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border"></textarea>
+                </label>
+
+                <div class="sm:col-span-2 flex justify-end space-x-4 mt-6">
+                    <button type="button" ng-click="hideEditModal()" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition duration-150">
+                        Cancel
+                    </button>
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-150">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+    var app = angular.module("myApp", []);
+    app.controller("myCtrl", function ($scope, $http, $window) {
+        
+        $scope.orgNameFontSize = '1.5rem'; // Default font size
+        
+        // --- DEFAULT DATA FOR INITIAL BINDINGS ---
+        const defaultUserInfo = {
+            // Metadata
+            TCNr: '',
+            AdmissionNumber: '',
+            DateOfIssue: new Date(), // Binds to the Date: field
+            
+            // 1-22 Fields (Populated with example data)
+            FullName: '',
+            FatherName: '',
+            MotherName: '',
+            PatentName: '',
+            AadharNumber: '',
+            PEN: '',
+            Nationality: '',
+            Religion: '',
+            Category: '',
+            AdmissionDate: new Date('2022-06-15'),
+            AdmissionClass: 'Grade V',
+            DateOfBirth: new Date('2012-09-01'),
+            LastClass: 'Grade VIII',
+            AnnualExamResult: 'Passed and Promoted',
+            SubjectsStudied: 'English, Hindi, Mathematics, Science, Social Studies, Computer Science',
+            PromotionStatus: 'Yes, qualified for Grade IX',
+            DuesPaidUpTo: 'March 2025',
+            IdentificationMarks: 'A small mole below the left eye.',
+            TotalWorkingDays: 220,
+            DaysPresent: 205,
+            GeneralConduct: 'Excellent',
+            DateOfApplication: new Date(),
+            ReasonForLeaving: 'Parental Transfer of Service',
+            Remarks: 'A highly disciplined and diligent student.'
+        };
+
+        // Initialize display data with defaults
+        $scope.userInfo = angular.copy(defaultUserInfo);
+        
+        // Initialize organization info with defaults
+        $scope.orgInfo = { 
+            Name: 'DEMO PUBLIC SCHOOL', 
+            Description: 'Affiliated to C.B.S.E, New Delhi', 
+            FullAddress: 'FCI-Gacchabowli, Hyderabad - 49' 
+        };
+        
+        $scope.modal = {
+            isVisible: false,
+            userInfo: angular.copy(defaultUserInfo),
+            orgInfo: angular.copy($scope.orgInfo)
+        };
+
+        function adjustOrgNameFontSize(name) {
+            // Function to dynamically adjust font size (retained from previous request)
+            if (!name) return '1.5rem';
+            const charCount = name.length;
+            if (charCount > 30) return '1.15rem';
+            if (charCount > 20) return '1.3rem';
+            return '1.5rem'; 
+        }
+        
+        function getQueryParams() {
+             const params = {};
+             location.search
+                 .substr(1)
+                 .split("&")
+                 .forEach(function (item) {
+                     const [key, value] = item.split("=");
+                     if (key) params[key] = decodeURIComponent(value);
+                 });
+             return params;
+         }
+
+        const baseUrl = 'https://api.schoolvertex.com/api';
+        const query = getQueryParams();
+        const orgId = query.orgId;
+        const userId = query.userId;
+
+        // --- Fetch Org Info ---
+        if (orgId) {
+            const orgInfoUrl = `${baseUrl}/Organisation/GetInfoForCertificate/${orgId}`;
+            $http.get(orgInfoUrl).then(function (response) {
+                // Merge API data with defaults
+                $scope.orgInfo = angular.extend($scope.orgInfo, response.data);
+                if ($scope.orgInfo && $scope.orgInfo.Name) {
+                    $scope.orgNameFontSize = adjustOrgNameFontSize($scope.orgInfo.Name);
+                }
+            }).catch(function(error) {
+                console.error("Error fetching org data:", error);
+            });
+        }
+        
+        // --- Fetch User Info ---
+        if (userId) {
+             const entityTypeId = query.entityTypeId;
+             const entityId = query.entityId;
+             const userInfoUrl = `${baseUrl}/User/GetInfoForCertificate/${userId}/${entityTypeId}/${entityId}`;
+             $http.get(userInfoUrl).then(function (response) {
+                 // Merge API data with defaults and convert date strings to Date objects
+                 let apiData = response.data;
+                 
+                 // Date conversion logic
+                 apiData.DateOfBirth = apiData.DateOfBirth ? new Date(apiData.DateOfBirth) : $scope.userInfo.DateOfBirth;
+                 apiData.AdmissionDate = apiData.AdmissionDate ? new Date(apiData.AdmissionDate) : $scope.userInfo.AdmissionDate;
+                 apiData.DateOfApplication = apiData.DateOfApplication ? new Date(apiData.DateOfApplication) : $scope.userInfo.DateOfApplication;
+                 apiData.DateOfIssue = apiData.DateOfIssue ? new Date(apiData.DateOfIssue) : $scope.userInfo.DateOfIssue;
+
+                 $scope.userInfo = angular.extend($scope.userInfo, apiData);
+                 $scope.modal.userInfo = angular.copy($scope.userInfo); // Update modal copy as well
+
+             }).catch(function(error) {
+                 console.error("Error fetching user data:", error);
+             });
+         }
+
+
+        // --- MODAL LOGIC ---
+        $scope.showEditModal = function() {
+            // Copy current display data to the modal for editing (to avoid live updates)
+            $scope.modal.userInfo = angular.copy($scope.userInfo);
+            $scope.modal.orgInfo = angular.copy($scope.orgInfo);
+
+            // Ensure all dates are Date objects for input[type=date] binding
+            $scope.modal.userInfo.DateOfBirth = $scope.modal.userInfo.DateOfBirth ? new Date($scope.modal.userInfo.DateOfBirth) : null;
+            $scope.modal.userInfo.AdmissionDate = $scope.modal.userInfo.AdmissionDate ? new Date($scope.modal.userInfo.AdmissionDate) : null;
+            $scope.modal.userInfo.DateOfApplication = $scope.modal.userInfo.DateOfApplication ? new Date($scope.modal.userInfo.DateOfApplication) : null;
+            $scope.modal.userInfo.DateOfIssue = $scope.modal.userInfo.DateOfIssue ? new Date($scope.modal.userInfo.DateOfIssue) : null;
+
+            $scope.modal.isVisible = true;
+        };
+
+        $scope.hideEditModal = function() {
+            $scope.modal.isVisible = false;
+        };
+
+        $scope.saveChanges = function() {
+            // Copy edited data back to the display data
+            $scope.userInfo = angular.copy($scope.modal.userInfo);
+            $scope.orgInfo = angular.extend({}, $scope.orgInfo, angular.copy($scope.modal.orgInfo));
+            if ($scope.orgInfo && $scope.orgInfo.Name) {
+                $scope.orgNameFontSize = adjustOrgNameFontSize($scope.orgInfo.Name);
+            }
+            $scope.hideEditModal();
+        };
+    });
+    </script>
+</body>
+</html>
