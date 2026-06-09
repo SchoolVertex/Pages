@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html ng-app="feeApp">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Student Fee Summary</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: "Segoe UI", sans-serif;
+        }
+
+        body {
+            background: #f5f7fb;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .report-container {
+            max-width: 1200px;
+            margin: auto;
+            background: #fff;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .btn {
+            min-height: 40px;
+            border: 0;
+            border-radius: 6px;
+            background: #2563eb;
+            color: #fff;
+            padding: 8px 14px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #475569;
+        }
+
+        .status-message {
+            margin-bottom: 18px;
+            padding: 12px 14px;
+            border-radius: 6px;
+            background: #eef2ff;
+            color: #3730a3;
+            font-weight: 600;
+        }
+
+        .error-message {
+            margin-bottom: 18px;
+            padding: 12px 14px;
+            border-radius: 6px;
+            background: #fef2f2;
+            color: #991b1b;
+            font-weight: 600;
+        }
+
+        .school-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 20px;
+            position: relative;
+        }
+
+        .school-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            object-fit: contain;
+            border: 1px solid #ddd;
+            background: #fff;
+            flex: 0 0 auto;
+        }
+
+        .school-details {
+            flex: 1;
+            text-align: center;
+        }
+
+        .school-details h1 {
+            margin: 0;
+            color: #1e40af;
+            font-size: 28px;
+        }
+
+        .school-details h4 {
+            margin: 5px 0;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .school-details p {
+            margin: 0;
+            color: #777;
+        }
+
+        .student-info {
+            margin-top: 30px;
+        }
+
+        .info-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .info-item {
+            flex: 1 1 50%;
+            min-width: 0;
+            font-size: 16px;
+        }
+
+        .info-item strong {
+            color: #111827;
+        }
+
+        .section {
+            margin-top: 35px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #111827;
+        }
+
+        .section-heading-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 15px;
+        }
+
+        .section-heading-row .section-title {
+            margin-bottom: 0;
+        }
+
+        .check-option {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #374151;
+            font-size: 15px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .check-option input {
+            width: 16px;
+            height: 16px;
+            margin: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f8fafc;
+            text-align: left;
+            padding: 14px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        td {
+            padding: 14px;
+            border-bottom: 1px solid #f0f0f0;
+            vertical-align: top;
+        }
+
+        .amount {
+            text-align: right;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .status-paid {
+            color: #16a34a;
+            font-weight: 600;
+        }
+
+        .status-partial {
+            color: #ca8a04;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        .muted {
+            color: #6b7280;
+        }
+
+        .summary-card {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .summary-box {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #2563eb;
+        }
+
+        .summary-box h3 {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .summary-box p {
+            margin: 10px 0 0;
+            font-size: 26px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .empty-row {
+            color: #6b7280;
+            text-align: center;
+        }
+
+        .total-row td {
+            font-weight: 700;
+            background: #f8fafc;
+            border-top: 2px solid #e5e7eb;
+        }
+
+        .total-label {
+            text-align: right;
+        }
+
+        .stamp-sign-section {
+            display: flex;
+            gap: 24px;
+            margin-top: 35px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .stamp-sign-box {
+            flex: 1 1 50%;
+            min-width: 0;
+            min-height: 130px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            border-bottom: 1px solid #cbd5e1;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .stamp-sign-box img {
+            max-width: 180px;
+            max-height: 80px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+
+        .stamp-sign-label {
+            color: #111827;
+            font-weight: 600;
+        }
+
+        @media (max-width: 900px) {
+            .summary-card {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .report-container {
+                padding: 16px;
+            }
+
+            .summary-card {
+                grid-template-columns: 1fr;
+            }
+
+            .info-row {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .school-header {
+                align-items: flex-start;
+            }
+
+            .school-details {
+                text-align: left;
+            }
+
+            .section-heading-row {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+
+        @page {
+            size: A4;
+            margin: 12mm;
+        }
+
+        @media print {
+            * {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            html,
+            body {
+                width: auto;
+                min-height: auto;
+                background: #fff;
+                padding: 0;
+                margin: 0;
+                color: #111827;
+            }
+
+            .toolbar,
+            .status-message,
+            .error-message {
+                display: none !important;
+            }
+
+            .report-container {
+                width: 100%;
+                max-width: none;
+                margin: 0;
+                padding: 0;
+                border-radius: 0;
+                box-shadow: none;
+            }
+
+            .school-header {
+                display: grid;
+                grid-template-columns: 24mm 1fr 24mm;
+                gap: 4mm;
+                align-items: center;
+                break-inside: avoid;
+                page-break-inside: avoid;
+                padding-bottom: 5mm;
+            }
+
+            .school-logo {
+                width: 22mm;
+                height: 22mm;
+            }
+
+            .school-details {
+                text-align: center;
+            }
+
+            .school-details h1 {
+                font-size: 18pt;
+            }
+
+            .school-details h4,
+            .school-details p,
+            .info-item,
+            th,
+            td {
+                font-size: 9.5pt;
+            }
+
+            .student-info {
+                margin-top: 5mm;
+            }
+
+            .info-row {
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+                gap: 8mm !important;
+                margin-bottom: 2mm !important;
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+
+            .info-item {
+                flex: 1 1 50% !important;
+                width: 50% !important;
+            }
+
+            .section {
+                margin-top: 6mm;
+            }
+
+            .section-title {
+                font-size: 14pt;
+                margin-bottom: 3mm;
+            }
+
+            .summary-card {
+                grid-template-columns: repeat(auto-fit, minmax(42mm, 1fr));
+                gap: 3mm;
+            }
+
+            .summary-box {
+                padding: 3mm;
+                border-radius: 0;
+                background: #fff;
+                border: 1px solid #cbd5e1;
+                border-left: 3px solid #2563eb;
+            }
+
+            .summary-box h3 {
+                font-size: 9pt;
+            }
+
+            .summary-box p {
+                font-size: 13pt;
+            }
+
+            table {
+                display: table;
+                overflow: visible;
+                page-break-inside: auto;
+            }
+
+            tr {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+
+            th,
+            td {
+                padding: 2.2mm;
+            }
+
+            .stamp-sign-section {
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+                gap: 8mm !important;
+                margin-top: 8mm;
+                padding-top: 5mm;
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+
+            .stamp-sign-box {
+                flex: 1 1 50% !important;
+                width: 50% !important;
+                min-height: 22mm;
+            }
+        }
+    </style>
+</head>
+
+<body ng-controller="FeeController">
+
+<div class="report-container">
+
+    <div class="toolbar">
+        <label class="check-option">
+            <input type="checkbox" ng-model="hideOverallSummary">
+            Hide Overall Summary
+        </label>
+
+        <label class="check-option">
+            <input type="checkbox" ng-model="hideFeeHeadSummary">
+            Hide Fee Head Summary
+        </label>
+
+        <label class="check-option">
+            <input type="checkbox" ng-model="hideConcession">
+            Hide Concession
+        </label>
+
+        <label class="check-option">
+            <input type="checkbox" ng-model="hideFeeStatus">
+            Hide Status
+        </label>
+
+        <label class="check-option">
+            <input type="checkbox" ng-model="hideFeeItems">
+            Hide Fee Items
+        </label>
+
+        <button class="btn btn-secondary" type="button" ng-click="printPage()">
+            Print
+        </button>
+    </div>
+
+    <div class="status-message" ng-if="isLoading">
+        Loading fee information from API...
+    </div>
+
+    <div class="error-message" ng-if="errorMessage">
+        {{errorMessage}}
+    </div>
+
+    <div class="school-header">
+        <img ng-src="{{school.logo}}" class="school-logo" alt="School Logo">
+
+        <div class="school-details">
+            <h1>{{school.name || 'School Name'}}</h1>
+            <h4>{{school.caption || 'School Caption'}}</h4>
+            <p>{{school.address || 'School Address'}}</p>
+        </div>
+    </div>
+
+    <div class="student-info">
+        <div class="info-row">
+            <div class="info-item">
+                <strong>Student:</strong> {{student.name || '-'}}
+            </div>
+            <div class="info-item">
+                <strong>Admission No:</strong> {{student.admissionNumber || '-'}}
+            </div>
+        </div>
+
+        <div class="info-row">
+            <div class="info-item">
+                <strong>Roll No:</strong> {{student.rollNumber || '-'}}
+            </div>
+            <div class="info-item">
+                <strong>Class:</strong> {{student.class || '-'}}
+            </div>
+        </div>
+
+        <div class="info-row">
+            <div class="info-item">
+                <strong>Father Name:</strong> {{student.father || '-'}}
+            </div>
+            <div class="info-item">
+                <strong>Mother Name:</strong> {{student.mother || '-'}}
+            </div>
+        </div>
+
+        <div class="info-row">
+            <div class="info-item">
+                <strong>Parent Name:</strong> {{student.parent || '-'}}
+            </div>
+            <div class="info-item">
+                <strong>Academic Year:</strong> {{student.academicYear || '-'}}
+            </div>
+        </div>
+    </div>
+
+    <div class="section" ng-if="!hideOverallSummary">
+        <div class="section-title">Overall Summary</div>
+
+        <div class="summary-card">
+            <div class="summary-box">
+                <h3>Total Fee</h3>
+                <p>&#8377;{{displaySummary.totalFee | number}}</p>
+            </div>
+
+            <div class="summary-box">
+                <h3>Total Paid</h3>
+                <p>&#8377;{{displaySummary.totalPaid | number}}</p>
+            </div>
+
+            <div class="summary-box" ng-if="!hideConcession">
+                <h3>Total Concession</h3>
+                <p>&#8377;{{displaySummary.totalConcession | number}}</p>
+            </div>
+
+            <div class="summary-box">
+                <h3>Total Pending</h3>
+                <p>&#8377;{{displaySummary.totalPending | number}}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="section" ng-if="!hideFeeHeadSummary">
+        <div class="section-title">Fee Head Summary</div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Fee Head</th>
+                    <th class="amount">Fee Amount</th>
+                    <th class="amount">Paid</th>
+                    <th class="amount" ng-if="!hideConcession">Concession</th>
+                    <th class="amount">Pending</th>
+                    <th ng-if="!hideFeeStatus">Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr ng-repeat="fee in feeHeads">
+                    <td>{{fee.itemName}}</td>
+                    <td class="amount">&#8377;{{getDisplayFeeAmount(fee) | number}}</td>
+                    <td class="amount">&#8377;{{fee.paid | number}}</td>
+                    <td class="amount" ng-if="!hideConcession">&#8377;{{fee.concession | number}}</td>
+                    <td class="amount">&#8377;{{fee.pending | number}}</td>
+                    <td ng-if="!hideFeeStatus">
+                        <span ng-if="fee.pending === 0" class="status-paid">Paid</span>
+                        <span ng-if="fee.pending > 0 && fee.paid > 0" class="status-partial">Partially Paid</span>
+                        <span ng-if="fee.pending > 0 && fee.paid === 0" class="status-pending">Pending</span>
+                    </td>
+                </tr>
+
+                <tr ng-if="!feeHeads.length">
+                    <td ng-attr-colspan="{{getFeeHeadColspan()}}" class="empty-row">No fee head summary found.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Payment History</div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Receipt No</th>
+                    <th>Transaction ID</th>
+                    <th>Payment Mode</th>
+                    <th ng-if="!hideFeeItems">Fee Items</th>
+                    <th class="amount">Amount</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr ng-repeat="payment in payments">
+                    <td>{{payment.date}}</td>
+                    <td>{{payment.receiptNo}}</td>
+                    <td>{{payment.transactionId}}</td>
+                    <td>{{payment.mode}}</td>
+                    <td ng-if="!hideFeeItems">{{payment.feeItems}}</td>
+                    <td class="amount">&#8377;{{payment.amount | number}}</td>
+                </tr>
+
+                <tr ng-if="!payments.length">
+                    <td ng-attr-colspan="{{getPaymentHistoryColspan()}}" class="empty-row">No payments found.</td>
+                </tr>
+
+                <tr class="total-row" ng-if="payments.length">
+                    <td ng-attr-colspan="{{getPaymentHistoryColspan() - 1}}" class="total-label">Total</td>
+                    <td class="amount">&#8377;{{totalPaymentAmount | number}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="stamp-sign-section">
+        <div class="stamp-sign-box">
+            <img ng-if="school.stamp" ng-src="{{school.stamp}}" alt="School Stamp">
+            <div class="stamp-sign-label">School Stamp</div>
+        </div>
+
+        <div class="stamp-sign-box">
+            <img ng-if="school.sign" ng-src="{{school.sign}}" alt="Authorized Signature">
+            <div class="stamp-sign-label">Authorized Signature</div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+angular.module('feeApp', [])
+.controller('FeeController', function($scope, $http, $window) {
+    var API_BASE_URL = 'https://api.schoolvertex.com/';
+    var DEFAULT_LOGO = 'https://via.placeholder.com/80?text=Logo';
+    var feeItemNames = {};
+
+    function getQueryParams() {
+        var params = {};
+        var search = $window.location.search || '';
+
+        if (search.charAt(0) === '?') {
+            search = search.substring(1);
+        }
+
+        search.split('&').forEach(function(item) {
+            if (!item) {
+                return;
+            }
+
+            var parts = item.split('=');
+            if (parts[0]) {
+                params[parts[0]] = decodeURIComponent((parts[1] || '').replace(/\+/g, ' '));
+            }
+        });
+
+        return params;
+    }
+
+    function parseQueryNumber(value) {
+        if (value === undefined || value === null || value === '') {
+            return null;
+        }
+
+        var numberValue = Number(value);
+        return isNaN(numberValue) ? null : numberValue;
+    }
+
+    function readFiltersFromUrl() {
+        var queryParams = getQueryParams();
+
+        return {
+            schoolId: parseQueryNumber(queryParams.schoolId),
+            userId: parseQueryNumber(queryParams.userId),
+            yearId: parseQueryNumber(queryParams.yearId)
+        };
+    }
+
+    $scope.filters = readFiltersFromUrl();
+
+    $scope.school = {};
+    $scope.student = {};
+    $scope.summary = resetSummary();
+    $scope.displaySummary = resetSummary();
+    $scope.feeHeads = [];
+    $scope.payments = [];
+    $scope.totalPaymentAmount = 0;
+    $scope.hideOverallSummary = false;
+    $scope.hideFeeHeadSummary = false;
+    $scope.hideConcession = false;
+    $scope.hideFeeStatus = false;
+    $scope.hideFeeItems = false;
+    $scope.isLoading = false;
+    $scope.errorMessage = '';
+
+    $scope.$watch('hideConcession', function() {
+        updateDisplaySummary();
+    });
+
+    $scope.getDisplayFeeAmount = function(fee) {
+        if (!fee) {
+            return 0;
+        }
+
+        return $scope.hideConcession ? fee.netAmount : fee.amount;
+    };
+
+    $scope.getFeeHeadColspan = function() {
+        var colspan = 4;
+
+        if (!$scope.hideConcession) {
+            colspan++;
+        }
+
+        if (!$scope.hideFeeStatus) {
+            colspan++;
+        }
+
+        return colspan;
+    };
+
+    $scope.getPaymentHistoryColspan = function() {
+        return $scope.hideFeeItems ? 5 : 6;
+    };
+
+    $scope.printPage = function() {
+        $window.print();
+    };
+
+    $scope.loadFeeSummary = function() {
+        $scope.filters = readFiltersFromUrl();
+
+        if ($scope.filters.schoolId === null || $scope.filters.userId === null || $scope.filters.yearId === null) {
+            $scope.errorMessage = 'School ID, User ID, and Year ID are required in the URL. Example: ?schoolId=1&userId=6583&yearId=8';
+            return;
+        }
+
+        $scope.isLoading = true;
+        $scope.errorMessage = '';
+
+        var feeSummaryUrl = API_BASE_URL + 'api/Fee/GetUserFeeItemSummary/' +
+            encodeURIComponent($scope.filters.userId) + '/' +
+            encodeURIComponent($scope.filters.yearId);
+
+        var paymentsUrl = API_BASE_URL + 'api/Fee/GetUserPayments/' +
+            encodeURIComponent($scope.filters.schoolId) + '/' +
+            encodeURIComponent($scope.filters.userId) + '/' +
+            encodeURIComponent($scope.filters.yearId);
+
+        var receiptInfoUrl = API_BASE_URL + 'api/Fee/GetFeeReceiptInfo/' +
+            encodeURIComponent($scope.filters.schoolId) + '/' +
+            encodeURIComponent($scope.filters.userId);
+
+        Promise.all([
+            $http.get(feeSummaryUrl),
+            $http.get(paymentsUrl),
+            $http.get(receiptInfoUrl)
+        ]).then(function(responses) {
+            setFeeHeads(responses[0].data || []);
+            setPayments(responses[1].data || []);
+            setReceiptInfo(responses[2].data || {});
+        }).catch(function(error) {
+            $scope.errorMessage = buildErrorMessage(error);
+            $scope.feeHeads = [];
+            $scope.payments = [];
+            $scope.totalPaymentAmount = 0;
+            $scope.summary = resetSummary();
+            updateDisplaySummary();
+        }).finally(function() {
+            $scope.isLoading = false;
+            $scope.$applyAsync();
+        });
+    };
+
+    function setReceiptInfo(info) {
+        $scope.school = {
+            logo: info.OrgImage || info.OrgHeaderImageUrl || DEFAULT_LOGO,
+            name: info.OrgName || '',
+            caption: info.OrgCaption || '',
+            address: info.OrgAddress || '',
+            stamp: info.OrgAcInSign || '',
+            sign: info.OrgSign || ''
+        };
+
+        var classText = info.ClassName || '';
+        if (info.SectionName) {
+            classText += ' - ' + info.SectionName;
+        }
+
+        $scope.student = {
+            name: info.StudentName || '',
+            admissionNumber: info.AdmissionNumber || '',
+            rollNumber: info.RollNumber || '',
+            class: classText,
+            parent: info.ParentName || '',
+            father: info.FatherName || '',
+            mother: info.MotherName || '',
+            academicYear: info.NextClassName || String($scope.filters.yearId)
+        };
+    }
+
+    function setFeeHeads(items) {
+        feeItemNames = {};
+
+        $scope.feeHeads = items.map(function(item) {
+            var amount = toNumber(item.TotalAmount);
+            var paid = toNumber(item.ReceivedAmount);
+            var concession = toNumber(item.ConcessionAmount);
+            var netAmount = Math.max(amount - concession, 0);
+            var pending = Math.max(amount - paid - concession, 0);
+            var itemName = item.ItemName || '-';
+
+            if (item.FeeItemId) {
+                feeItemNames[item.FeeItemId] = itemName;
+            }
+
+            return {
+                id: item.FeeItemId,
+                itemName: itemName,
+                amount: amount,
+                netAmount: netAmount,
+                paid: paid,
+                concession: concession,
+                pending: pending
+            };
+        });
+
+        $scope.summary = $scope.feeHeads.reduce(function(total, fee) {
+            total.totalFee += fee.amount;
+            total.totalPaid += fee.paid;
+            total.totalConcession += fee.concession;
+            total.totalPending += fee.pending;
+            return total;
+        }, resetSummary());
+
+        updateDisplaySummary();
+    }
+
+    function setPayments(items) {
+        $scope.payments = items
+            .filter(function(payment) {
+                return !payment.IsConcessionPayment;
+            })
+            .map(function(payment) {
+                return {
+                    date: formatApiDate(payment.CreatedOn),
+                    receiptNo: payment.ReceiptNumber || payment.OrgReceiptNumber || '-',
+                    transactionId: payment.TransactionNumber || '-',
+                    mode: getPaymentMode(payment.PaymentModeId),
+                    feeItems: formatPaymentFeeItems(payment.FeeItemList),
+                    amount: toNumber(payment.Amount)
+                };
+            });
+
+        $scope.totalPaymentAmount = $scope.payments.reduce(function(total, payment) {
+            return total + payment.amount;
+        }, 0);
+    }
+
+    function formatPaymentFeeItems(items) {
+        if (!items || !items.length) {
+            return '-';
+        }
+
+        return items.map(function(item) {
+            var label = item.ItemName || item.Name || feeItemNames[item.FeeItemId] || '-';
+            return label + ' (' + currency(item.Amount) + ')';
+        }).join(', ');
+    }
+
+    function formatApiDate(value) {
+        if (!value) {
+            return '-';
+        }
+
+        var timestamp = Number(value);
+        if (timestamp < 100000000000) {
+            timestamp = timestamp * 1000;
+        }
+
+        var date = new Date(timestamp);
+        if (isNaN(date.getTime())) {
+            return '-';
+        }
+
+        return date.toLocaleDateString('en-IN', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        });
+    }
+
+    function getPaymentMode(modeId) {
+        var modeMap = {
+            901: 'Cash',
+            902: 'Cheque',
+            903: 'Online',
+            904: 'Card',
+            905: 'UPI',
+            906: 'Bank Transfer'
+        };
+
+        return modeMap[modeId] || (modeId ? 'Mode ' + modeId : '-');
+    }
+
+    function currency(value) {
+        return 'Rs. ' + toNumber(value).toLocaleString('en-IN');
+    }
+
+    function toNumber(value) {
+        var numberValue = Number(value);
+        return isNaN(numberValue) ? 0 : numberValue;
+    }
+
+    function resetSummary() {
+        return {
+            totalFee: 0,
+            totalPaid: 0,
+            totalConcession: 0,
+            totalPending: 0
+        };
+    }
+
+    function updateDisplaySummary() {
+        if (!$scope.summary) {
+            $scope.displaySummary = resetSummary();
+            return;
+        }
+
+        $scope.displaySummary = {
+            totalFee: $scope.hideConcession ?
+                Math.max($scope.summary.totalFee - $scope.summary.totalConcession, 0) :
+                $scope.summary.totalFee,
+            totalPaid: $scope.summary.totalPaid,
+            totalConcession: $scope.hideConcession ? 0 : $scope.summary.totalConcession,
+            totalPending: $scope.summary.totalPending
+        };
+    }
+
+    function buildErrorMessage(error) {
+        if (!error) {
+            return 'Unable to load fee summary.';
+        }
+
+        if (error.status === -1) {
+            return 'Unable to connect to API. Check that http://localhost:62786/ is running and CORS is enabled.';
+        }
+
+        return 'API error ' + error.status + ': ' + (error.statusText || 'Unable to load fee summary.');
+    }
+
+    $scope.loadFeeSummary();
+});
+</script>
+
+</body>
+</html>
