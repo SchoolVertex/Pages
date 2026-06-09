@@ -1,0 +1,183 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f4f7f6;
+}
+
+.id-card {
+    width: 2.125in;
+    height: 3.375in;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.main-content {
+    height: 325px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 4mm;
+    border-radius: 10px;
+    position: relative;
+}
+
+.school-info {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    width: 100%;
+    color: #2c3e50;
+    border-bottom: 1px solid #3498db;
+    text-align: center;
+}
+
+.school-logo {
+    height: 47px;
+}
+
+.school-logo img {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: 1px solid #3498db;
+    object-fit: cover;
+}
+
+.school-name {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.school-caption,
+.school-affliate,
+.school-address {
+    font-size: 7px;
+    font-weight: 600;
+    font-style: italic;
+}
+
+.school-address {
+    font-size: 5px;
+    font-weight: bold;
+}
+
+.student-photo-area {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+    overflow: hidden;
+    margin-top: 3px;
+}
+
+.student-photo-area img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.student-name {
+    margin-top: 2px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #212121;
+    text-align: center;
+}
+
+.student-info {
+    text-align: left;
+    padding-top: 2px;
+    width: 90%;
+}
+
+.info-row {
+    display: flex;
+    margin-bottom: 3px;
+    font-size: 8px;
+    color: #000;
+    font-weight: 600;
+}
+
+.info-label {
+    font-weight: 600;
+    width: 42px;
+    color: #673AB7;
+    flex-shrink: 0;
+}
+
+.info-devider {
+    margin-right: 3px;
+}
+
+.principal-signature-area {
+    color: #000;
+    padding-bottom: 0px;
+    text-align: center;
+    margin-top: auto;
+}
+
+.principal-sign {
+    margin: -5px;
+}
+
+.principal-sign img {
+    height: 20px;
+}
+
+.principal-label {
+    font-size: 8px;
+    letter-spacing: 0.5px;
+    border-top: 1px solid #000;
+}
+
+.bg-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('./bg/1.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 0;
+}
+
+.school-color {
+    color: #673AB7;
+}
+
+body {
+    display: block !important;
+}
+@media print {
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    .id-card {
+        page-break-after: always;
+        break-after: page;
+    }
+}
+
+@page {
+    size: 2.125in 3.375in;
+    margin: 0;
+}
