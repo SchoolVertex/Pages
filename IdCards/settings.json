@@ -16,5 +16,11 @@
         "TextColor": "black",
         "SchoolNameSize": 9,
         "BackgroundImage": 2
+    },
+    "143": {
+        "PrimaryColor": "midnightblue",
+        "TextColor": "black",
+        "SchoolNameSize": 9,
+        "BackgroundImage": 2
     }
 }
