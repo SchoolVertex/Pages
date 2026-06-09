@@ -59,7 +59,7 @@ body {
 .school-name {
     font-size: 12px;
     font-weight: 700;
-    line-height: 100%;
+    line-height: 120%;
 }
 
 .school-caption,
@@ -68,6 +68,7 @@ body {
     font-size: 7px;
     font-weight: 600;
     font-style: italic;
+    line-height: 120%;
 }
 
 .school-address {
