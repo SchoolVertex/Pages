@@ -12,9 +12,9 @@
         "BackgroundImage": 8
     },
     "153": {
-        "PrimaryColor": "#673AB7",
+        "PrimaryColor": "midnightblue",
         "TextColor": "black",
-        "SchoolNameSize": 10,
-        "BackgroundImage": 8
+        "SchoolNameSize": 9,
+        "BackgroundImage": 2
     }
 }
