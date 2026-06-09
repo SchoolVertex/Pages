@@ -911,8 +911,8 @@ angular.module('feeApp', [])
             .map(function(payment) {
                 return {
                     date: formatApiDate(payment.CreatedOn),
-                    receiptNo: payment.ReceiptNumber || payment.OrgReceiptNumber || '-',
-                    transactionId: payment.TransactionNumber || '-',
+                    receiptNo: payment.OrgReceiptNumber || '-',
+                    transactionId: payment.ReceiptNumber || '-',
                     mode: getPaymentMode(payment.PaymentModeId),
                     feeItems: formatPaymentFeeItems(payment.FeeItemList),
                     amount: toNumber(payment.Amount)
@@ -960,11 +960,11 @@ angular.module('feeApp', [])
     function getPaymentMode(modeId) {
         var modeMap = {
             901: 'Cash',
-            902: 'Cheque',
-            903: 'Online',
-            904: 'Card',
-            905: 'UPI',
-            906: 'Bank Transfer'
+            902: 'UPI',
+            903: 'Card',
+            904: 'Bank',
+            905: 'Cheque',
+            906: 'Bank2'
         };
 
         return modeMap[modeId] || (modeId ? 'Mode ' + modeId : '-');
@@ -1010,7 +1010,7 @@ angular.module('feeApp', [])
         }
 
         if (error.status === -1) {
-            return 'Unable to connect to API. Check that http://localhost:62786/ is running and CORS is enabled.';
+            return 'Unable to connect to API.';
         }
 
         return 'API error ' + error.status + ': ' + (error.statusText || 'Unable to load fee summary.');
