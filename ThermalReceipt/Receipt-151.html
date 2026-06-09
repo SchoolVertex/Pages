@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html ng-app="feeReceiptApp" ng-controller="ReceiptController">
+<head>
+  <meta charset="UTF-8">
+  <title>Fee Receipt</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <style>
+    @page { size: 80mm auto; margin: 0; }
+    body {
+      width: 72mm; font-family: Courier Prime, monospace;
+      font-size: 14px; margin: 0 auto; padding: 4mm; box-sizing: border-box;
+      line-height: 125%;
+    }
+    .center { text-align: center; }
+    .line { border-top: 1px dashed #000; margin: 8px 0; }
+    .table { width: 100%; }
+    .table td { padding: 2px 0; }
+    .right { text-align: right; }
+    .left { text-align: left; }
+    strong, b { font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <div class="center">
+    <!-- <img ng-if="school.OrgImage" ng-src="{{school.OrgImage}}" style="width:40px;height:auto;" /><br> -->
+    <strong style="font-size: 24px;line-height: 125%;">{{school.OrgName}}</strong>
+  </div>
+  <div class="center">{{school.OrgAddress}}</div>
+  <!-- <div class="center" ng-if="school.OrgCaption">{{school.OrgCaption}}</div> -->
+
+  <div class="line"></div>
+
+  <div>Date: <strong>{{receiptDate | date:'dd-MMM-yyyy hh:mm a'}}</strong></div>
+  <div>Receipt No: <strong>{{fee.OrgReceiptNumber || fee.UserFeeRecordId}}</strong></div>
+  <div>Class: <strong>{{school.ClassName}} <span ng-if="school.SectionName">/ {{school.SectionName}}</span></strong></div>
+  <div>Student: <strong>{{school.StudentName}}</strong></div>
+  <div ng-if="school.MotherName">Mother: <strong>{{school.MotherName}}</strong></div>
+  <div ng-if="school.FatherName">Father: <strong>{{school.FatherName}}</strong></div>
+
+  <div class="line"></div>
+
+  <table class="table">
+    <tr>
+      <td><strong>Description</strong></td>
+      <td class="right"><strong>Amount (₹)</strong></td>
+    </tr>
+    <tr ng-repeat="item in fee.FeeItemList">
+      <td>{{item.Name || 'Fee'}}</td>
+      <td class="right">{{item.Amount | number}}</td>
+    </tr>
+  </table>
+
+  <div class="line"></div>
+
+  <div class="right">
+    <strong style="font-size: 15px;">Total Paid: ₹{{fee.Amount | number }}</strong>
+  </div>
+  
+
+  <div class="line"></div>
+  <div>Payment Mode: <strong>{{getPaymentModeName(fee.PaymentModeId)}}</strong></div>
+  <div>Collected By: <strong>{{fee.CreatedBy.FullName}}</strong></div>
+
+  <div class="line"></div>
+
+  <div class="center"><strong>*** THANK YOU! ***</strong></div>
+  <div class="center">Fees once paid will not be refunded.</div>
+<script>
+  angular.module('feeReceiptApp', [])
+    .controller('ReceiptController', function($scope, $http, $q) {
+      // Helper: Get URL query parameters
+      function getQueryParams() {
+        const params = {};
+        location.search.substr(1).split("&").forEach(function(item) {
+          const [key, value] = item.split("=");
+          if (key) params[key] = decodeURIComponent(value);
+        });
+        return params;
+      }
+
+      const query = getQueryParams();
+      const feeId = query.feeId;
+      const userId = query.userId;
+
+      const feeUrl = `https://api.schoolvertex.com/api/Fee/GetById/${feeId}`;
+      const receiptUrl = `https://api.schoolvertex.com/api/Fee/GetFeeReceiptInfo/151/${userId}`;
+
+      const paymentModes = [
+        { Id: 901, Name: "Cash" },
+        { Id: 902, Name: "UPI" },
+        { Id: 903, Name: "Card" },
+        { Id: 904, Name: "Bank" },
+        { Id: 905, Name: "Cheque" },
+        { Id: 906, Name: "Bank 2" },
+      ];
+
+      $scope.getPaymentModeName = function (id) {
+        const mode = paymentModes.find(m => m.Id === id);
+        return mode ? mode.Name : "Unknown";
+      };
+
+      $scope.fee = {};
+      $scope.school = {};
+      $scope.receiptDate = new Date();
+
+      const feePromise = $http.get(feeUrl).then(function(response) {
+        $scope.fee = response.data;
+        $scope.receiptDate = new Date($scope.fee.CreatedOn * 1000);
+      });
+
+      const receiptPromise = $http.get(receiptUrl).then(function(response) {
+        $scope.school = response.data;
+      });
+
+      $q.all([feePromise, receiptPromise]).then(function() {
+        setTimeout(function () {
+          if (confirm("Receipt data loaded. Do you want to print now?")) {
+            window.print();
+          }
+        }, 500);
+      });
+    });
+</script>
+
+
+
+</body>
+</html>
