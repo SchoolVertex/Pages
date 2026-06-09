@@ -14,13 +14,13 @@
     "153": {
         "PrimaryColor": "midnightblue",
         "TextColor": "black",
-        "SchoolNameSize": 10,
+        "SchoolNameSize": 16,
         "BackgroundImage": 2
     },
     "143": {
         "PrimaryColor": "midnightblue",
         "TextColor": "black",
-        "SchoolNameSize": 12,
+        "SchoolNameSize": 13,
         "BackgroundImage": 2
     }
 }
