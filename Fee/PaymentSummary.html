@@ -911,8 +911,8 @@ angular.module('feeApp', [])
             .map(function(payment) {
                 return {
                     date: formatApiDate(payment.CreatedOn),
-                    receiptNo: payment.OrgReceiptNumber || '-',
-                    transactionId: payment.ReceiptNumber || '-',
+                    receiptNo: payment.OrgReceiptNumber || payment.UserFeeRecordId,
+                    transactionId: payment.TransactionNumber || payment.ReceiptNumber || '-',
                     mode: getPaymentMode(payment.PaymentModeId),
                     feeItems: formatPaymentFeeItems(payment.FeeItemList),
                     amount: toNumber(payment.Amount)
