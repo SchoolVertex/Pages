@@ -91,27 +91,27 @@
                     <div class="info-value">{{userInfo.ClassName}} <span ng-if="userInfo.SectionName"> /
                             {{userInfo.SectionName}}</span></div>
                 </div>
-                <div class="info-row">
+                <div class="info-row" ng-if="userInfo.AdmissionNumber">
                     <div class="info-label">Adm' No</div>
                     <div class="info-devider">:</div>
                     <div class="info-value">{{userInfo.AdmissionNumber}}</div>
                 </div>
-                <div class="info-row">
+                <div class="info-row" ng-if="userInfo.DateOfBirth">
                     <div class="info-label">D.O.B</div>
                     <div class="info-devider">:</div>
                     <div class="info-value">{{userInfo.DateOfBirth | date:'dd-MMM-yyyy'}}</div>
                 </div>
-                <div class="info-row">
+                <div class="info-row" ng-if="userInfo.ParentName">
                     <div class="info-label">P' Name</div>
                     <div class="info-devider">:</div>
                     <div class="info-value">{{userInfo.ParentName}}</div>
                 </div>
-                <div class="info-row">
+                <div class="info-row" ng-if="userInfo.Mobile">
                     <div class="info-label">Phone No</div>
                     <div class="info-devider">:</div>
                     <div class="info-value">{{userInfo.Mobile}}</div>
                 </div>
-                <div class="info-row">
+                <div class="info-row" ng-if="userInfo.Address">
                     <div class="info-label">Address</div>
                     <div class="info-devider">:</div>
                     <div class="info-value">{{userInfo.Address}}</div>
@@ -119,7 +119,7 @@
             </div>
 
             <div class="principal-signature-area">
-                <div class="principal-sign">
+                <div class="principal-sign" ng-if="org.Sign">
                     <img ng-src="{{org.Sign}}" alt="Signature">
                 </div>
                 <div class="principal-label">Principal Signature</div>
