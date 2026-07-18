@@ -51,6 +51,8 @@
         "PrimaryColor": "midnightblue",
         "TextColor": "black",
         "SchoolNameSize": 16,
-        "BackgroundImage": 7
+        "BackgroundImage": 7,
+        "PhotoHeight": 80,
+        "PhotoBorderRadius": 50 
     }
 }
