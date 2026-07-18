@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="feeReceiptApp">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fee Receipt — SchoolVertex</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #1a3a5c;
+      --accent: #2563eb;
+      --border: #d1d5db;
+      --muted: #6b7280;
+      --bg: #f3f4f6;
+      --success: #059669;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: #111827;
+      line-height: 1.5;
+    }
+
+    /* ── Toolbar (screen only) ── */
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    }
+
+    .toolbar h1 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--primary);
+      margin-right: auto;
+    }
+
+    .toolbar label {
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .toolbar input {
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      width: 130px;
+    }
+
+    .toolbar input.wide { width: 220px; }
+
+    .btn {
+      padding: 8px 18px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+    }
+
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-print { background: var(--success); color: #fff; }
+    .btn-print:hover { background: #047857; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    .status-bar {
+      padding: 8px 24px;
+      font-size: 13px;
+      text-align: center;
+    }
+    .status-bar.error { background: #fef2f2; color: #b91c1c; }
+    .status-bar.loading { background: #eff6ff; color: var(--accent); }
+
+    /* ── Page wrapper ── */
+    .page-wrapper {
+      display: flex;
+      justify-content: center;
+      padding: 24px 16px 48px;
+    }
+
+    /* ── A4 Receipt ── */
+    .receipt {
+      width: 210mm;
+      min-height: 297mm;
+      background: #fff;
+      padding: 14mm 16mm;
+      box-shadow: 0 4px 24px rgba(0,0,0,.12);
+      position: relative;
+    }
+
+    /* Header */
+    .receipt-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding-bottom: 14px;
+      border-bottom: 3px double var(--primary);
+    }
+
+    .school-logo {
+      width: 72px;
+      height: 72px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+
+    .school-info { flex: 1; text-align: center; }
+
+    .school-info h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
+    .school-info .caption {
+      font-size: 11px;
+      font-style: italic;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .school-info .address {
+      font-size: 11px;
+      color: #374151;
+      margin-top: 4px;
+    }
+
+    .receipt-title {
+      text-align: center;
+      margin: 16px 0 14px;
+    }
+
+    .receipt-title h3 {
+      display: inline-block;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--primary);
+      border: 2px solid var(--primary);
+      padding: 6px 28px;
+    }
+
+    /* Meta row */
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+      font-size: 12px;
+    }
+
+    .meta-row .meta-item span { color: var(--muted); }
+    .meta-row .meta-item strong { color: #111; }
+
+    /* Student info grid */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px 24px;
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      font-size: 12px;
+    }
+
+    .info-grid .field label {
+      color: var(--muted);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      display: block;
+    }
+
+    .info-grid .field .value {
+      font-weight: 600;
+      color: #111;
+    }
+
+    /* Fee table */
+    .fee-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+      font-size: 12px;
+    }
+
+    .fee-table thead th {
+      background: var(--primary);
+      color: #fff;
+      padding: 8px 12px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .3px;
+    }
+
+    .fee-table thead th:last-child { text-align: right; }
+
+    .fee-table tbody td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .fee-table tbody td:last-child { text-align: right; font-weight: 600; }
+    .fee-table tbody tr:nth-child(even) { background: #f9fafb; }
+
+    .fee-table tfoot td {
+      padding: 10px 12px;
+      font-weight: 700;
+      font-size: 13px;
+      border-top: 2px solid var(--primary);
+    }
+
+    .fee-table tfoot td:last-child { text-align: right; color: var(--primary); }
+
+    /* Summary boxes */
+    .summary-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .summary-box {
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .summary-box .label {
+      font-size: 10px;
+      text-transform: uppercase;
+      color: var(--muted);
+      letter-spacing: .3px;
+    }
+
+    .summary-box .amount {
+      font-size: 16px;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    .summary-box.total .amount { color: var(--primary); }
+    .summary-box.received .amount { color: var(--success); }
+    .summary-box.concession .amount { color: #d97706; }
+    .summary-box.balance .amount { color: #dc2626; }
+
+    /* Payment details */
+    .payment-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px 24px;
+      font-size: 12px;
+      margin-bottom: 24px;
+      padding: 10px 14px;
+      border: 1px dashed var(--border);
+      border-radius: 4px;
+    }
+
+    .payment-details .field label {
+      color: var(--muted);
+      font-size: 10px;
+      text-transform: uppercase;
+    }
+
+    /* Footer signatures */
+    .signatures {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 40px;
+      padding-top: 12px;
+    }
+
+    .sig-block {
+      text-align: center;
+      width: 180px;
+    }
+
+    .sig-block img {
+      max-height: 48px;
+      max-width: 140px;
+      object-fit: contain;
+      margin-bottom: 4px;
+    }
+
+    .sig-block .line {
+      border-top: 1px solid #374151;
+      padding-top: 6px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .sig-block .name {
+      font-size: 11px;
+      font-weight: 600;
+      color: #111;
+    }
+
+    .receipt-footer {
+      position: absolute;
+      bottom: 14mm;
+      left: 16mm;
+      right: 16mm;
+      text-align: center;
+      font-size: 9px;
+      color: var(--muted);
+      border-top: 1px solid #e5e7eb;
+      padding-top: 8px;
+    }
+
+    .amount-words {
+      font-size: 11px;
+      font-style: italic;
+      color: #374151;
+      margin-bottom: 14px;
+      padding: 8px 12px;
+      background: #fffbeb;
+      border-left: 3px solid #f59e0b;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+      color: var(--muted);
+    }
+
+    .empty-state svg { width: 48px; height: 48px; margin-bottom: 12px; opacity: .4; }
+
+    /* ── Print styles ── */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 0;
+      }
+
+      body { background: #fff; }
+
+      .no-print { display: none !important; }
+
+      .page-wrapper { padding: 0; }
+
+      .receipt {
+        width: 210mm;
+        min-height: auto;
+        box-shadow: none;
+        padding: 12mm 14mm;
+        page-break-after: avoid;
+      }
+
+      .receipt-footer {
+        position: fixed;
+        bottom: 10mm;
+      }
+    }
+  </style>
+
+  <script>
+
+    const erpOrigin = "https://schoolvertex.com"; // Replace with your ERP domain
+
+    window.addEventListener("load", () => {
+      if (window.opener) {
+        window.opener.postMessage(
+          {
+            type: "REPORT_READY"
+          },
+          erpOrigin
+        );
+      }
+    });
+
+
+    window.addEventListener("message", (event) => {
+      const erpOrigin = "https://schoolvertex.com"; // Replace with your ERP domain
+
+      if (event.origin !== erpOrigin) {
+        return;
+      }
+
+      if (event.data?.type === "AUTH") {
+        const token = event.data.token;
+
+        localStorage.setItem("access-token", token);
+
+        console.log("Token received successfully");
+      }
+    });
+  </script>
+</head>
+<body ng-controller="FeeReceiptCtrl as vm">
+
+  <!-- Toolbar -->
+  <div class="toolbar no-print">
+    <h1>Fee Receipt Generator</h1>
+
+    <label>Fee Record ID
+      <input type="number" ng-model="vm.feeRecordId" placeholder="184925" />
+    </label>
+    <label>School ID
+      <input type="number" ng-model="vm.schoolId" placeholder="153" />
+    </label>
+    <label>Student ID
+      <input type="number" ng-model="vm.studentId" placeholder="70907" />
+    </label>
+    <label>Academic Year ID
+      <input type="number" ng-model="vm.academicYearId" placeholder="9" />
+    </label>
+    <label>Auth Token
+      <input type="text" class="wide" ng-model="vm.authToken" placeholder="Bearer token (if required)" />
+    </label>
+
+    <button class="btn btn-primary" ng-click="vm.loadReceipt()" ng-disabled="vm.loading">
+      {{ vm.loading ? 'Loading…' : 'Load Receipt' }}
+    </button>
+    <button class="btn btn-print" ng-click="vm.printReceipt()" ng-disabled="!vm.fee">
+      Print Receipt
+    </button>
+  </div>
+
+  <div class="status-bar no-print" ng-class="{ loading: vm.loading, error: vm.error }" ng-if="vm.loading || vm.error">
+    <span ng-if="vm.loading">Fetching receipt data…</span>
+    <span ng-if="vm.error">{{ vm.error }}</span>
+  </div>
+
+  <!-- Receipt -->
+  <div class="page-wrapper">
+    <div class="receipt" ng-if="vm.fee && vm.receiptInfo">
+
+      <!-- Header -->
+      <div class="receipt-header">
+        <img class="school-logo" ng-src="{{ vm.receiptInfo.OrgImage }}" alt="School Logo"
+             onerror="this.style.display='none'" />
+        <div class="school-info">
+          <h2>{{ vm.receiptInfo.OrgName }}</h2>
+          <div class="caption" ng-if="vm.receiptInfo.OrgCaption">{{ vm.receiptInfo.OrgCaption }}</div>
+          <div class="address" ng-if="vm.receiptInfo.OrgAddress">{{ vm.receiptInfo.OrgAddress }}</div>
+        </div>
+      </div>
+
+      <div class="receipt-title">
+        <h3>Fee Receipt</h3>
+      </div>
+
+      <!-- Receipt meta -->
+      <div class="meta-row">
+        <div class="meta-item">
+          <span>Receipt No: </span>
+          <strong>{{ vm.fee.ReceiptNumber || vm.fee.OrgReceiptNumber || vm.fee.UserFeeRecordId }}</strong>
+        </div>
+        <div class="meta-item">
+          <span>Date: </span>
+          <strong>{{ vm.formatDate(vm.fee.CreatedOn) }}</strong>
+        </div>
+        <div class="meta-item" ng-if="vm.academicYearLabel">
+          <span>Academic Year: </span>
+          <strong>{{ vm.academicYearLabel }}</strong>
+        </div>
+      </div>
+
+      <!-- Student info -->
+      <div class="info-grid">
+        <div class="field">
+          <label>Student Name</label>
+          <div class="value">{{ vm.receiptInfo.StudentName }}</div>
+        </div>
+        <div class="field">
+          <label>Admission No</label>
+          <div class="value">{{ vm.receiptInfo.AdmissionNumber || '—' }}</div>
+        </div>
+        <div class="field">
+          <label>Class</label>
+          <div class="value">{{ vm.receiptInfo.ClassName }}<span ng-if="vm.receiptInfo.SectionName"> — {{ vm.receiptInfo.SectionName }}</span></div>
+        </div>
+        <div class="field">
+          <label>Roll Number</label>
+          <div class="value">{{ vm.receiptInfo.RollNumber || '—' }}</div>
+        </div>
+        <div class="field">
+          <label>Father's Name</label>
+          <div class="value">{{ vm.receiptInfo.FatherName || '—' }}</div>
+        </div>
+        <div class="field">
+          <label>Mother's Name</label>
+          <div class="value">{{ vm.receiptInfo.MotherName || '—' }}</div>
+        </div>
+      </div>
+
+      <!-- Fee items table -->
+      <table class="fee-table">
+        <thead>
+          <tr>
+            <th style="width:40px">#</th>
+            <th>Fee Description</th>
+            <th style="width:120px">Amount (₹)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="item in vm.fee.FeeItemList track by item.FeeItemId">
+            <td>{{ $index + 1 }}</td>
+            <td>{{ item.Name }}</td>
+            <td>{{ vm.formatCurrency(item.Amount) }}</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2">Amount Paid (This Receipt)</td>
+            <td>₹ {{ vm.formatCurrency(vm.fee.Amount) }}</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <!-- Amount in words -->
+      <div class="amount-words" ng-if="vm.fee.Amount">
+        <strong>Amount in words:</strong> {{ vm.amountInWords(vm.fee.Amount) }}
+      </div>
+
+      <!-- Fee summary -->
+      <div class="summary-row" ng-if="vm.summary">
+        <div class="summary-box total">
+          <div class="label">Total Fee</div>
+          <div class="amount">₹ {{ vm.formatCurrency(vm.summary.Total) }}</div>
+        </div>
+        <div class="summary-box concession">
+          <div class="label">Concession</div>
+          <div class="amount">₹ {{ vm.formatCurrency(vm.summary.Concession) }}</div>
+        </div>
+        <div class="summary-box received">
+          <div class="label">Total Received</div>
+          <div class="amount">₹ {{ vm.formatCurrency(vm.summary.Received) }}</div>
+        </div>
+        <div class="summary-box balance">
+          <div class="label">Balance Due</div>
+          <div class="amount">₹ {{ vm.formatCurrency(vm.balanceDue()) }}</div>
+        </div>
+      </div>
+
+      <!-- Payment details -->
+      <div class="payment-details">
+        <div class="field">
+          <label>Payment Mode</label>
+          <div>{{ vm.getPaymentMode(vm.fee.PaymentModeId) }}</div>
+        </div>
+        <div class="field" ng-if="vm.fee.TransactionNumber">
+          <label>Transaction / Cheque No</label>
+          <div>{{ vm.fee.TransactionNumber }}</div>
+        </div>
+        <div class="field" ng-if="vm.fee.IsConcessionPayment">
+          <label>Concession Payment</label>
+          <div>Yes</div>
+        </div>
+        <div class="field" ng-if="vm.fee.Comments">
+          <label>Remarks</label>
+          <div>{{ vm.fee.Comments }}</div>
+        </div>
+        <div class="field">
+          <label>Collected By</label>
+          <div>{{ vm.fee.CreatedBy.FullName || '—' }}</div>
+        </div>
+      </div>
+
+      <!-- Signatures -->
+      <div class="signatures">
+        <div class="sig-block">
+          <div class="line">Parent / Guardian Signature</div>
+        </div>
+        <div class="sig-block">
+          <img ng-if="vm.receiptInfo.OrgSign" ng-src="{{ vm.receiptInfo.OrgSign }}" alt="Authorized Sign" />
+          <div class="line">Authorized Signatory</div>
+        </div>
+        <div class="sig-block" ng-if="vm.receiptInfo.OrgAcInSign">
+          <img ng-src="{{ vm.receiptInfo.OrgAcInSign }}" alt="Accounts Sign" />
+          <div class="line">Accounts Officer</div>
+        </div>
+      </div>
+
+      <div class="receipt-footer">
+        This is a computer-generated receipt. Please retain for your records.
+        &nbsp;|&nbsp; Generated on {{ vm.todayFormatted() }}
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div class="receipt empty-state" ng-if="!vm.fee && !vm.loading">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+      <p>Enter the IDs above and click <strong>Load Receipt</strong> to generate the fee receipt.</p>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      angular.module('feeReceiptApp', [])
+        .controller('FeeReceiptCtrl', FeeReceiptCtrl);
+
+      FeeReceiptCtrl.$inject = ['$http', '$q', '$window', '$location'];
+
+      function FeeReceiptCtrl($http, $q, $window, $location) {
+        var vm = this;
+        var API_BASE = 'https://api.schoolvertex.com/api/Fee';
+
+        vm.feeRecordId = null;
+        vm.schoolId = null;
+        vm.studentId = null;
+        vm.academicYearId = null;
+        vm.authToken = '';
+        vm.loading = false;
+        vm.error = null;
+        vm.fee = null;
+        vm.receiptInfo = null;
+        vm.summary = null;
+        vm.preData = null;
+        vm.academicYearLabel = '';
+
+        var PAYMENT_MODES = {
+          901: 'Cash',
+          902: 'Cheque',
+          903: 'Online Transfer',
+          904: 'UPI',
+          905: 'Card',
+          906: 'DD',
+          907: 'NEFT/RTGS'
+        };
+
+        initFromUrl();
+
+        vm.loadReceipt = loadReceipt;
+        vm.printReceipt = printReceipt;
+        vm.formatDate = formatDate;
+        vm.formatCurrency = formatCurrency;
+        vm.amountInWords = amountInWords;
+        vm.getPaymentMode = getPaymentMode;
+        vm.balanceDue = balanceDue;
+        vm.todayFormatted = todayFormatted;
+
+        function initFromUrl() {
+          var params = $location.search();
+          if (params.feeRecordId) vm.feeRecordId = +params.feeRecordId;
+          if (params.schoolId) vm.schoolId = +params.schoolId;
+          if (params.studentId) vm.studentId = +params.studentId;
+          if (params.academicYearId) vm.academicYearId = +params.academicYearId;
+          if (params.token) vm.authToken = params.token;
+
+          if (vm.feeRecordId && vm.schoolId && vm.studentId && vm.academicYearId) {
+            loadReceipt();
+          }
+        }
+
+        function getHeaders() {
+          var headers = { 'Content-Type': 'application/json' };
+          if (vm.authToken) {
+            headers['Authorization'] = vm.authToken.indexOf('Bearer') === 0
+              ? vm.authToken
+              : 'Bearer ' + vm.authToken;
+          }
+          return headers;
+        }
+
+        function loadReceipt() {
+          vm.error = null;
+          vm.fee = null;
+          vm.receiptInfo = null;
+          vm.summary = null;
+
+          if (!vm.feeRecordId || !vm.schoolId || !vm.studentId || !vm.academicYearId) {
+            vm.error = 'Please fill in all four IDs: Fee Record, School, Student, and Academic Year.';
+            return;
+          }
+
+          vm.loading = true;
+
+          var feeUrl = API_BASE + '/GetById/' + vm.feeRecordId;
+          var receiptUrl = API_BASE + '/GetFeeReceiptInfo/' + vm.schoolId + '/' + vm.studentId;
+          var preDataUrl = API_BASE + '/GetUserFeePreData/' + vm.studentId + '/' + vm.academicYearId;
+          var summaryUrl = API_BASE + '/GetUserFeeSummary/' + vm.studentId + '/' + vm.academicYearId;
+
+          $q.all([
+            $http.get(feeUrl, { headers: getHeaders() }),
+            $http.get(receiptUrl, { headers: getHeaders() }),
+            $http.get(preDataUrl, { headers: getHeaders() }),
+            $http.get(summaryUrl, { headers: getHeaders() })
+          ]).then(function (results) {
+            vm.fee = results[0].data;
+            vm.receiptInfo = results[1].data;
+            vm.preData = results[2].data;
+            vm.summary = results[3].data;
+
+            if (vm.preData && vm.preData.EducationalYearList) {
+              var year = vm.preData.EducationalYearList.find(function (y) {
+                return y.value === vm.academicYearId;
+              });
+              vm.academicYearLabel = year ? year.label : '';
+            }
+
+            if (vm.fee && vm.fee.EducationalYearId && !vm.academicYearLabel && vm.preData) {
+              var altYear = vm.preData.EducationalYearList.find(function (y) {
+                return y.value === vm.fee.EducationalYearId;
+              });
+              vm.academicYearLabel = altYear ? altYear.label : '';
+            }
+          }).catch(function (err) {
+            var msg = 'Failed to load receipt data.';
+            if (err.status === 401) msg = 'Unauthorized — please provide a valid auth token.';
+            else if (err.status === 404) msg = 'Record not found. Please verify the IDs.';
+            else if (err.data && err.data.Message) msg = err.data.Message;
+            else if (err.status) msg += ' (HTTP ' + err.status + ')';
+            vm.error = msg;
+          }).finally(function () {
+            vm.loading = false;
+          });
+        }
+
+        function printReceipt() {
+          $window.print();
+        }
+
+        function formatDate(timestamp) {
+          if (!timestamp) return '—';
+          var d = new Date(timestamp * 1000);
+          if (isNaN(d.getTime())) return '—';
+          var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+          return ('0' + d.getDate()).slice(-2) + ' ' + months[d.getMonth()] + ' ' + d.getFullYear();
+        }
+
+        function formatCurrency(amount) {
+          if (amount == null) return '0.00';
+          return Number(amount).toLocaleString('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          });
+        }
+
+        function balanceDue() {
+          if (!vm.summary) return 0;
+          return Math.max(0, vm.summary.Total - vm.summary.Concession - vm.summary.Received);
+        }
+
+        function getPaymentMode(id) {
+          return PAYMENT_MODES[id] || ('Mode #' + id);
+        }
+
+        function todayFormatted() {
+          return formatDate(Math.floor(Date.now() / 1000));
+        }
+
+        /* ── Number to words (Indian system) ── */
+        function amountInWords(num) {
+          num = Math.round(Number(num));
+          if (isNaN(num) || num === 0) return 'Zero Rupees Only';
+
+          var ones = ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine',
+                      'Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen',
+                      'Seventeen','Eighteen','Nineteen'];
+          var tens = ['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+
+          function twoDigits(n) {
+            if (n < 20) return ones[n];
+            return tens[Math.floor(n / 10)] + (n % 10 ? ' ' + ones[n % 10] : '');
+          }
+
+          function threeDigits(n) {
+            if (n < 100) return twoDigits(n);
+            return ones[Math.floor(n / 100)] + ' Hundred' + (n % 100 ? ' ' + twoDigits(n % 100) : '');
+          }
+
+          var result = '';
+
+          if (num >= 10000000) {
+            result += threeDigits(Math.floor(num / 10000000)) + ' Crore ';
+            num %= 10000000;
+          }
+          if (num >= 100000) {
+            result += threeDigits(Math.floor(num / 100000)) + ' Lakh ';
+            num %= 100000;
+          }
+          if (num >= 1000) {
+            result += threeDigits(Math.floor(num / 1000)) + ' Thousand ';
+            num %= 1000;
+          }
+          if (num > 0) {
+            result += threeDigits(num);
+          }
+
+          return result.trim() + ' Rupees Only';
+        }
+      }
+    })();
+  </script>
+</body>
+</html>
