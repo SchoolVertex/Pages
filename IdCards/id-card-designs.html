@@ -92,9 +92,9 @@ body {
 }
 
 .student-photo-area {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
+    width: var(--student-photo-height, 80px);
+    height: var(--student-photo-height, 80px);
+    border-radius: var(--student-photo-border-radius, 50%);
     border: 2px solid #fff;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     flex-shrink: 0;
@@ -205,7 +205,9 @@ body {
     :root {
       --school-color: blue;
       --text-color: black;
-       --school-name-font-size: 12px; /* ✅ NEW */
+      --school-name-font-size: 12px;
+      --student-photo-height: 80px;
+      --student-photo-border-radius: 50%;
     }
 
     body {
@@ -322,8 +324,26 @@ body {
         step="1"
         style="width:70px" />
     </div>
-
-    <!-- <div style="font-size:13px;color:#666;">(changes apply instantly and persist)</div> -->
+    <div class="control-group">
+      <label>Photo Height</label>
+      <input
+        type="number"
+        id="student-photo-height"
+        min="40"
+        max="120"
+        step="1"
+        style="width:70px" />
+    </div>
+    <div class="control-group">
+      <label>Photo Border Radius</label>
+      <input
+        type="number"
+        id="student-photo-border-radius"
+        min="0"
+        max="50"
+        step="1"
+        style="width:70px" />
+    </div>
   </div>
 
   <!-- CARD GRID -->
@@ -331,7 +351,13 @@ body {
 
 <!-- ================= COLOR PICKER SCRIPT (UNCHANGED) ================= -->
 <script>
-const LS_KEYS = { school: "schoolColor", text: "textColor", schoolNameSize: "schoolNameFontSize" };
+const LS_KEYS = {
+  school: "schoolColor",
+  text: "textColor",
+  schoolNameSize: "schoolNameFontSize",
+  photoHeight: "studentPhotoHeight",
+  photoBorderRadius: "studentPhotoBorderRadius"
+};
 
 const commonColors = [
   "Black","White","Gray","Silver","Red","Maroon","Yellow","Olive","Lime","Green",
@@ -404,6 +430,40 @@ function setupPickers() {
 
   fontInput.addEventListener("change", e => {
     localStorage.setItem(LS_KEYS.schoolNameSize, e.target.value);
+  });
+
+  const photoHeightInput = document.getElementById("student-photo-height");
+  const savedPhotoHeight = localStorage.getItem(LS_KEYS.photoHeight) || "80";
+
+  photoHeightInput.value = savedPhotoHeight;
+  document.documentElement.style.setProperty("--student-photo-height", savedPhotoHeight + "px");
+
+  photoHeightInput.addEventListener("input", e => {
+    document.documentElement.style.setProperty(
+      "--student-photo-height",
+      e.target.value + "px"
+    );
+  });
+
+  photoHeightInput.addEventListener("change", e => {
+    localStorage.setItem(LS_KEYS.photoHeight, e.target.value);
+  });
+
+  const photoRadiusInput = document.getElementById("student-photo-border-radius");
+  const savedPhotoRadius = localStorage.getItem(LS_KEYS.photoBorderRadius) || "50";
+
+  photoRadiusInput.value = savedPhotoRadius;
+  document.documentElement.style.setProperty("--student-photo-border-radius", savedPhotoRadius + "%");
+
+  photoRadiusInput.addEventListener("input", e => {
+    document.documentElement.style.setProperty(
+      "--student-photo-border-radius",
+      e.target.value + "%"
+    );
+  });
+
+  photoRadiusInput.addEventListener("change", e => {
+    localStorage.setItem(LS_KEYS.photoBorderRadius, e.target.value);
   });
 }
 
