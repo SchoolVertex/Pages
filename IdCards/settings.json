@@ -28,5 +28,29 @@
         "TextColor": "black",
         "SchoolNameSize": 13,
         "BackgroundImage": 45
+    },
+    "184": {
+        "PrimaryColor": "midnightblue",
+        "TextColor": "black",
+        "SchoolNameSize": 14,
+        "BackgroundImage": 50
+    },
+    "170": {
+        "PrimaryColor": "midnightblue",
+        "TextColor": "black",
+        "SchoolNameSize": 10,
+        "BackgroundImage": 1
+    },
+    "158": {
+        "PrimaryColor": "midnightblue",
+        "TextColor": "black",
+        "SchoolNameSize": 16,
+        "BackgroundImage": 1
+    },
+     "141": {
+        "PrimaryColor": "midnightblue",
+        "TextColor": "black",
+        "SchoolNameSize": 16,
+        "BackgroundImage": 7
     }
 }
