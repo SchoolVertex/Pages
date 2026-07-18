@@ -60,7 +60,7 @@
                 </div>
             </div>
 
-            <div class="student-photo-area">
+            <div class="student-photo-area" ng-style="{'width': studentPhotoHeight, 'height': studentPhotoHeight, 'border-radius': studentPhotoBorderRadius}">
                 <img src="{{userInfo.Image}}" alt="Student Photo">
             </div>
 
@@ -234,6 +234,8 @@
             $scope.primaryColor = defaults.primaryColor;
             $scope.secondaryColor = defaults.secondaryColor;
             $scope.schoolNameFontSize = "14px";
+            $scope.studentPhotoHeight = "80px";
+            $scope.studentPhotoBorderRadius = "50%";
             $scope.bgStyle = {
                 'background-image': "url('" + designMap[defaults.designNumber] + "')"
             };
@@ -296,6 +298,12 @@
                     }
                     if (config.SchoolNameSize) {
                         $scope.schoolNameFontSize = config.SchoolNameSize + "px";
+                    }
+                    if (config.PhotoHeight) {
+                        $scope.studentPhotoHeight = config.PhotoHeight + "px";
+                    }
+                    if (config.PhotoBorderRadius !== undefined && config.PhotoBorderRadius !== null) {
+                        $scope.studentPhotoBorderRadius = config.PhotoBorderRadius + "%";
                     }
                     console.log("Design config loaded:", config);
                 }
