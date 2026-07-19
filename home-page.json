@@ -3,102 +3,87 @@
     {
       "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1681699480/School%20Logos/lotuslap.jpg",
       "Name": "Lotus Lap Public Schools",
-      "Address": "" //Hyderabad, TS
-    },
-    //{
-    //  "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1666932645/SmartFusing/School%20Data/GeetamSchool/Geetam-logo.jpg",
-    //  "Name": "Geetam Group of institutions",
-    //  "Address": "" //Singarayakonda, AP
-    //},
-    //{
-    //  "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1671950485/SmartFusing/School%20Data/Narayana%20Public%20School/logo.jpg",
-    //  "Name": "Narayana Public School",
-    //  "Address": "" //Ongole, AP
-    //},
-    {
-      "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1676237223/WhatsApp_Image_2023-02-13_at_2.38.13_AM.jpg",
-      "Name": "SRK EM School",
-      "Address": "" //Ongole, AP
+      "Address": ""
     },
     {
       "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1678518422/School%20Logos/Sharada_Group_of_School.jpg",
       "Name": "Sharada Group of School",
-      "Address": "" // Siddipet, TS
+      "Address": ""
     },
     {
       "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1678518421/School%20Logos/Ambitus_School.jpg",
       "Name": "Ambitus School",
-      "Address": "" // Siddipet, TS
+      "Address": ""
     },
     {
       "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1678518420/School%20Logos/Keys_Model_School.jpg",
       "Name": "Keys Model School",
-      "Address": "" // Siddipet, TS
+      "Address": ""
     },
     {
       "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1678518420/School%20Logos/Spice_World_School.jpg",
       "Name": "Spice World School",
-      "Address": "" // Siddipet, TS
+      "Address": ""
     },
     {
       "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1678518844/School%20Logos/Vijetha.jpg",
       "Name": "Vijetha School",
-      "Address": "" // Siddipet, TS
+      "Address": ""
     },
     {
       "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1684700570/School%20Logos/WhatsApp_Image_2023-04-29_at_10.09.21_AM.jpg",
       "Name": "Chaitanya Bharathi High School",
-      "Address": "" // Hyderabad, TS
+      "Address": ""
     },
     {
       "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1684700670/School%20Logos/WhatsApp_Image_2023-04-29_at_11.05.22_AM.jpg",
       "Name": "St. John's EM School",
-      "Address": "" // Nellore, AP
+      "Address": ""
     },
     {
       "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1684700670/School%20Logos/WhatsApp_Image_2023-05-17_at_10.04.20_AM.jpg",
       "Name": "Sanskriti World School",
-      "Address": "" // Hyderabad, TS
+      "Address": ""
     },
     {
       "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1684700670/School%20Logos/Aadyaa_The_School_Logo_2_1.png",
       "Name": "Aadyaa The School",
-      "Address": "" // Siddipet, TS
+      "Address": ""
     },
     {
       "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1684700670/School%20Logos/WhatsApp_Image_2023-05-10_at_5.24.40_PM.jpg",
       "Name": "Future Minds School",
-      "Address": "" // Siddipet, TS
+      "Address": ""
     },
     {
       "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1684700669/School%20Logos/WhatsApp_Image_2023-05-17_at_11.23.44_AM.jpg",
       "Name": "Heralds High School",
-      "Address": "" // Hyderabad, TS
+      "Address": ""
     },
     {
       "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1685947135/School%20Logos/naveena.jpg",
       "Name": "Naveena School",
-      "Address": "" // Siddipet, TS
+      "Address": ""
     },
     {
       "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1685947357/School%20Logos/KeralaModelSchool.jpg",
       "Name": "Kerala Model School",
-      "Address": "" // Siddipet, TS
+      "Address": ""
     },
     {
       "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1685948465/School%20Logos/53.jpg",
       "Name": "Vaishnavi Olympiad School",
-      "Address": "" // Siddipet, TS
+      "Address": ""
     },
     {
       "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1685948584/School%20Logos/68.jpg",
       "Name": "Little Scholar School",
-      "Address": "" // Siddipet, TS
+      "Address": ""
     },
     {
       "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1685948700/School%20Logos/sage.jpg",
       "Name": "Sage High School",
-      "Address": "" // Siddipet, TS
+      "Address": ""
     },
     {
       "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1685948802/School%20Logos/76.jpg",
@@ -115,36 +100,31 @@
       "Name": "Sadhana High School",
       "Address": ""
     }
-    //{
-    //  "Image": "",
-    //  "Name": "",
-    //  "Address": ""
-    //}
   ],
   "Testimonials": [
-    //{
-    //  "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1681699480/School%20Logos/lotuslap.jpg",
-    //  "Message": "School Vertex is helping us by filling the gap between parents and the school. Their attendance, homework, sylabus tracking and communication modules have helped our teachers tremendously in keeping a track of students performance",
-    //  "Name": "Chandra Shekar Reddy",
-    //  "SchoolName": "Lotus Lap Group Schools",
-    //  "Designation": "Chairman & Correspondent",
-    //  "Address": "Hyderabad"
-    //},
-    //{
-    //  "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1684700670/School%20Logos/WhatsApp_Image_2023-05-10_at_5.24.40_PM.jpg",
-    //  "Message": "One of the greatest systems for managing school operations is SchoolVertex. We are pleased to have collaborated with SchoolVertex, which aids in the efficient digitization of schools!",
-    //  "Name": "Nanda Kishore",
-    //  "SchoolName": "Future Mind School",
-    //  "Designation": "Chairman & Correspondent",
-    //  "Address": "Kadapa"
-    //},
-    //{
-    //  "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1684700670/School%20Logos/WhatsApp_Image_2023-04-29_at_11.05.22_AM.jpg",
-    //  "Message": "Finally found great ERP software along with so many features with LMS and world class digital content which can enable student's learning joyful'",
-    //  "Name": "Ram Reddy Sir",
-    //  "SchoolName": "ST.JOHN'S EM School",
-    //  "Designation": "Chairman & Correspondent",
-    //  "Address": "Hyderabad"
-    //}
+    {
+      "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1681699480/School%20Logos/lotuslap.jpg",
+      "Message": "School Vertex is helping us by filling the gap between parents and the school. Their attendance, homework, sylabus tracking and communication modules have helped our teachers tremendously in keeping a track of students performance",
+      "Name": "Chandra Shekar Reddy",
+      "SchoolName": "Lotus Lap Group Schools",
+      "Designation": "Chairman & Correspondent",
+      "Address": "Hyderabad"
+    },
+    {
+      "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1684700670/School%20Logos/WhatsApp_Image_2023-05-10_at_5.24.40_PM.jpg",
+      "Message": "One of the greatest systems for managing school operations is SchoolVertex. We are pleased to have collaborated with SchoolVertex, which aids in the efficient digitization of schools!",
+      "Name": "Nanda Kishore",
+      "SchoolName": "Future Mind School",
+      "Designation": "Chairman & Correspondent",
+      "Address": "Kadapa"
+    },
+    {
+      "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1684700670/School%20Logos/WhatsApp_Image_2023-04-29_at_11.05.22_AM.jpg",
+      "Message": "Finally found great ERP software along with so many features with LMS and world class digital content which can enable student's learning joyful'",
+      "Name": "Ram Reddy Sir",
+      "SchoolName": "ST.JOHN'S EM School",
+      "Designation": "Chairman & Correspondent",
+      "Address": "Hyderabad"
+    }
   ]
 }
