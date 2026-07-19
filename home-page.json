@@ -15,11 +15,11 @@
     //  "Name": "Narayana Public School",
     //  "Address": "" //Ongole, AP
     //},
-    //{
-    //  "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1676237223/WhatsApp_Image_2023-02-13_at_2.38.13_AM.jpg",
-    //  "Name": "SRK EM School",
-    //  "Address": "" //Ongole, AP
-    //},
+    {
+      "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1676237223/WhatsApp_Image_2023-02-13_at_2.38.13_AM.jpg",
+      "Name": "SRK EM School",
+      "Address": "" //Ongole, AP
+    },
     {
       "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1678518422/School%20Logos/Sharada_Group_of_School.jpg",
       "Name": "Sharada Group of School",
