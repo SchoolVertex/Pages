@@ -99,7 +99,137 @@
       "Image": "https://res.cloudinary.com/bashbook3/image/upload/v1685949087/School%20Logos/1684559600070.jpg",
       "Name": "Sadhana High School",
       "Address": ""
-    }
+    },
+    {
+      "Image": "https://res.cloudinary.com/deiccaugl/image/upload/v1781070554/151%20school/151_logo_p4mwvi.png",
+      "Name": "Vidyaniketan Model High School ",
+      "Address": ""
+   },
+    {
+           "Image": "https://res.cloudinary.com/deylencm8/image/upload/v1695967022/Sankalp/115_aaij99.jpg",
+            "Name": "SANKALP SCHOOL",
+             "Address": ""
+     },
+     {
+           "Image": "https://res.cloudinary.com/dmruhfgkt/image/upload/v1691809649/School%20Logos/53_odnmd3.jpg",
+            "Name": "VAISHNAVI SCHOOL",
+            "Address": ""
+
+     },
+    {
+           "Image": "https://res.cloudinary.com/deiccaugl/image/upload/v1749555887/Vidya%20Vikas/vidya_vikas_jguula.jpg",
+            "Name": "VIDYA VIKAS HIGH SCHOOL",
+            "Address": ""
+    },
+     {
+           "Image": "https://res.cloudinary.com/deiccaugl/image/upload/v1781248582/179%20school/184_logo_zoxqml.jpg",
+            "Name": "SRI SAI VIKAS SCHOOL",
+             "Address": ""
+     },
+    {
+           "Image": "https://res.cloudinary.com/drlfc7rfb/image/upload/v1696921501/Domnics%20School/Domnics_lq96az.png",
+            "Name": "ST. DOMNICS HIGH SCHOOL",
+             "Address": ""
+        },
+    {
+           "Image": "https://res.cloudinary.com/deiccaugl/image/upload/v1780643940/SVHS/SVHS_auhf2j.jpg",
+            "Name": "SRI VIVEKANANDA VIDYALAYA HIGH SCHOOL",
+           "Address": ""
+        },
+    {
+           "Image": "https://res.cloudinary.com/deiccaugl/image/upload/v1781168953/184%20school/184_logo_qngnaj.jpg",
+            "Name": "NOVA GRAMMAR  SCHOOL",
+           "Address": ""
+        },
+    {
+           "Image": "https://res.cloudinary.com/dwdamoo2e/image/upload/v1750928656/SVP_logo_t39rdp.jpg",
+            "Name": "Sardar Vallabhbhai Patel High School",
+             "Address": ""
+        },
+     {
+           "Image": "https://cdn.jsdelivr.net/gh/gitcdnsv/svcdn/SchoolLogo/158%20logo.jpeg",
+            "Name": "New Bloom High School",
+              "Address": ""
+        },
+     {
+           "Image": "https://res.cloudinary.com/dwdamoo2e/image/upload/v1751440797/krishnaveni_school_atlbwg.jpg",
+            "Name": "SRI KRISHNAVENI CONCEPT SCHOOL",
+            "Address": ""
+        },
+    {
+           "Image": "https://res.cloudinary.com/dwdamoo2e/image/upload/v1753075068/Prathyusha_logo_mhx23f.jpg",
+            "Name": "SRI PRATHYUSHA HIGH SCHOOL"
+        },
+        {
+           "Image": "https://res.cloudinary.com/dt9a1yr4c/image/upload/v1688060598/School%20Images/SPSSchool_kes9gv.jpg",
+            "Name": "SRI PADMAVATHI E.M HIGH SCHOOL",
+             "Address": ""
+        },
+         {
+           "Image": "https://res.cloudinary.com/dusnd2guf/image/upload/v1712290834/Oxford/logo_twscj7.png",
+            "Name": "OXFORD E.M SCHOOL",
+            "Address": ""
+        },
+        {
+           "Image": "https://res.cloudinary.com/deiccaugl/image/upload/v1774928519/167%20school/167_logo_hwe9dv.jpg",
+            "Name": "Ratnam Marvel School",
+           "Address": ""
+        },
+    {
+           "Image": "https://cdn.jsdelivr.net/gh/gitcdnsv/svcdn/SchoolLogo/156%20logo.jpg",
+            "Name": "Nagarjuna Grammar High School",
+           "Address": ""
+        },
+        {
+           "Image": "https://res.cloudinary.com/dt9a1yr4c/image/upload/v1688810330/School%20Images/KranthiSchool_jrdtqr.jpg",
+            "Name": "KRANTHI VIDYALAYAM",
+            "Address": ""
+        },
+        {
+           "Image": "https://res.cloudinary.com/deiccaugl/image/upload/v1772173205/Apple%20School/apple_school_gyrqt7.jpg",
+            "Name": "Apple School",
+            "Address": ""
+        },
+        {
+           "Image": "https://res.cloudinary.com/deiccaugl/image/upload/v1781068820/153%20school/153_logo_dp1vd3.png",
+            "Name": "GVR Global Erudite School",
+            "Address": ""
+        },
+        {
+           "Image": "https://res.cloudinary.com/dwdamoo2e/image/upload/v1750769730/LLitte_Logo_plzjkp.jpg",
+            "Name": "LITTLE ANGELS HIGH SCHOOL",
+            "Address": ""
+        },
+        {
+           "Image": "https://res.cloudinary.com/deiccaugl/image/upload/v1781070041/153%20school/143_logo_rm5k5v.png",
+            "Name": "Ridge Board International School",
+            "Address": ""
+        },
+        {
+           "Image": "https://res.cloudinary.com/deiccaugl/image/upload/v1780994979/183/TSH_usm0l6.jpg",
+            "Name": "NEW TAKSHASILA HIGH SCHOOL",
+            "Address": ""
+        },
+     {
+           "Image": "https://res.cloudinary.com/deiccaugl/image/upload/v1774947385/168/159%20school/159_logo_p7pk0s.jpg",
+            "Name": "Nalandha High School",
+              "Address": ""
+        },
+        {
+           "Image": "https://res.cloudinary.com/deiccaugl/image/upload/v1781070832/170%20school/170_logo_kc96l1.png",
+            "Name": "Sri Chakra High School",
+              "Address": ""
+        },
+        {
+           "Image": "https://res.cloudinary.com/dwdamoo2e/image/upload/v1750916586/dev_guru_logo_wgbkhw.jpg",
+            "Name": "Dev Guru The Concept School",
+              "Address": ""
+        },
+        {
+           "Image": "https://res.cloudinary.com/deiccaugl/image/upload/q_auto/f_auto/v1775285702/168/171_logo_wychql.jpg",
+            "Name": "RNR Educational Group",
+              "Address": ""
+        }
   ],
   "Testimonials": [
     {
