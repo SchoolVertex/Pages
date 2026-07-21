@@ -25,6 +25,7 @@
       --student-photo-height: 80px;
       --student-photo-border-radius: 50%;
       --student-photo-object-fit: cover;
+      --bg-image-opacity: 1;
       --accent-color: #c02026;
       --school-name-line1-font-size: 12px;
       --school-name-line1-font-family: Arial, Helvetica, sans-serif;
@@ -38,52 +39,6 @@
       margin: 0;
       padding: 0;
       display: block !important;
-    }
-
-    .control-bar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px 16px;
-      align-items: center;
-      background: #fff;
-      padding: 8px 12px;
-      border-bottom: 1px solid #ccc;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-
-    .control-group label {
-      font-size: 13px;
-      margin-right: 6px;
-      font-weight: 600;
-    }
-
-    .control-group input[type="checkbox"] {
-      margin-right: 6px;
-      vertical-align: middle;
-    }
-
-    .control-group input[type="text"],
-    .control-group input[type="number"],
-    .control-group select {
-      padding: 3px 6px;
-      font-size: 13px;
-    }
-
-    .control-panel-extra {
-      display: none;
-      width: 100%;
-      flex-basis: 100%;
-      gap: 12px 16px;
-      flex-wrap: wrap;
-      align-items: center;
-      padding-top: 4px;
-      border-top: 1px dashed #ddd;
-    }
-
-    .control-panel-extra.is-open {
-      display: flex;
     }
 
     .school-name-two-line {
@@ -102,85 +57,6 @@
       display: block;
       font-family: var(--school-name-line2-font-family, Arial, Helvetica, sans-serif);
       font-size: var(--school-name-line2-font-size, 11px);
-    }
-
-    .settings-json-btn {
-      padding: 6px 12px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      background: #1a2b56;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-    }
-
-    .settings-json-modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.45);
-      z-index: 2000;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .settings-json-modal.is-open {
-      display: flex;
-    }
-
-    .settings-json-dialog {
-      background: #fff;
-      border-radius: 8px;
-      width: min(560px, 100%);
-      max-height: 80vh;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
-    }
-
-    .settings-json-dialog header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 14px;
-      border-bottom: 1px solid #ddd;
-      font-weight: 700;
-    }
-
-    .settings-json-dialog pre {
-      margin: 0;
-      padding: 14px;
-      overflow: auto;
-      font-size: 12px;
-      line-height: 1.4;
-      background: #f7f8fa;
-      flex: 1;
-    }
-
-    .settings-json-dialog footer {
-      display: flex;
-      gap: 8px;
-      justify-content: flex-end;
-      padding: 12px 14px;
-      border-top: 1px solid #ddd;
-    }
-
-    .settings-json-dialog button {
-      padding: 6px 12px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-      background: #fff;
-    }
-
-    .settings-json-dialog button.primary {
-      background: #1a2b56;
-      color: #fff;
-      border-color: #1a2b56;
     }
 
     .id-card {
@@ -205,6 +81,7 @@
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
+      opacity: var(--bg-image-opacity, 1);
       z-index: 0;
     }
 
@@ -347,7 +224,6 @@
     }
 
     .format-ridgeboard .bg-image {
-      opacity: 0.25;
       background-size: cover;
     }
 
@@ -638,7 +514,6 @@
     }
 
     .format-simple .bg-image {
-      opacity: 0.2;
       background-size: cover;
     }
 
@@ -796,14 +671,6 @@
         padding: 0;
       }
 
-      .control-bar {
-        display: none !important;
-      }
-
-      .settings-json-modal {
-        display: none !important;
-      }
-
       .id-card {
         box-shadow: none;
         border-radius: 0;
@@ -819,101 +686,6 @@
 </head>
 
 <body ng-controller="myCtrl" id="page-body" ng-class="bodyFormatClass">
-
-  <div class="control-bar">
-    <div class="control-group">
-      <label>Photo Fit</label>
-      <select ng-model="currentPhotoObjectFit" ng-change="applyPhotoObjectFit()">
-        <option value="cover">cover</option>
-        <option value="fill">fill</option>
-      </select>
-    </div>
-    <div class="control-group">
-      <label>
-        <input type="checkbox" ng-model="useTwoLineSchoolName" ng-change="onTwoLineToggle()" />
-        Two-line School Name
-      </label>
-    </div>
-    <div class="control-panel-extra" ng-class="{'is-open': useTwoLineSchoolName}">
-      <div class="control-group">
-        <label>Line 1</label>
-        <input type="text" ng-model="schoolNameLine1" ng-change="persistTwoLineSettings()" style="width:160px" />
-      </div>
-      <div class="control-group">
-        <label>Line 1 Font Size</label>
-        <input type="number" ng-model="schoolNameLine1FontSize" ng-change="applyTwoLineFontStyles()" min="6" max="40" step="1" style="width:70px" />
-      </div>
-      <div class="control-group">
-        <label>Line 1 Font Family</label>
-        <select ng-model="schoolNameLine1FontFamily" ng-change="applyTwoLineFontStyles()">
-          <optgroup label="Tier 1 – Universal">
-            <option value="Arial, Helvetica, sans-serif">Arial</option>
-            <option value="Verdana, Geneva, sans-serif">Verdana</option>
-            <option value="Tahoma, Geneva, sans-serif">Tahoma</option>
-            <option value='"Trebuchet MS", Helvetica, sans-serif'>Trebuchet MS</option>
-            <option value="Georgia, serif">Georgia</option>
-            <option value='"Times New Roman", Times, serif'>Times New Roman</option>
-            <option value='"Courier New", Courier, monospace'>Courier New</option>
-          </optgroup>
-          <optgroup label="Tier 2 – Mostly Available">
-            <option value="Helvetica, Arial, sans-serif">Helvetica</option>
-            <option value='"Palatino Linotype", "Book Antiqua", Palatino, serif'>Palatino</option>
-            <option value="Garamond, serif">Garamond</option>
-            <option value='"Book Antiqua", Palatino, serif'>Book Antiqua</option>
-            <option value='"Lucida Sans Unicode", "Lucida Grande", sans-serif'>Lucida Sans</option>
-            <option value='"Century Gothic", Arial, sans-serif'>Century Gothic</option>
-          </optgroup>
-        </select>
-      </div>
-      <div class="control-group">
-        <label>Line 2</label>
-        <input type="text" ng-model="schoolNameLine2" ng-change="persistTwoLineSettings()" style="width:160px" />
-      </div>
-      <div class="control-group">
-        <label>Line 2 Font Size</label>
-        <input type="number" ng-model="schoolNameLine2FontSize" ng-change="applyTwoLineFontStyles()" min="6" max="40" step="1" style="width:70px" />
-      </div>
-      <div class="control-group">
-        <label>Line 2 Font Family</label>
-        <select ng-model="schoolNameLine2FontFamily" ng-change="applyTwoLineFontStyles()">
-          <optgroup label="Tier 1 – Universal">
-            <option value="Arial, Helvetica, sans-serif">Arial</option>
-            <option value="Verdana, Geneva, sans-serif">Verdana</option>
-            <option value="Tahoma, Geneva, sans-serif">Tahoma</option>
-            <option value='"Trebuchet MS", Helvetica, sans-serif'>Trebuchet MS</option>
-            <option value="Georgia, serif">Georgia</option>
-            <option value='"Times New Roman", Times, serif'>Times New Roman</option>
-            <option value='"Courier New", Courier, monospace'>Courier New</option>
-          </optgroup>
-          <optgroup label="Tier 2 – Mostly Available">
-            <option value="Helvetica, Arial, sans-serif">Helvetica</option>
-            <option value='"Palatino Linotype", "Book Antiqua", Palatino, serif'>Palatino</option>
-            <option value="Garamond, serif">Garamond</option>
-            <option value='"Book Antiqua", Palatino, serif'>Book Antiqua</option>
-            <option value='"Lucida Sans Unicode", "Lucida Grande", sans-serif'>Lucida Sans</option>
-            <option value='"Century Gothic", Arial, sans-serif'>Century Gothic</option>
-          </optgroup>
-        </select>
-      </div>
-    </div>
-    <div class="control-group">
-      <button type="button" class="settings-json-btn" ng-click="showSettingsJson()">Copy Settings JSON</button>
-    </div>
-  </div>
-
-  <div class="settings-json-modal" ng-class="{'is-open': settingsJsonOpen}" ng-click="closeSettingsJsonOnBackdrop($event)">
-    <div class="settings-json-dialog" ng-click="$event.stopPropagation()">
-      <header>
-        <span>settings.json object</span>
-        <button type="button" ng-click="settingsJsonOpen=false">Close</button>
-      </header>
-      <pre>{{settingsJsonText}}</pre>
-      <footer>
-        <button type="button" ng-click="settingsJsonOpen=false">Close</button>
-        <button type="button" class="primary" ng-click="copySettingsJson()">Copy to clipboard</button>
-      </footer>
-    </div>
-  </div>
 
   <!-- Single Card -->
   <div class="id-card" ng-if="userInfo && !userList.length">
@@ -939,8 +711,8 @@
             <span class="school-name-line2" ng-if="schoolNameLine2">{{schoolNameLine2}}</span>
           </span>
           <span class="school-color school-name-dynamic" ng-if="!useTwoLineSchoolName">{{org.Name}}</span>
-          <p class="school-caption text-color" ng-if="org.Description || org.Caption">{{org.Description || org.Caption}}</p>
-          <p class="school-affliate text-color" ng-if="org.AffiliationInfo || org.Affiliation">{{org.AffiliationInfo || org.Affiliation}}</p>
+          <p class="school-caption text-color" ng-if="org.Description">{{org.Description}}</p>
+          <p class="school-affliate text-color" ng-if="org.AffiliationInfo">{{org.AffiliationInfo}}</p>
           <p class="school-address text-color" ng-if="org.fullAddress">{{org.fullAddress}}</p>
           <p class="school-address text-color" ng-if="org.Mobile">PHONE: {{org.Mobile}}</p>
         </div>
@@ -1002,8 +774,9 @@
             <span class="school-name-line1">{{schoolNameLine1}}</span>
             <span class="school-name-line2 school-title-sub" ng-if="schoolNameLine2">{{schoolNameLine2}}</span>
           </span>
-          <div class="school-tagline" ng-if="org.Description || org.Caption">
-            <span>{{org.Description || org.Caption}}</span>
+          <p class="school-affliate" ng-if="org.AffiliationInfo">{{org.AffiliationInfo}}</p>
+          <div class="school-tagline" ng-if="org.Description">
+            <span>{{org.Description}}</span>
           </div>
           <p class="school-address" ng-if="org.fullAddress">{{org.fullAddress}}</p>
         </div>
@@ -1099,8 +872,8 @@
             <span class="school-name-line2" ng-if="schoolNameLine2">{{schoolNameLine2}}</span>
           </span>
           <span class="school-color school-name-dynamic" ng-if="!useTwoLineSchoolName">{{org.Name}}</span>
-          <p class="school-caption text-color" ng-if="org.Description || org.Caption">{{org.Description || org.Caption}}</p>
-          <p class="school-affliate text-color" ng-if="org.AffiliationInfo || org.Affiliation">{{org.AffiliationInfo || org.Affiliation}}</p>
+          <p class="school-caption text-color" ng-if="org.Description">{{org.Description}}</p>
+          <p class="school-affliate text-color" ng-if="org.AffiliationInfo">{{org.AffiliationInfo}}</p>
           <p class="school-address text-color" ng-if="org.fullAddress">{{org.fullAddress}}</p>
           <p class="school-address text-color" ng-if="org.Mobile">PHONE: {{org.Mobile}}</p>
         </div>
@@ -1142,9 +915,8 @@
       $scope.schoolNameLine1FontFamily = "Arial, Helvetica, sans-serif";
       $scope.schoolNameLine2FontSize = 11;
       $scope.schoolNameLine2FontFamily = "Arial, Helvetica, sans-serif";
-      $scope.settingsJsonOpen = false;
-      $scope.settingsJsonText = "";
       $scope.currentBackgroundImage = 8;
+      $scope.currentBackgroundOpacity = 1;
       $scope.currentPrimaryColor = "Blue";
       $scope.currentTextColor = "Black";
       $scope.currentSchoolNameSize = 12;
@@ -1179,116 +951,32 @@
         return key === "fill" ? "fill" : "cover";
       }
 
-      $scope.applyPhotoObjectFit = function () {
-        var fit = normalizePhotoObjectFit($scope.currentPhotoObjectFit);
+      function normalizeBackgroundOpacity(value) {
+        var n = parseFloat(value);
+        if (isNaN(n)) n = 1;
+        if (n < 0) n = 0;
+        if (n > 1) n = 1;
+        return Math.round(n * 10) / 10;
+      }
+
+      function applyPhotoObjectFit(value) {
+        var fit = normalizePhotoObjectFit(value);
         $scope.currentPhotoObjectFit = fit;
         setCssVar("--student-photo-object-fit", fit);
-      };
+      }
 
-      $scope.applyTwoLineFontStyles = function () {
+      function applyBackgroundOpacity(value) {
+        var opacity = normalizeBackgroundOpacity(value);
+        $scope.currentBackgroundOpacity = opacity;
+        setCssVar("--bg-image-opacity", String(opacity));
+      }
+
+      function applyTwoLineFontStyles() {
         setCssVar("--school-name-line1-font-size", $scope.schoolNameLine1FontSize + "px");
         setCssVar("--school-name-line1-font-family", $scope.schoolNameLine1FontFamily);
         setCssVar("--school-name-line2-font-size", $scope.schoolNameLine2FontSize + "px");
         setCssVar("--school-name-line2-font-family", $scope.schoolNameLine2FontFamily);
-        $scope.persistTwoLineSettings();
-      };
-
-      $scope.persistTwoLineSettings = function () {
-        try {
-          localStorage.setItem("singleSchoolNameTwoLine", $scope.useTwoLineSchoolName ? "true" : "false");
-          localStorage.setItem("singleSchoolNameLine1", $scope.schoolNameLine1 || "");
-          localStorage.setItem("singleSchoolNameLine2", $scope.schoolNameLine2 || "");
-          localStorage.setItem("singleSchoolNameLine1FontSize", String($scope.schoolNameLine1FontSize));
-          localStorage.setItem("singleSchoolNameLine1FontFamily", $scope.schoolNameLine1FontFamily);
-          localStorage.setItem("singleSchoolNameLine2FontSize", String($scope.schoolNameLine2FontSize));
-          localStorage.setItem("singleSchoolNameLine2FontFamily", $scope.schoolNameLine2FontFamily);
-        } catch (e) {}
-      };
-
-      $scope.onTwoLineToggle = function () {
-        if ($scope.useTwoLineSchoolName && $scope.org && $scope.org.Name) {
-          splitSchoolName($scope.org.Name);
-        }
-        $scope.applyTwoLineFontStyles();
-      };
-
-      $scope.buildCurrentSettingsJson = function () {
-        var settings = {
-          Format: parseInt($scope.contentFormat, 10) || 1,
-          PrimaryColor: $scope.currentPrimaryColor,
-          TextColor: $scope.currentTextColor,
-          SchoolNameSize: $scope.currentSchoolNameSize,
-          PhotoHeight: $scope.currentPhotoHeight,
-          PhotoBorderRadius: $scope.currentPhotoBorderRadius,
-          PhotoObjectFit: normalizePhotoObjectFit($scope.currentPhotoObjectFit),
-          BackgroundImage: $scope.currentBackgroundImage,
-          PrincipalSignature: $scope.principalLabel,
-          SchoolNameTwoLine: !!$scope.useTwoLineSchoolName
-        };
-        if (settings.SchoolNameTwoLine) {
-          settings.SchoolNameLine1 = $scope.schoolNameLine1 || "";
-          settings.SchoolNameLine2 = $scope.schoolNameLine2 || "";
-          settings.SchoolNameLine1FontSize = parseInt($scope.schoolNameLine1FontSize, 10) || 12;
-          settings.SchoolNameLine1FontFamily = $scope.schoolNameLine1FontFamily;
-          settings.SchoolNameLine2FontSize = parseInt($scope.schoolNameLine2FontSize, 10) || 11;
-          settings.SchoolNameLine2FontFamily = $scope.schoolNameLine2FontFamily;
-        }
-        return settings;
-      };
-
-      $scope.showSettingsJson = function () {
-        $scope.settingsJsonText = JSON.stringify($scope.buildCurrentSettingsJson(), null, 2);
-        $scope.settingsJsonOpen = true;
-      };
-
-      $scope.closeSettingsJsonOnBackdrop = function ($event) {
-        if ($event.target === $event.currentTarget) {
-          $scope.settingsJsonOpen = false;
-        }
-      };
-
-      $scope.copySettingsJson = function () {
-        var text = $scope.settingsJsonText;
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(text).then(function () {
-            alert("Settings JSON copied to clipboard");
-          }, function () {
-            prompt("Copy this settings JSON:", text);
-          });
-        } else {
-          prompt("Copy this settings JSON:", text);
-        }
-      };
-
-      function loadTwoLineFromLocal() {
-        try {
-          var enabled = localStorage.getItem("singleSchoolNameTwoLine") === "true";
-          $scope.useTwoLineSchoolName = enabled;
-          if (!enabled) {
-            $scope.schoolNameLine1FontSize = 12;
-            $scope.schoolNameLine1FontFamily = "Arial, Helvetica, sans-serif";
-            $scope.schoolNameLine2FontSize = 11;
-            $scope.schoolNameLine2FontFamily = "Arial, Helvetica, sans-serif";
-            $scope.applyTwoLineFontStyles();
-            return;
-          }
-          var l1 = localStorage.getItem("singleSchoolNameLine1");
-          var l2 = localStorage.getItem("singleSchoolNameLine2");
-          if (l1) $scope.schoolNameLine1 = l1;
-          if (l2 != null) $scope.schoolNameLine2 = l2;
-          var fs1 = localStorage.getItem("singleSchoolNameLine1FontSize");
-          if (fs1) $scope.schoolNameLine1FontSize = parseInt(fs1, 10) || 12;
-          var ff1 = localStorage.getItem("singleSchoolNameLine1FontFamily");
-          if (ff1) $scope.schoolNameLine1FontFamily = ff1;
-          var fs2 = localStorage.getItem("singleSchoolNameLine2FontSize");
-          if (fs2) $scope.schoolNameLine2FontSize = parseInt(fs2, 10) || 11;
-          var ff2 = localStorage.getItem("singleSchoolNameLine2FontFamily");
-          if (ff2) $scope.schoolNameLine2FontFamily = ff2;
-        } catch (e) {}
-        $scope.applyTwoLineFontStyles();
       }
-
-      loadTwoLineFromLocal();
 
       function normalizeFormat(format) {
         var key = String(format == null ? "1" : format).toLowerCase();
@@ -1369,6 +1057,13 @@
             "background-image": "url('" + designMap[config.BackgroundImage] + "')"
           };
         }
+        if (config.BackgroundOpacity !== undefined && config.BackgroundOpacity !== null && config.BackgroundOpacity !== "") {
+          $scope.currentBackgroundOpacity = normalizeBackgroundOpacity(config.BackgroundOpacity);
+          setCssVar("--bg-image-opacity", String($scope.currentBackgroundOpacity));
+        } else {
+          $scope.currentBackgroundOpacity = 1;
+          setCssVar("--bg-image-opacity", "1");
+        }
         if (config.PrimaryColor) {
           var primary = resolveColorName(config.PrimaryColor, "Blue");
           $scope.currentPrimaryColor = primary;
@@ -1419,6 +1114,9 @@
           if (config.SchoolNameLine2 !== undefined && config.SchoolNameLine2 !== null) {
             $scope.schoolNameLine2 = config.SchoolNameLine2;
           }
+          if (!$scope.schoolNameLine1 && $scope.org && $scope.org.Name) {
+            splitSchoolName($scope.org.Name);
+          }
           if (config.SchoolNameLine1FontSize || config.SchoolNameLineFontSize) {
             $scope.schoolNameLine1FontSize = config.SchoolNameLine1FontSize || config.SchoolNameLineFontSize;
           } else if (config.SchoolNameSize !== undefined && config.SchoolNameSize !== null && config.SchoolNameSize !== "") {
@@ -1433,13 +1131,16 @@
           if (config.SchoolNameLine2FontFamily || config.SchoolNameLineFontFamily) {
             $scope.schoolNameLine2FontFamily = config.SchoolNameLine2FontFamily || config.SchoolNameLineFontFamily;
           }
-          $scope.applyTwoLineFontStyles();
+          applyTwoLineFontStyles();
         } else {
           $scope.schoolNameLine1FontSize = 12;
           $scope.schoolNameLine1FontFamily = "Arial, Helvetica, sans-serif";
           $scope.schoolNameLine2FontSize = 11;
           $scope.schoolNameLine2FontFamily = "Arial, Helvetica, sans-serif";
-          $scope.applyTwoLineFontStyles();
+          if ($scope.org && $scope.org.Name) {
+            splitSchoolName($scope.org.Name);
+          }
+          applyTwoLineFontStyles();
         }
 
         // Always apply format; missing Format → Standard (1)
@@ -1461,7 +1162,9 @@
       setCssVar("--student-photo-height", "80px");
       setCssVar("--student-photo-border-radius", "50%");
       setCssVar("--student-photo-object-fit", "cover");
+      setCssVar("--bg-image-opacity", "1");
       $scope.currentPhotoObjectFit = "cover";
+      $scope.currentBackgroundOpacity = 1;
 
       function getQueryParams() {
         var params = {};
@@ -1493,16 +1196,7 @@
           if (data) {
           $scope.org = data;
           if ($scope.useTwoLineSchoolName) {
-            var savedL1 = null;
-            var savedL2 = null;
-            try {
-              savedL1 = localStorage.getItem("singleSchoolNameLine1");
-              savedL2 = localStorage.getItem("singleSchoolNameLine2");
-            } catch (e) {}
-            if (savedL1) {
-              $scope.schoolNameLine1 = savedL1;
-              $scope.schoolNameLine2 = savedL2 != null ? savedL2 : "";
-            } else if (!$scope.schoolNameLine1) {
+            if (!$scope.schoolNameLine1) {
               splitSchoolName(data.Name);
             }
           } else {
