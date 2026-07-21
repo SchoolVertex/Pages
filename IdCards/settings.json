@@ -67,5 +67,24 @@
         "BackgroundImage": 7,
         "PhotoHeight": 80,
         "PhotoBorderRadius": 50 
+    },
+    "159": {
+      "Format": 3,
+      "PrimaryColor": "Red",
+      "TextColor": "Black",
+      "SchoolNameSize": 12,
+      "PhotoHeight": 120,
+      "PhotoBorderRadius": 20,
+      "PhotoObjectFit": "cover",
+      "BackgroundImage": 17,
+      "BackgroundOpacity": 1,
+      "PrincipalSignature": "Correspondent",
+      "SchoolNameTwoLine": true,
+      "SchoolNameLine1": "NALANDA",
+      "SchoolNameLine2": "High School",
+      "SchoolNameLine1FontSize": 25,
+      "SchoolNameLine1FontFamily": "\"Times New Roman\", Times, serif",
+      "SchoolNameLine2FontSize": 16,
+      "SchoolNameLine2FontFamily": "\"Times New Roman\", Times, serif"
     }
 }
