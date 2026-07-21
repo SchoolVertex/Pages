@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student ID Card</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --school-color: Blue;
+      --text-color: Black;
+      --school-name-font-size: 12px;
+      --student-photo-height: 80px;
+      --student-photo-border-radius: 50%;
+      --student-photo-object-fit: cover;
+      --accent-color: #c02026;
+      --school-name-line1-font-size: 12px;
+      --school-name-line1-font-family: Arial, Helvetica, sans-serif;
+      --school-name-line2-font-size: 11px;
+      --school-name-line2-font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #e9eef2;
+      margin: 0;
+      padding: 0;
+      display: block !important;
+    }
+
+    .control-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 16px;
+      align-items: center;
+      background: #fff;
+      padding: 8px 12px;
+      border-bottom: 1px solid #ccc;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .control-group label {
+      font-size: 13px;
+      margin-right: 6px;
+      font-weight: 600;
+    }
+
+    .control-group input[type="checkbox"] {
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    .control-group input[type="text"],
+    .control-group input[type="number"],
+    .control-group select {
+      padding: 3px 6px;
+      font-size: 13px;
+    }
+
+    .control-panel-extra {
+      display: none;
+      width: 100%;
+      flex-basis: 100%;
+      gap: 12px 16px;
+      flex-wrap: wrap;
+      align-items: center;
+      padding-top: 4px;
+      border-top: 1px dashed #ddd;
+    }
+
+    .control-panel-extra.is-open {
+      display: flex;
+    }
+
+    .school-name-two-line {
+      display: block;
+      line-height: 1.15;
+      font-weight: 700;
+    }
+
+    .school-name-two-line .school-name-line1 {
+      display: block;
+      font-family: var(--school-name-line1-font-family, Arial, Helvetica, sans-serif);
+      font-size: var(--school-name-line1-font-size, 12px);
+    }
+
+    .school-name-two-line .school-name-line2 {
+      display: block;
+      font-family: var(--school-name-line2-font-family, Arial, Helvetica, sans-serif);
+      font-size: var(--school-name-line2-font-size, 11px);
+    }
+
+    .settings-json-btn {
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      background: #1a2b56;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+    }
+
+    .settings-json-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .settings-json-modal.is-open {
+      display: flex;
+    }
+
+    .settings-json-dialog {
+      background: #fff;
+      border-radius: 8px;
+      width: min(560px, 100%);
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+    }
+
+    .settings-json-dialog header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 14px;
+      border-bottom: 1px solid #ddd;
+      font-weight: 700;
+    }
+
+    .settings-json-dialog pre {
+      margin: 0;
+      padding: 14px;
+      overflow: auto;
+      font-size: 12px;
+      line-height: 1.4;
+      background: #f7f8fa;
+      flex: 1;
+    }
+
+    .settings-json-dialog footer {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      padding: 12px 14px;
+      border-top: 1px solid #ddd;
+    }
+
+    .settings-json-dialog button {
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      background: #fff;
+    }
+
+    .settings-json-dialog button.primary {
+      background: #1a2b56;
+      color: #fff;
+      border-color: #1a2b56;
+    }
+
+    .id-card {
+      width: 2.125in;
+      height: 3.375in;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      position: relative;
+      overflow: hidden;
+      background: #fff;
+      margin: 0 auto;
+      page-break-after: always;
+      break-after: page;
+    }
+
+    .bg-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      z-index: 0;
+    }
+
+    /* ══════════════ STANDARD FORMAT ══════════════ */
+    .format-standard .main-content {
+      height: 325px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 4mm;
+      border-radius: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .format-standard .school-info {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      width: 100%;
+      color: #2c3e50;
+      border-bottom: 1px solid var(--school-color);
+      text-align: center;
+    }
+
+    .format-standard .school-logo {
+      height: 47px;
+    }
+
+    .format-standard .school-logo img {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .format-standard .school-name {
+      font-size: var(--school-name-font-size, 12px);
+      font-weight: 700;
+    }
+
+    .format-standard .school-caption,
+    .format-standard .school-affliate,
+    .format-standard .school-address {
+      font-size: 6px;
+      font-weight: 600;
+      font-style: italic;
+    }
+
+    .format-standard .school-address {
+      font-size: 5px;
+      font-weight: bold;
+      font-style: normal;
+    }
+
+    .format-standard .student-photo-area {
+      width: var(--student-photo-height);
+      height: var(--student-photo-height);
+      border-radius: var(--student-photo-border-radius);
+      border: 2px solid #fff;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      flex-shrink: 0;
+      overflow: hidden;
+      margin-top: 3px;
+    }
+
+    .format-standard .student-photo-area img {
+      width: 100%;
+      height: 100%;
+      object-fit: var(--student-photo-object-fit, cover);
+    }
+
+    .format-standard .student-name {
+      margin-top: 2px;
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .format-standard .student-info {
+      text-align: left;
+      padding-top: 2px;
+      width: 90%;
+    }
+
+    .format-standard .info-row {
+      display: flex;
+      margin-bottom: 3px;
+      font-size: 8px;
+      color: #000;
+      font-weight: 600;
+    }
+
+    .format-standard .info-label {
+      font-weight: 600;
+      width: 42px;
+      flex-shrink: 0;
+    }
+
+    .format-standard .principal-signature-area {
+      color: #000;
+      padding-bottom: 25px;
+      text-align: center;
+      margin-top: auto;
+    }
+
+    .format-standard .principal-sign {
+      margin: -5px;
+    }
+
+    .format-standard .principal-sign img {
+      height: 20px;
+    }
+
+    .format-standard .principal-label {
+      font-size: 8px;
+      letter-spacing: 0.5px;
+      border-top: 1px solid #000;
+    }
+
+    .format-standard .school-color {
+      color: var(--school-color);
+    }
+
+    .format-standard .school-name-dynamic {
+      font-size: var(--school-name-font-size);
+    }
+
+    .format-standard .school-name-two-line {
+      color: var(--school-color);
+    }
+
+    .format-standard .text-color {
+      color: var(--text-color);
+    }
+
+    /* ══════════════ RIDGEBOARD / BOXED FORMAT ══════════════ */
+    .format-ridgeboard .id-card {
+      border-radius: 10px;
+    }
+
+    .format-ridgeboard .bg-image {
+      opacity: 0.25;
+      background-size: cover;
+    }
+
+    .format-ridgeboard .main-content {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px 8px 0;
+      position: relative;
+      z-index: 1;
+      font-family: 'Source Sans 3', sans-serif;
+    }
+
+    .format-ridgeboard .school-info {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      width: 100%;
+      border-bottom: none;
+    }
+
+    .format-ridgeboard .school-logo {
+      flex-shrink: 0;
+      width: 48px;
+      height: 48px;
+    }
+
+    .format-ridgeboard .school-logo img {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .format-ridgeboard .school-name-block {
+      flex: 1;
+      min-width: 0;
+      text-align: center;
+      padding-top: 1px;
+    }
+
+    .format-ridgeboard .school-title {
+      font-family: 'Libre Baskerville', serif;
+      font-weight: 700;
+      font-size: var(--school-name-font-size);
+      line-height: 1.15;
+      color: var(--school-color);
+      display: block;
+    }
+
+    .format-ridgeboard .school-title.school-name-two-line,
+    .format-ridgeboard .school-name-two-line {
+      color: var(--school-color);
+    }
+
+    .format-ridgeboard .school-title-sub {
+      display: block;
+    }
+
+    .format-ridgeboard .school-name-two-line .school-name-line2.school-title-sub {
+      font-size: var(--school-name-line2-font-size, 11px);
+    }
+
+    .format-ridgeboard .school-tagline {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      margin: 3px 0 2px;
+    }
+
+    .format-ridgeboard .school-tagline::before,
+    .format-ridgeboard .school-tagline::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--accent-color);
+      max-width: 28px;
+    }
+
+    .format-ridgeboard .school-tagline span {
+      font-family: 'Libre Baskerville', serif;
+      font-style: italic;
+      font-size: 7px;
+      color: var(--accent-color);
+      white-space: nowrap;
+    }
+
+    .format-ridgeboard .school-address {
+      font-size: 5.5px;
+      font-weight: 600;
+      color: var(--text-color);
+      line-height: 1.25;
+      text-align: center;
+      font-style: normal;
+    }
+
+    .format-ridgeboard .header-divider {
+      width: 100%;
+      height: 1px;
+      background: var(--school-color);
+      margin: 2px 0;
+      flex-shrink: 0;
+    }
+
+    .format-ridgeboard .student-photo-area {
+      width: var(--student-photo-height);
+      height: var(--student-photo-height);
+      border-radius: var(--student-photo-border-radius);
+      border: 1.5px solid var(--school-color);
+      overflow: hidden;
+      flex-shrink: 0;
+      background: #ddd;
+      position: relative;
+      z-index: 2;
+      box-shadow: none;
+      margin-top: 2px;
+    }
+
+    .format-ridgeboard .student-photo-area img {
+      width: 100%;
+      height: 100%;
+      object-fit: var(--student-photo-object-fit, cover);
+      display: block;
+    }
+
+    .format-ridgeboard .student-name-banner {
+      margin-top: 2px;
+      background: var(--school-color);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      text-align: center;
+      padding: 2px 22px;
+      width: 96%;
+      line-height: 1.25;
+      position: relative;
+      z-index: 1;
+      clip-path: polygon(
+        0% 0%,
+        100% 0%,
+        calc(100% - 14px) 50%,
+        100% 100%,
+        0% 100%,
+        14px 50%
+      );
+    }
+
+    .format-ridgeboard .student-info {
+      width: 94%;
+      margin-top: 3px;
+      border: 1.25px solid var(--school-color);
+      border-radius: 10px;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: #fff;
+      text-align: left;
+      padding-top: 0;
+    }
+
+    .format-ridgeboard .info-row {
+      display: grid;
+      grid-template-columns: 18px 54px 1fr;
+      min-height: 16px;
+      border-bottom: 1px solid #b8bfcc;
+      margin-bottom: 0;
+      font-size: inherit;
+    }
+
+    .format-ridgeboard .info-row:last-child {
+      border-bottom: none;
+    }
+
+    .format-ridgeboard .info-icon-cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--school-color);
+      padding: 2px 0;
+    }
+
+    .format-ridgeboard .info-icon-cell .icon {
+      width: 10px;
+      height: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .format-ridgeboard .info-icon-cell .icon svg {
+      width: 10px;
+      height: 10px;
+      fill: #fff;
+    }
+
+    .format-ridgeboard .info-label-cell {
+      display: flex;
+      align-items: center;
+      background: var(--school-color);
+      color: #fff;
+      padding: 2px 2px 2px 0;
+      font-size: 7px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .format-ridgeboard .info-value {
+      display: flex;
+      align-items: center;
+      background: #fff;
+      padding: 2px 5px;
+      font-size: 7px;
+      font-weight: 700;
+      color: var(--text-color);
+      line-height: 1.2;
+      word-break: break-word;
+    }
+
+    .format-ridgeboard .info-row.address-row {
+      min-height: 22px;
+    }
+
+    .format-ridgeboard .info-row.address-row .info-value {
+      font-size: 6.5px;
+    }
+
+    .format-ridgeboard .card-footer {
+      margin-top: auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 12px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .format-ridgeboard .principal-signature-area {
+      text-align: center;
+      width: 55%;
+      padding-bottom: 0;
+      margin-top: 0;
+    }
+
+    .format-ridgeboard .principal-sign {
+      min-height: 16px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .format-ridgeboard .principal-sign img {
+      height: 18px;
+      max-width: 70px;
+      object-fit: contain;
+    }
+
+    .format-ridgeboard .principal-label {
+      font-size: 7px;
+      font-weight: 700;
+      color: var(--text-color);
+      border-top: 1px solid var(--text-color);
+      letter-spacing: 0.2px;
+    }
+
+    /* ══════════════ SIMPLE FORMAT ══════════════ */
+    .format-simple .id-card {
+      border-radius: 10px;
+    }
+
+    .format-simple .side-accent {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 42px;
+      height: 72%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .format-simple .side-accent svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .format-simple .bg-image {
+      opacity: 0.2;
+      background-size: cover;
+    }
+
+    .format-simple .main-content {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+      padding: 4mm 4mm 3mm;
+      border-radius: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .format-simple .school-info {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      width: 100%;
+      color: #2c3e50;
+      border-bottom: 1px solid var(--school-color);
+      text-align: center;
+    }
+
+    .format-simple .school-logo {
+      height: 47px;
+    }
+
+    .format-simple .school-logo img {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .format-simple .school-name {
+      font-size: var(--school-name-font-size, 12px);
+      font-weight: 700;
+    }
+
+    .format-simple .school-caption,
+    .format-simple .school-affliate,
+    .format-simple .school-address {
+      font-size: 6px;
+      font-weight: 600;
+      font-style: italic;
+    }
+
+    .format-simple .school-address {
+      font-size: 5px;
+      font-weight: bold;
+      font-style: normal;
+    }
+
+    .format-simple .school-color {
+      color: var(--school-color);
+    }
+
+    .format-simple .school-name-dynamic {
+      font-size: var(--school-name-font-size);
+    }
+
+    .format-simple .school-name-two-line {
+      color: var(--school-color);
+    }
+
+    .format-simple .text-color {
+      color: var(--text-color);
+    }
+
+    .format-simple .student-photo-area {
+      width: var(--student-photo-height);
+      height: var(--student-photo-height);
+      border-radius: var(--student-photo-border-radius);
+      border: 1.5px solid #87ceeb;
+      box-shadow: none;
+      flex-shrink: 0;
+      overflow: hidden;
+      margin-top: 14px;
+      background: #eee;
+    }
+
+    .format-simple .student-photo-area img {
+      width: 100%;
+      height: 100%;
+      object-fit: var(--student-photo-object-fit, cover);
+      display: block;
+    }
+
+    .format-simple .student-name {
+      margin-top: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+      color: var(--school-color);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      width: 90%;
+      line-height: 1.25;
+    }
+
+    .format-simple .simple-class-info {
+      margin-top: 4px;
+      text-align: center;
+      width: 90%;
+    }
+
+    .format-simple .simple-class-line {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-color);
+      letter-spacing: 0.3px;
+      line-height: 1.35;
+      text-transform: uppercase;
+    }
+
+    .format-simple .principal-signature-area {
+      margin-top: auto;
+      align-self: flex-end;
+      text-align: center;
+      padding: 0 6px 4px 0;
+      width: auto;
+      min-width: 70px;
+    }
+
+    .format-simple .principal-sign {
+      margin: 0;
+      min-height: 18px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .format-simple .principal-sign img {
+      height: 22px;
+      max-width: 80px;
+      object-fit: contain;
+    }
+
+    .format-simple .principal-label {
+      font-size: 7px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      color: var(--text-color);
+      border-top: none;
+      margin-top: 2px;
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        margin: 0;
+        padding: 0;
+      }
+
+      .control-bar {
+        display: none !important;
+      }
+
+      .settings-json-modal {
+        display: none !important;
+      }
+
+      .id-card {
+        box-shadow: none;
+        border-radius: 0;
+        margin: 0;
+      }
+    }
+
+    @page {
+      size: 2.125in 3.375in;
+      margin: 0;
+    }
+  </style>
+</head>
+
+<body ng-controller="myCtrl" id="page-body" ng-class="bodyFormatClass">
+
+  <div class="control-bar">
+    <div class="control-group">
+      <label>Photo Fit</label>
+      <select ng-model="currentPhotoObjectFit" ng-change="applyPhotoObjectFit()">
+        <option value="cover">cover</option>
+        <option value="fill">fill</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>
+        <input type="checkbox" ng-model="useTwoLineSchoolName" ng-change="onTwoLineToggle()" />
+        Two-line School Name
+      </label>
+    </div>
+    <div class="control-panel-extra" ng-class="{'is-open': useTwoLineSchoolName}">
+      <div class="control-group">
+        <label>Line 1</label>
+        <input type="text" ng-model="schoolNameLine1" ng-change="persistTwoLineSettings()" style="width:160px" />
+      </div>
+      <div class="control-group">
+        <label>Line 1 Font Size</label>
+        <input type="number" ng-model="schoolNameLine1FontSize" ng-change="applyTwoLineFontStyles()" min="6" max="40" step="1" style="width:70px" />
+      </div>
+      <div class="control-group">
+        <label>Line 1 Font Family</label>
+        <select ng-model="schoolNameLine1FontFamily" ng-change="applyTwoLineFontStyles()">
+          <optgroup label="Tier 1 – Universal">
+            <option value="Arial, Helvetica, sans-serif">Arial</option>
+            <option value="Verdana, Geneva, sans-serif">Verdana</option>
+            <option value="Tahoma, Geneva, sans-serif">Tahoma</option>
+            <option value='"Trebuchet MS", Helvetica, sans-serif'>Trebuchet MS</option>
+            <option value="Georgia, serif">Georgia</option>
+            <option value='"Times New Roman", Times, serif'>Times New Roman</option>
+            <option value='"Courier New", Courier, monospace'>Courier New</option>
+          </optgroup>
+          <optgroup label="Tier 2 – Mostly Available">
+            <option value="Helvetica, Arial, sans-serif">Helvetica</option>
+            <option value='"Palatino Linotype", "Book Antiqua", Palatino, serif'>Palatino</option>
+            <option value="Garamond, serif">Garamond</option>
+            <option value='"Book Antiqua", Palatino, serif'>Book Antiqua</option>
+            <option value='"Lucida Sans Unicode", "Lucida Grande", sans-serif'>Lucida Sans</option>
+            <option value='"Century Gothic", Arial, sans-serif'>Century Gothic</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Line 2</label>
+        <input type="text" ng-model="schoolNameLine2" ng-change="persistTwoLineSettings()" style="width:160px" />
+      </div>
+      <div class="control-group">
+        <label>Line 2 Font Size</label>
+        <input type="number" ng-model="schoolNameLine2FontSize" ng-change="applyTwoLineFontStyles()" min="6" max="40" step="1" style="width:70px" />
+      </div>
+      <div class="control-group">
+        <label>Line 2 Font Family</label>
+        <select ng-model="schoolNameLine2FontFamily" ng-change="applyTwoLineFontStyles()">
+          <optgroup label="Tier 1 – Universal">
+            <option value="Arial, Helvetica, sans-serif">Arial</option>
+            <option value="Verdana, Geneva, sans-serif">Verdana</option>
+            <option value="Tahoma, Geneva, sans-serif">Tahoma</option>
+            <option value='"Trebuchet MS", Helvetica, sans-serif'>Trebuchet MS</option>
+            <option value="Georgia, serif">Georgia</option>
+            <option value='"Times New Roman", Times, serif'>Times New Roman</option>
+            <option value='"Courier New", Courier, monospace'>Courier New</option>
+          </optgroup>
+          <optgroup label="Tier 2 – Mostly Available">
+            <option value="Helvetica, Arial, sans-serif">Helvetica</option>
+            <option value='"Palatino Linotype", "Book Antiqua", Palatino, serif'>Palatino</option>
+            <option value="Garamond, serif">Garamond</option>
+            <option value='"Book Antiqua", Palatino, serif'>Book Antiqua</option>
+            <option value='"Lucida Sans Unicode", "Lucida Grande", sans-serif'>Lucida Sans</option>
+            <option value='"Century Gothic", Arial, sans-serif'>Century Gothic</option>
+          </optgroup>
+        </select>
+      </div>
+    </div>
+    <div class="control-group">
+      <button type="button" class="settings-json-btn" ng-click="showSettingsJson()">Copy Settings JSON</button>
+    </div>
+  </div>
+
+  <div class="settings-json-modal" ng-class="{'is-open': settingsJsonOpen}" ng-click="closeSettingsJsonOnBackdrop($event)">
+    <div class="settings-json-dialog" ng-click="$event.stopPropagation()">
+      <header>
+        <span>settings.json object</span>
+        <button type="button" ng-click="settingsJsonOpen=false">Close</button>
+      </header>
+      <pre>{{settingsJsonText}}</pre>
+      <footer>
+        <button type="button" ng-click="settingsJsonOpen=false">Close</button>
+        <button type="button" class="primary" ng-click="copySettingsJson()">Copy to clipboard</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Single Card -->
+  <div class="id-card" ng-if="userInfo && !userList.length">
+    <div ng-include="templateUrl" ng-init="userInfo=userInfo"></div>
+  </div>
+
+  <!-- Bulk Cards -->
+  <div class="id-card" ng-repeat="userInfo in userList">
+    <div ng-include="templateUrl"></div>
+  </div>
+
+  <!-- ── Standard Format Template ── -->
+  <script type="text/ng-template" id="standard-template.html">
+    <div class="bg-image" ng-style="bgStyle"></div>
+    <div class="main-content">
+      <div class="school-info">
+        <div class="school-logo">
+          <img ng-src="{{org.Image}}" alt="School Logo">
+        </div>
+        <div class="school-name">
+          <span class="school-color school-name-two-line" ng-if="useTwoLineSchoolName">
+            <span class="school-name-line1">{{schoolNameLine1}}</span>
+            <span class="school-name-line2" ng-if="schoolNameLine2">{{schoolNameLine2}}</span>
+          </span>
+          <span class="school-color school-name-dynamic" ng-if="!useTwoLineSchoolName">{{org.Name}}</span>
+          <p class="school-caption text-color" ng-if="org.Description || org.Caption">{{org.Description || org.Caption}}</p>
+          <p class="school-affliate text-color" ng-if="org.AffiliationInfo || org.Affiliation">{{org.AffiliationInfo || org.Affiliation}}</p>
+          <p class="school-address text-color" ng-if="org.fullAddress">{{org.fullAddress}}</p>
+          <p class="school-address text-color" ng-if="org.Mobile">PHONE: {{org.Mobile}}</p>
+        </div>
+      </div>
+
+      <div class="student-photo-area">
+        <img ng-src="{{userInfo.Image}}" alt="Student Photo">
+      </div>
+
+      <div class="student-name school-color">{{userInfo.StudentName}}</div>
+
+      <div class="student-info">
+        <div class="info-row">
+          <div class="info-label school-color">Grade</div>
+          <div class="info-value text-color">{{userInfo.ClassName}}<span ng-if="userInfo.SectionName"> / {{userInfo.SectionName}}</span></div>
+        </div>
+        <div class="info-row">
+          <div class="info-label school-color">Adm' No</div>
+          <div class="info-value text-color">{{userInfo.AdmissionNumber}}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label school-color">D.O.B</div>
+          <div class="info-value text-color">{{userInfo.DateOfBirth | date:'dd-MMM-yyyy'}}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label school-color">P' Name</div>
+          <div class="info-value text-color">{{userInfo.ParentName}}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label school-color">Phone No</div>
+          <div class="info-value text-color">{{userInfo.Mobile}}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-label school-color">Address</div>
+          <div class="info-value text-color">{{userInfo.Address}}</div>
+        </div>
+      </div>
+
+      <div class="principal-signature-area">
+        <div class="principal-sign" ng-if="org.Sign">
+          <img ng-src="{{org.Sign}}" alt="Signature">
+        </div>
+        <div class="principal-label text-color">{{principalLabel}}</div>
+      </div>
+    </div>
+  </script>
+
+  <!-- ── Ridge Board / Boxed Format Template ── -->
+  <script type="text/ng-template" id="ridgeboard-template.html">
+    <div class="bg-image" ng-style="bgStyle"></div>
+    <div class="main-content">
+      <div class="school-info">
+        <div class="school-logo">
+          <img ng-src="{{org.Image}}" alt="School Logo">
+        </div>
+        <div class="school-name-block">
+          <span class="school-title" ng-if="!useTwoLineSchoolName">{{org.Name || schoolNameLine1}}</span>
+          <span class="school-title school-name-two-line" ng-if="useTwoLineSchoolName">
+            <span class="school-name-line1">{{schoolNameLine1}}</span>
+            <span class="school-name-line2 school-title-sub" ng-if="schoolNameLine2">{{schoolNameLine2}}</span>
+          </span>
+          <div class="school-tagline" ng-if="org.Description || org.Caption">
+            <span>{{org.Description || org.Caption}}</span>
+          </div>
+          <p class="school-address" ng-if="org.fullAddress">{{org.fullAddress}}</p>
+        </div>
+      </div>
+
+      <div class="header-divider"></div>
+
+      <div class="student-photo-area">
+        <img ng-src="{{userInfo.Image}}" alt="Student Photo">
+      </div>
+
+      <div class="student-name-banner">{{userInfo.StudentName}}</div>
+
+      <div class="student-info">
+        <div class="info-row">
+          <div class="info-icon-cell">
+            <span class="icon">
+              <svg viewBox="0 0 24 24"><path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z"/></svg>
+            </span>
+          </div>
+          <div class="info-label-cell">Grade</div>
+          <div class="info-value">{{userInfo.ClassName}}<span ng-if="userInfo.SectionName"> / {{userInfo.SectionName}}</span></div>
+        </div>
+        <div class="info-row">
+          <div class="info-icon-cell">
+            <span class="icon">
+              <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4V6h16v12zM6 10h4v4H6v-4zm6 0h6v2h-6v-2zm0 4h4v2h-4v-2z"/></svg>
+            </span>
+          </div>
+          <div class="info-label-cell">Adm' No</div>
+          <div class="info-value">{{userInfo.AdmissionNumber}}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-icon-cell">
+            <span class="icon">
+              <svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zM7 12h5v5H7v-5z"/></svg>
+            </span>
+          </div>
+          <div class="info-label-cell">D.O.B</div>
+          <div class="info-value">{{userInfo.DateOfBirth | date:'dd-MMM-yyyy'}}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-icon-cell">
+            <span class="icon">
+              <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            </span>
+          </div>
+          <div class="info-label-cell">P' Name</div>
+          <div class="info-value">{{userInfo.ParentName}}</div>
+        </div>
+        <div class="info-row">
+          <div class="info-icon-cell">
+            <span class="icon">
+              <svg viewBox="0 0 24 24"><path d="M6.62 10.79a15.15 15.15 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.4 21 3 13.6 3 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.57a1 1 0 01-.25 1.02l-2.2 2.2z"/></svg>
+            </span>
+          </div>
+          <div class="info-label-cell">Phone No</div>
+          <div class="info-value">{{userInfo.Mobile}}</div>
+        </div>
+        <div class="info-row address-row">
+          <div class="info-icon-cell">
+            <span class="icon">
+              <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1114.5 9 2.5 2.5 0 0112 11.5z"/></svg>
+            </span>
+          </div>
+          <div class="info-label-cell">Address</div>
+          <div class="info-value">{{userInfo.Address}}</div>
+        </div>
+      </div>
+
+      <div class="card-footer">
+        <div class="principal-signature-area">
+          <div class="principal-sign" ng-if="org.Sign">
+            <img ng-src="{{org.Sign}}" alt="Signature">
+          </div>
+          <div class="principal-label">{{principalLabel}}</div>
+        </div>
+      </div>
+    </div>
+  </script>
+
+  <!-- ── Simple Format Template ── -->
+  <script type="text/ng-template" id="simple-template.html">
+    <div class="bg-image" ng-style="bgStyle"></div>
+    <div class="main-content">
+      <div class="school-info">
+        <div class="school-logo">
+          <img ng-src="{{org.Image}}" alt="School Logo">
+        </div>
+        <div class="school-name">
+          <span class="school-color school-name-two-line" ng-if="useTwoLineSchoolName">
+            <span class="school-name-line1">{{schoolNameLine1}}</span>
+            <span class="school-name-line2" ng-if="schoolNameLine2">{{schoolNameLine2}}</span>
+          </span>
+          <span class="school-color school-name-dynamic" ng-if="!useTwoLineSchoolName">{{org.Name}}</span>
+          <p class="school-caption text-color" ng-if="org.Description || org.Caption">{{org.Description || org.Caption}}</p>
+          <p class="school-affliate text-color" ng-if="org.AffiliationInfo || org.Affiliation">{{org.AffiliationInfo || org.Affiliation}}</p>
+          <p class="school-address text-color" ng-if="org.fullAddress">{{org.fullAddress}}</p>
+          <p class="school-address text-color" ng-if="org.Mobile">PHONE: {{org.Mobile}}</p>
+        </div>
+      </div>
+
+      <div class="student-photo-area">
+        <img ng-src="{{userInfo.Image}}" alt="Student Photo">
+      </div>
+
+      <div class="student-name school-color">{{userInfo.StudentName}}</div>
+
+      <div class="simple-class-info">
+        <div class="simple-class-line" ng-if="userInfo.ClassName">{{userInfo.ClassName}}</div>
+      </div>
+
+      <div class="principal-signature-area">
+        <div class="principal-sign" ng-if="org.Sign">
+          <img ng-src="{{org.Sign}}" alt="Signature">
+        </div>
+        <div class="principal-label text-color">{{principalLabel}}</div>
+      </div>
+    </div>
+  </script>
+
+  <script>
+    var app = angular.module("myApp", []);
+    const baseApiUrl = "https://api.schoolvertex.com/api";
+
+    app.controller("myCtrl", function ($scope, $http) {
+      $scope.userList = [];
+      $scope.contentFormat = "1";
+      $scope.bodyFormatClass = "format-standard";
+      $scope.templateUrl = "standard-template.html";
+      $scope.principalLabel = "Principal Signature";
+      $scope.schoolNameLine1 = "";
+      $scope.schoolNameLine2 = "";
+      $scope.useTwoLineSchoolName = false;
+      $scope.schoolNameLine1FontSize = 12;
+      $scope.schoolNameLine1FontFamily = "Arial, Helvetica, sans-serif";
+      $scope.schoolNameLine2FontSize = 11;
+      $scope.schoolNameLine2FontFamily = "Arial, Helvetica, sans-serif";
+      $scope.settingsJsonOpen = false;
+      $scope.settingsJsonText = "";
+      $scope.currentBackgroundImage = 8;
+      $scope.currentPrimaryColor = "Blue";
+      $scope.currentTextColor = "Black";
+      $scope.currentSchoolNameSize = 12;
+      $scope.schoolNameFontSize = "12px";
+      $scope.currentPhotoHeight = 80;
+      $scope.currentPhotoBorderRadius = 50;
+      $scope.currentPhotoObjectFit = "cover";
+
+      var designBaseUrl = "https://cdn.jsdelivr.net/gh/gitcdnsv/svcdn/IdCardBg/";
+      var designMap = {};
+      for (var i = 1; i <= 102; i++) {
+        designMap[i] = designBaseUrl + i + ".jpg";
+      }
+
+      var defaults = {
+        designNumber: 8,
+        primaryColor: "Blue",
+        secondaryColor: "Black",
+        accentColor: "#c02026"
+      };
+
+      $scope.bgStyle = {
+        "background-image": "url('" + designMap[defaults.designNumber] + "')"
+      };
+
+      function setCssVar(name, value) {
+        document.documentElement.style.setProperty(name, value);
+      }
+
+      function normalizePhotoObjectFit(value) {
+        var key = String(value == null ? "cover" : value).toLowerCase().trim();
+        return key === "fill" ? "fill" : "cover";
+      }
+
+      $scope.applyPhotoObjectFit = function () {
+        var fit = normalizePhotoObjectFit($scope.currentPhotoObjectFit);
+        $scope.currentPhotoObjectFit = fit;
+        setCssVar("--student-photo-object-fit", fit);
+      };
+
+      $scope.applyTwoLineFontStyles = function () {
+        setCssVar("--school-name-line1-font-size", $scope.schoolNameLine1FontSize + "px");
+        setCssVar("--school-name-line1-font-family", $scope.schoolNameLine1FontFamily);
+        setCssVar("--school-name-line2-font-size", $scope.schoolNameLine2FontSize + "px");
+        setCssVar("--school-name-line2-font-family", $scope.schoolNameLine2FontFamily);
+        $scope.persistTwoLineSettings();
+      };
+
+      $scope.persistTwoLineSettings = function () {
+        try {
+          localStorage.setItem("singleSchoolNameTwoLine", $scope.useTwoLineSchoolName ? "true" : "false");
+          localStorage.setItem("singleSchoolNameLine1", $scope.schoolNameLine1 || "");
+          localStorage.setItem("singleSchoolNameLine2", $scope.schoolNameLine2 || "");
+          localStorage.setItem("singleSchoolNameLine1FontSize", String($scope.schoolNameLine1FontSize));
+          localStorage.setItem("singleSchoolNameLine1FontFamily", $scope.schoolNameLine1FontFamily);
+          localStorage.setItem("singleSchoolNameLine2FontSize", String($scope.schoolNameLine2FontSize));
+          localStorage.setItem("singleSchoolNameLine2FontFamily", $scope.schoolNameLine2FontFamily);
+        } catch (e) {}
+      };
+
+      $scope.onTwoLineToggle = function () {
+        if ($scope.useTwoLineSchoolName && $scope.org && $scope.org.Name) {
+          splitSchoolName($scope.org.Name);
+        }
+        $scope.applyTwoLineFontStyles();
+      };
+
+      $scope.buildCurrentSettingsJson = function () {
+        var settings = {
+          Format: parseInt($scope.contentFormat, 10) || 1,
+          PrimaryColor: $scope.currentPrimaryColor,
+          TextColor: $scope.currentTextColor,
+          SchoolNameSize: $scope.currentSchoolNameSize,
+          PhotoHeight: $scope.currentPhotoHeight,
+          PhotoBorderRadius: $scope.currentPhotoBorderRadius,
+          PhotoObjectFit: normalizePhotoObjectFit($scope.currentPhotoObjectFit),
+          BackgroundImage: $scope.currentBackgroundImage,
+          PrincipalSignature: $scope.principalLabel,
+          SchoolNameTwoLine: !!$scope.useTwoLineSchoolName
+        };
+        if (settings.SchoolNameTwoLine) {
+          settings.SchoolNameLine1 = $scope.schoolNameLine1 || "";
+          settings.SchoolNameLine2 = $scope.schoolNameLine2 || "";
+          settings.SchoolNameLine1FontSize = parseInt($scope.schoolNameLine1FontSize, 10) || 12;
+          settings.SchoolNameLine1FontFamily = $scope.schoolNameLine1FontFamily;
+          settings.SchoolNameLine2FontSize = parseInt($scope.schoolNameLine2FontSize, 10) || 11;
+          settings.SchoolNameLine2FontFamily = $scope.schoolNameLine2FontFamily;
+        }
+        return settings;
+      };
+
+      $scope.showSettingsJson = function () {
+        $scope.settingsJsonText = JSON.stringify($scope.buildCurrentSettingsJson(), null, 2);
+        $scope.settingsJsonOpen = true;
+      };
+
+      $scope.closeSettingsJsonOnBackdrop = function ($event) {
+        if ($event.target === $event.currentTarget) {
+          $scope.settingsJsonOpen = false;
+        }
+      };
+
+      $scope.copySettingsJson = function () {
+        var text = $scope.settingsJsonText;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function () {
+            alert("Settings JSON copied to clipboard");
+          }, function () {
+            prompt("Copy this settings JSON:", text);
+          });
+        } else {
+          prompt("Copy this settings JSON:", text);
+        }
+      };
+
+      function loadTwoLineFromLocal() {
+        try {
+          var enabled = localStorage.getItem("singleSchoolNameTwoLine") === "true";
+          $scope.useTwoLineSchoolName = enabled;
+          if (!enabled) {
+            $scope.schoolNameLine1FontSize = 12;
+            $scope.schoolNameLine1FontFamily = "Arial, Helvetica, sans-serif";
+            $scope.schoolNameLine2FontSize = 11;
+            $scope.schoolNameLine2FontFamily = "Arial, Helvetica, sans-serif";
+            $scope.applyTwoLineFontStyles();
+            return;
+          }
+          var l1 = localStorage.getItem("singleSchoolNameLine1");
+          var l2 = localStorage.getItem("singleSchoolNameLine2");
+          if (l1) $scope.schoolNameLine1 = l1;
+          if (l2 != null) $scope.schoolNameLine2 = l2;
+          var fs1 = localStorage.getItem("singleSchoolNameLine1FontSize");
+          if (fs1) $scope.schoolNameLine1FontSize = parseInt(fs1, 10) || 12;
+          var ff1 = localStorage.getItem("singleSchoolNameLine1FontFamily");
+          if (ff1) $scope.schoolNameLine1FontFamily = ff1;
+          var fs2 = localStorage.getItem("singleSchoolNameLine2FontSize");
+          if (fs2) $scope.schoolNameLine2FontSize = parseInt(fs2, 10) || 11;
+          var ff2 = localStorage.getItem("singleSchoolNameLine2FontFamily");
+          if (ff2) $scope.schoolNameLine2FontFamily = ff2;
+        } catch (e) {}
+        $scope.applyTwoLineFontStyles();
+      }
+
+      loadTwoLineFromLocal();
+
+      function normalizeFormat(format) {
+        var key = String(format == null ? "1" : format).toLowerCase();
+        if (key === "2" || key === "ridgeboard" || key === "boxed") return "2";
+        if (key === "3" || key === "simple") return "3";
+        return "1";
+      }
+
+      function applyContentFormat(format) {
+        var normalized = normalizeFormat(format);
+        $scope.contentFormat = normalized;
+        if (normalized === "2") {
+          $scope.bodyFormatClass = "format-ridgeboard";
+          $scope.templateUrl = "ridgeboard-template.html";
+        } else if (normalized === "3") {
+          $scope.bodyFormatClass = "format-simple";
+          $scope.templateUrl = "simple-template.html";
+        } else {
+          $scope.bodyFormatClass = "format-standard";
+          $scope.templateUrl = "standard-template.html";
+        }
+      }
+
+      function splitSchoolName(name) {
+        if (!name) {
+          $scope.schoolNameLine1 = "";
+          $scope.schoolNameLine2 = "";
+          return;
+        }
+        var match = name.match(/^(.*?)\s+(International\s+School.*)$/i);
+        if (match) {
+          $scope.schoolNameLine1 = match[1];
+          $scope.schoolNameLine2 = match[2];
+          return;
+        }
+        var parts = name.trim().split(/\s+/);
+        if (parts.length > 2) {
+          $scope.schoolNameLine1 = parts.slice(0, 2).join(" ");
+          $scope.schoolNameLine2 = parts.slice(2).join(" ");
+        } else {
+          $scope.schoolNameLine1 = name;
+          $scope.schoolNameLine2 = "";
+        }
+      }
+
+      function resolveColorName(value, fallback) {
+        if (!value) return fallback;
+        var named = [
+          "Black","White","Gray","Silver","Red","Maroon","Yellow","Olive","Lime","Green",
+          "Aqua","Teal","Blue","Navy","Fuchsia","Purple","AliceBlue","AntiqueWhite",
+          "Aquamarine","Azure","Beige","Bisque","BlanchedAlmond","BlueViolet","Brown",
+          "BurlyWood","CadetBlue","Chartreuse","Chocolate","Coral","CornflowerBlue",
+          "Cornsilk","Crimson","Cyan","DarkBlue","DarkCyan","DarkGoldenRod","DarkGray",
+          "DarkGreen","DarkKhaki","DarkMagenta","DarkOliveGreen","DarkOrange","DarkOrchid",
+          "DarkRed","DarkSalmon","DarkSeaGreen","DarkSlateBlue","DarkSlateGray",
+          "DarkTurquoise","DarkViolet","DeepPink","DeepSkyBlue","DimGray","DodgerBlue",
+          "FireBrick","FloralWhite","ForestGreen","Gainsboro","GhostWhite","Gold",
+          "GoldenRod","GreenYellow","HoneyDew","HotPink","IndianRed","Indigo","Ivory",
+          "Khaki","Lavender","LavenderBlush","LawnGreen","LemonChiffon","LightBlue",
+          "LightCoral","LightCyan","LightGoldenRodYellow","LightGray","LightGreen",
+          "LightPink","LightSalmon","LightSeaGreen","LightSkyBlue","LightSlateGray",
+          "LightSteelBlue","LightYellow","LimeGreen","Linen","Magenta","MediumAquaMarine",
+          "MediumBlue","MediumOrchid","MediumPurple","MediumSeaGreen","MediumSlateBlue",
+          "MediumSpringGreen","MediumTurquoise","MediumVioletRed","MidnightBlue","MintCream"
+        ];
+        var found = named.find(function (c) {
+          return c.toLowerCase() === String(value).toLowerCase();
+        });
+        return found || String(value);
+      }
+
+      function applyDesignConfig(config) {
+        if (!config) return;
+
+        if (config.BackgroundImage && designMap[config.BackgroundImage]) {
+          $scope.currentBackgroundImage = config.BackgroundImage;
+          $scope.bgStyle = {
+            "background-image": "url('" + designMap[config.BackgroundImage] + "')"
+          };
+        }
+        if (config.PrimaryColor) {
+          var primary = resolveColorName(config.PrimaryColor, "Blue");
+          $scope.currentPrimaryColor = primary;
+          setCssVar("--school-color", primary);
+        }
+        if (config.TextColor) {
+          var text = resolveColorName(config.TextColor, "Black");
+          $scope.currentTextColor = text;
+          setCssVar("--text-color", text);
+        }
+        if (config.AccentColor) {
+          setCssVar("--accent-color", config.AccentColor);
+        }
+        if (config.SchoolNameSize !== undefined && config.SchoolNameSize !== null && config.SchoolNameSize !== "") {
+          var size = String(config.SchoolNameSize).replace(/px$/i, "");
+          $scope.currentSchoolNameSize = parseInt(size, 10) || size;
+          $scope.schoolNameFontSize = size + "px";
+          setCssVar("--school-name-font-size", size + "px");
+        }
+        if (config.PhotoHeight !== undefined && config.PhotoHeight !== null) {
+          $scope.currentPhotoHeight = config.PhotoHeight;
+          setCssVar("--student-photo-height", config.PhotoHeight + "px");
+        }
+        if (config.PhotoBorderRadius !== undefined && config.PhotoBorderRadius !== null) {
+          $scope.currentPhotoBorderRadius = config.PhotoBorderRadius;
+          setCssVar("--student-photo-border-radius", config.PhotoBorderRadius + "%");
+        }
+        if (config.PhotoObjectFit || config.PhotoFit) {
+          $scope.currentPhotoObjectFit = normalizePhotoObjectFit(config.PhotoObjectFit || config.PhotoFit);
+          setCssVar("--student-photo-object-fit", $scope.currentPhotoObjectFit);
+        } else {
+          $scope.currentPhotoObjectFit = "cover";
+          setCssVar("--student-photo-object-fit", "cover");
+        }
+        if (config.PrincipalSignature || config.PrincipalLabel) {
+          $scope.principalLabel = config.PrincipalSignature || config.PrincipalLabel;
+        } else {
+          $scope.principalLabel = "Principal Signature";
+        }
+
+        var twoLineOn = config.SchoolNameTwoLine === true || config.SchoolNameTwoLine === 1 || config.SchoolNameTwoLine === "true";
+        $scope.useTwoLineSchoolName = !!twoLineOn;
+
+        if (twoLineOn) {
+          if (config.SchoolNameLine1) {
+            $scope.schoolNameLine1 = config.SchoolNameLine1;
+          }
+          if (config.SchoolNameLine2 !== undefined && config.SchoolNameLine2 !== null) {
+            $scope.schoolNameLine2 = config.SchoolNameLine2;
+          }
+          if (config.SchoolNameLine1FontSize || config.SchoolNameLineFontSize) {
+            $scope.schoolNameLine1FontSize = config.SchoolNameLine1FontSize || config.SchoolNameLineFontSize;
+          } else if (config.SchoolNameSize !== undefined && config.SchoolNameSize !== null && config.SchoolNameSize !== "") {
+            $scope.schoolNameLine1FontSize = String(config.SchoolNameSize).replace(/px$/i, "");
+          }
+          if (config.SchoolNameLine1FontFamily || config.SchoolNameLineFontFamily) {
+            $scope.schoolNameLine1FontFamily = config.SchoolNameLine1FontFamily || config.SchoolNameLineFontFamily;
+          }
+          if (config.SchoolNameLine2FontSize || config.SchoolNameLineFontSize) {
+            $scope.schoolNameLine2FontSize = config.SchoolNameLine2FontSize || config.SchoolNameLineFontSize;
+          }
+          if (config.SchoolNameLine2FontFamily || config.SchoolNameLineFontFamily) {
+            $scope.schoolNameLine2FontFamily = config.SchoolNameLine2FontFamily || config.SchoolNameLineFontFamily;
+          }
+          $scope.applyTwoLineFontStyles();
+        } else {
+          $scope.schoolNameLine1FontSize = 12;
+          $scope.schoolNameLine1FontFamily = "Arial, Helvetica, sans-serif";
+          $scope.schoolNameLine2FontSize = 11;
+          $scope.schoolNameLine2FontFamily = "Arial, Helvetica, sans-serif";
+          $scope.applyTwoLineFontStyles();
+        }
+
+        // Always apply format; missing Format → Standard (1)
+        if (config.Format !== undefined && config.Format !== null) {
+          applyContentFormat(config.Format);
+        } else if (config.ContentFormat) {
+          applyContentFormat(config.ContentFormat);
+        } else {
+          applyContentFormat("1");
+        }
+      }
+
+      // Defaults on CSS vars
+      setCssVar("--school-color", defaults.primaryColor);
+      setCssVar("--text-color", defaults.secondaryColor);
+      setCssVar("--accent-color", defaults.accentColor);
+      setCssVar("--school-name-font-size", "12px");
+      $scope.schoolNameFontSize = "12px";
+      setCssVar("--student-photo-height", "80px");
+      setCssVar("--student-photo-border-radius", "50%");
+      setCssVar("--student-photo-object-fit", "cover");
+      $scope.currentPhotoObjectFit = "cover";
+
+      function getQueryParams() {
+        var params = {};
+        location.search
+          .substr(1)
+          .split("&")
+          .forEach(function (item) {
+            var parts = item.split("=");
+            if (parts[0]) params[parts[0]] = decodeURIComponent(parts[1] || "");
+          });
+        return params;
+      }
+
+      var query = getQueryParams();
+      var userId = query.userId;
+      var classId = parseInt(query.classId || 0);
+      var sectionId = parseInt(query.sectionId || 0);
+      var orgId = query.orgId;
+
+      // Optional format override via query: ?format=1|2|3
+      if (query.format) {
+        applyContentFormat(query.format);
+      }
+
+      $scope.org = {};
+      var orgApiUrl = baseApiUrl + "/Organisation/GetInfoForCertificate/" + orgId;
+      $http.get(orgApiUrl).then(function (response) {
+        var data = response.data;
+          if (data) {
+          $scope.org = data;
+          if ($scope.useTwoLineSchoolName) {
+            var savedL1 = null;
+            var savedL2 = null;
+            try {
+              savedL1 = localStorage.getItem("singleSchoolNameLine1");
+              savedL2 = localStorage.getItem("singleSchoolNameLine2");
+            } catch (e) {}
+            if (savedL1) {
+              $scope.schoolNameLine1 = savedL1;
+              $scope.schoolNameLine2 = savedL2 != null ? savedL2 : "";
+            } else if (!$scope.schoolNameLine1) {
+              splitSchoolName(data.Name);
+            }
+          } else {
+            splitSchoolName(data.Name);
+          }
+          if (data.FullAddress) {
+            $scope.org.fullAddress = data.FullAddress;
+          } else if (data.AddressInfo) {
+            var a = data.AddressInfo;
+            var parts = [a.Plot_HouseNumber, a.LandMark, a.Street, a.City, a.State, a.ZipCode].filter(Boolean);
+            $scope.org.fullAddress = parts.join(", ");
+          }
+        }
+      }, function (error) {
+        console.error("Organisation API failed:", error.status, error.statusText);
+      });
+
+      var designApiUrl = "https://schoolvertex.github.io/Pages/IdCards/settings.json";
+      $http.get(designApiUrl).then(function (response) {
+        var data = response.data || {};
+        var key = orgId != null ? String(orgId) : "All";
+        var config = data[key] || data["All"] || {};
+        applyDesignConfig(config);
+        // Query format wins over settings if provided
+        if (query.format) {
+          applyContentFormat(query.format);
+        }
+      }, function (error) {
+        console.error("Design config API failed — using defaults:", error.status, error.statusText);
+      });
+
+      if (userId) {
+        var url = baseApiUrl + "/Fee/GetIdCardInfo/" + orgId + "/" + userId;
+        $http.get(url).then(function (response) {
+          $scope.userInfo = response.data;
+        });
+      } else if (sectionId > 0 || classId > 0) {
+        var bulkUrl = null;
+        if (sectionId > 0) {
+          bulkUrl = baseApiUrl + "/Fee/GetSectionIdCardInfo/" + sectionId;
+        } else if (classId > 0) {
+          bulkUrl = baseApiUrl + "/Fee/GetBatchIdCardInfo/" + classId;
+        }
+        if (bulkUrl) {
+          $http.get(bulkUrl).then(function (response) {
+            $scope.userList = response.data;
+          });
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>
