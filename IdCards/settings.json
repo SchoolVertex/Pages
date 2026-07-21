@@ -18,10 +18,23 @@
         "BackgroundImage": 2
     },
     "143": {
-        "PrimaryColor": "midnightblue",
-        "TextColor": "black",
-        "SchoolNameSize": 13,
-        "BackgroundImage": 2
+      "Format": 2,
+      "PrimaryColor": "MidnightBlue",
+      "TextColor": "Black",
+      "SchoolNameSize": 13,
+      "PhotoHeight": 80,
+      "PhotoBorderRadius": 50,
+      "PhotoObjectFit": "cover",
+      "BackgroundImage": 2,
+      "BackgroundOpacity": 0.5,
+      "PrincipalSignature": "Principal Signature",
+      "SchoolNameTwoLine": true,
+      "SchoolNameLine1": "Ridge Board",
+      "SchoolNameLine2": "International School",
+      "SchoolNameLine1FontSize": 16,
+      "SchoolNameLine1FontFamily": "Georgia, serif",
+      "SchoolNameLine2FontSize": 12,
+      "SchoolNameLine2FontFamily": "Georgia, serif"
     },
     "151": {
         "PrimaryColor": "red",
