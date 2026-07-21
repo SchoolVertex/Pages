@@ -29,6 +29,7 @@
       --student-photo-height: 80px;
       --student-photo-border-radius: 50%;
       --student-photo-object-fit: cover;
+      --bg-image-opacity: 1;
       --accent-color: #c02026;
       --school-name-line1-font-size: 12px;
       --school-name-line1-font-family: Arial, Helvetica, sans-serif;
@@ -243,6 +244,7 @@
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
+      opacity: var(--bg-image-opacity, 1);
       z-index: 0;
     }
 
@@ -387,10 +389,6 @@
     /* ══════════════ RIDGEBOARD FORMAT ══════════════ */
     .format-ridgeboard .id-card {
       border-radius: 10px;
-    }
-
-    .format-ridgeboard .bg-image {
-      opacity: 0.25;
     }
 
     .format-ridgeboard .main-content {
@@ -854,6 +852,10 @@
       <input type="number" id="background-image-id" min="1" max="102" step="1" style="width:70px" />
     </div>
     <div class="control-group">
+      <label>BG Opacity</label>
+      <input type="number" id="background-image-opacity" min="0" max="1" step="0.1" style="width:70px" />
+    </div>
+    <div class="control-group">
       <label>Primary Color</label>
       <select id="school-color-picker"></select>
     </div>
@@ -974,25 +976,6 @@
   <div id="id-card-grid" ng-bind-html="cardsHtml"></div>
 
 <script>
-const LS_KEYS = {
-  school: "schoolColor",
-  text: "textColor",
-  schoolNameSize: "schoolNameFontSize",
-  photoHeight: "studentPhotoHeight",
-  photoBorderRadius: "studentPhotoBorderRadius",
-  photoObjectFit: "studentPhotoObjectFit",
-  contentFormat: "idCardContentFormat",
-  principalLabel: "principalSignatureLabel",
-  backgroundImage: "backgroundImageId",
-  schoolNameTwoLine: "schoolNameTwoLine",
-  schoolNameLine1: "schoolNameLine1",
-  schoolNameLine2: "schoolNameLine2",
-  schoolNameLine1FontSize: "schoolNameLine1FontSize",
-  schoolNameLine1FontFamily: "schoolNameLine1FontFamily",
-  schoolNameLine2FontSize: "schoolNameLine2FontSize",
-  schoolNameLine2FontFamily: "schoolNameLine2FontFamily"
-};
-
 const SETTINGS_URL = "https://schoolvertex.github.io/Pages/IdCards/settings.json";
 const DEFAULT_BG_IMAGE = 8;
 
@@ -1055,11 +1038,14 @@ function getOrgIdFromQuery() {
   return new URLSearchParams(location.search).get("orgid") || "1";
 }
 
+function getElValue(id, fallback) {
+  var el = document.getElementById(id);
+  if (!el || el.value === undefined || el.value === null || el.value === "") return fallback;
+  return el.value;
+}
+
 function getBackgroundImageId() {
-  var raw = document.getElementById("background-image-id")
-    ? document.getElementById("background-image-id").value
-    : localStorage.getItem(LS_KEYS.backgroundImage);
-  var n = parseInt(raw || DEFAULT_BG_IMAGE, 10);
+  var n = parseInt(getElValue("background-image-id", DEFAULT_BG_IMAGE), 10);
   return isNaN(n) ? DEFAULT_BG_IMAGE : n;
 }
 
@@ -1079,9 +1065,28 @@ function applyPhotoObjectFit(value) {
   var fit = normalizePhotoObjectFit(value);
   var select = document.getElementById("student-photo-object-fit");
   if (select) select.value = fit;
-  localStorage.setItem(LS_KEYS.photoObjectFit, fit);
   document.documentElement.style.setProperty("--student-photo-object-fit", fit);
   return fit;
+}
+
+function normalizeBackgroundOpacity(value) {
+  var n = parseFloat(value);
+  if (isNaN(n)) n = 1;
+  if (n < 0) n = 0;
+  if (n > 1) n = 1;
+  return Math.round(n * 10) / 10;
+}
+
+function applyBackgroundOpacity(value) {
+  var opacity = normalizeBackgroundOpacity(value);
+  var input = document.getElementById("background-image-opacity");
+  if (input) input.value = String(opacity);
+  document.documentElement.style.setProperty("--bg-image-opacity", String(opacity));
+  return opacity;
+}
+
+function getBackgroundOpacity() {
+  return normalizeBackgroundOpacity(getElValue("background-image-opacity", "1"));
 }
 
 function formatClassName(format) {
@@ -1092,32 +1097,29 @@ function formatClassName(format) {
 }
 
 function getContentFormat() {
-  var picker = document.getElementById("content-format-picker");
-  if (picker && picker.value) {
-    return normalizeFormat(picker.value);
-  }
-  return normalizeFormat(localStorage.getItem(LS_KEYS.contentFormat) || "1");
+  return normalizeFormat(getElValue("content-format-picker", "1"));
 }
 
 function getPrincipalLabel() {
   var input = document.getElementById("principal-signature-label");
-  if (input && input.value !== undefined && input.value !== null && String(input.value).trim() !== "") {
-    return String(input.value);
-  }
-  return localStorage.getItem(LS_KEYS.principalLabel) || "Principal Signature";
+  if (input && String(input.value).trim() !== "") return String(input.value);
+  return "Principal Signature";
 }
 
 function isSchoolNameTwoLine() {
-  return localStorage.getItem(LS_KEYS.schoolNameTwoLine) === "true";
+  var toggle = document.getElementById("school-name-twoline-toggle");
+  return !!(toggle && toggle.checked);
 }
 
 function getSchoolNameLines(fallbackName) {
-  var line1 = localStorage.getItem(LS_KEYS.schoolNameLine1);
-  var line2 = localStorage.getItem(LS_KEYS.schoolNameLine2);
-  if (line1 == null || line1 === "") {
+  var line1El = document.getElementById("school-name-line1");
+  var line2El = document.getElementById("school-name-line2");
+  var line1 = line1El ? line1El.value : "";
+  var line2 = line2El ? line2El.value : "";
+  if (!line1) {
     var parts = splitSchoolNameFallback(fallbackName || "");
     line1 = parts.line1;
-    if (line2 == null) line2 = parts.line2;
+    if (!line2) line2 = parts.line2;
   }
   if (line2 == null) line2 = "";
   return { line1: line1, line2: line2 };
@@ -1135,20 +1137,10 @@ function splitSchoolNameFallback(name) {
 }
 
 function applySchoolNameLineStyles() {
-  var size1El = document.getElementById("school-name-line1-fontsize");
-  var family1El = document.getElementById("school-name-line1-fontfamily");
-  var size2El = document.getElementById("school-name-line2-fontsize");
-  var family2El = document.getElementById("school-name-line2-fontfamily");
-
-  var size1 = (size1El && size1El.value) || localStorage.getItem(LS_KEYS.schoolNameLine1FontSize) || "12";
-  var family1 = (family1El && family1El.value) || localStorage.getItem(LS_KEYS.schoolNameLine1FontFamily) || "Arial, Helvetica, sans-serif";
-  var size2 = (size2El && size2El.value) || localStorage.getItem(LS_KEYS.schoolNameLine2FontSize) || "11";
-  var family2 = (family2El && family2El.value) || localStorage.getItem(LS_KEYS.schoolNameLine2FontFamily) || "Arial, Helvetica, sans-serif";
-
-  localStorage.setItem(LS_KEYS.schoolNameLine1FontSize, String(size1));
-  localStorage.setItem(LS_KEYS.schoolNameLine1FontFamily, family1);
-  localStorage.setItem(LS_KEYS.schoolNameLine2FontSize, String(size2));
-  localStorage.setItem(LS_KEYS.schoolNameLine2FontFamily, family2);
+  var size1 = getElValue("school-name-line1-fontsize", "12");
+  var family1 = getElValue("school-name-line1-fontfamily", "Arial, Helvetica, sans-serif");
+  var size2 = getElValue("school-name-line2-fontsize", "11");
+  var family2 = getElValue("school-name-line2-fontfamily", "Arial, Helvetica, sans-serif");
 
   document.documentElement.style.setProperty("--school-name-line1-font-size", size1 + "px");
   document.documentElement.style.setProperty("--school-name-line1-font-family", family1);
@@ -1159,22 +1151,14 @@ function applySchoolNameLineStyles() {
 function buildCurrentSettingsJson() {
   var settings = {
     Format: parseInt(getContentFormat(), 10) || 1,
-    PrimaryColor: document.getElementById("school-color-picker").value || localStorage.getItem(LS_KEYS.school) || "Blue",
-    TextColor: document.getElementById("text-color-picker").value || localStorage.getItem(LS_KEYS.text) || "Black",
-    SchoolNameSize: parseInt(
-      (document.getElementById("school-name-fontsize") && document.getElementById("school-name-fontsize").value) ||
-      localStorage.getItem(LS_KEYS.schoolNameSize) ||
-      "12",
-      10
-    ),
-    PhotoHeight: parseInt(localStorage.getItem(LS_KEYS.photoHeight) || "80", 10),
-    PhotoBorderRadius: parseInt(localStorage.getItem(LS_KEYS.photoBorderRadius) || "50", 10),
-    PhotoObjectFit: normalizePhotoObjectFit(
-      (document.getElementById("student-photo-object-fit") && document.getElementById("student-photo-object-fit").value) ||
-      localStorage.getItem(LS_KEYS.photoObjectFit) ||
-      "cover"
-    ),
+    PrimaryColor: getElValue("school-color-picker", "Blue"),
+    TextColor: getElValue("text-color-picker", "Black"),
+    SchoolNameSize: parseInt(getElValue("school-name-fontsize", "12"), 10),
+    PhotoHeight: parseInt(getElValue("student-photo-height", "80"), 10),
+    PhotoBorderRadius: parseInt(getElValue("student-photo-border-radius", "50"), 10),
+    PhotoObjectFit: normalizePhotoObjectFit(getElValue("student-photo-object-fit", "cover")),
     BackgroundImage: getBackgroundImageId(),
+    BackgroundOpacity: getBackgroundOpacity(),
     PrincipalSignature: getPrincipalLabel(),
     SchoolNameTwoLine: isSchoolNameTwoLine()
   };
@@ -1182,10 +1166,10 @@ function buildCurrentSettingsJson() {
     var lines = getSchoolNameLines((window.__idCardOrg && window.__idCardOrg.Name) || "");
     settings.SchoolNameLine1 = lines.line1;
     settings.SchoolNameLine2 = lines.line2;
-    settings.SchoolNameLine1FontSize = parseInt(localStorage.getItem(LS_KEYS.schoolNameLine1FontSize) || "12", 10);
-    settings.SchoolNameLine1FontFamily = localStorage.getItem(LS_KEYS.schoolNameLine1FontFamily) || "Arial, Helvetica, sans-serif";
-    settings.SchoolNameLine2FontSize = parseInt(localStorage.getItem(LS_KEYS.schoolNameLine2FontSize) || "11", 10);
-    settings.SchoolNameLine2FontFamily = localStorage.getItem(LS_KEYS.schoolNameLine2FontFamily) || "Arial, Helvetica, sans-serif";
+    settings.SchoolNameLine1FontSize = parseInt(getElValue("school-name-line1-fontsize", "12"), 10);
+    settings.SchoolNameLine1FontFamily = getElValue("school-name-line1-fontfamily", "Arial, Helvetica, sans-serif");
+    settings.SchoolNameLine2FontSize = parseInt(getElValue("school-name-line2-fontsize", "11"), 10);
+    settings.SchoolNameLine2FontFamily = getElValue("school-name-line2-fontfamily", "Arial, Helvetica, sans-serif");
   }
   return settings;
 }
@@ -1257,20 +1241,22 @@ function setupPickers() {
 
   const formatPicker = document.getElementById("content-format-picker");
   formatPicker.value = "1";
-  localStorage.setItem(LS_KEYS.contentFormat, "1");
   applyBodyFormat("1");
 
   const bgImageInput = document.getElementById("background-image-id");
   bgImageInput.value = DEFAULT_BG_IMAGE;
-  localStorage.setItem(LS_KEYS.backgroundImage, String(DEFAULT_BG_IMAGE));
-  bgImageInput.addEventListener("change", e => {
-    localStorage.setItem(LS_KEYS.backgroundImage, e.target.value);
+
+  applyBackgroundOpacity(1);
+  document.getElementById("background-image-opacity").addEventListener("input", e => {
+    applyBackgroundOpacity(e.target.value);
+  });
+  document.getElementById("background-image-opacity").addEventListener("change", e => {
+    applyBackgroundOpacity(e.target.value);
   });
 
   formatPicker.addEventListener("change", e => {
     const format = normalizeFormat(e.target.value);
     formatPicker.value = format;
-    localStorage.setItem(LS_KEYS.contentFormat, format);
     applyBodyFormat(format);
     window.dispatchEvent(new CustomEvent("idcard-format-change", { detail: { format } }));
   });
@@ -1278,15 +1264,9 @@ function setupPickers() {
   document.getElementById("school-color-picker").addEventListener("input", e => {
     document.documentElement.style.setProperty("--school-color", e.target.value);
   });
-  document.getElementById("school-color-picker").addEventListener("change", e => {
-    localStorage.setItem(LS_KEYS.school, e.target.value);
-  });
 
   document.getElementById("text-color-picker").addEventListener("input", e => {
     document.documentElement.style.setProperty("--text-color", e.target.value);
-  });
-  document.getElementById("text-color-picker").addEventListener("change", e => {
-    localStorage.setItem(LS_KEYS.text, e.target.value);
   });
 
   const fontInput = document.getElementById("school-name-fontsize");
@@ -1295,9 +1275,6 @@ function setupPickers() {
   fontInput.addEventListener("input", e => {
     document.documentElement.style.setProperty("--school-name-font-size", e.target.value + "px");
   });
-  fontInput.addEventListener("change", e => {
-    localStorage.setItem(LS_KEYS.schoolNameSize, e.target.value);
-  });
 
   const photoHeightInput = document.getElementById("student-photo-height");
   photoHeightInput.value = "80";
@@ -1305,18 +1282,12 @@ function setupPickers() {
   photoHeightInput.addEventListener("input", e => {
     document.documentElement.style.setProperty("--student-photo-height", e.target.value + "px");
   });
-  photoHeightInput.addEventListener("change", e => {
-    localStorage.setItem(LS_KEYS.photoHeight, e.target.value);
-  });
 
   const photoRadiusInput = document.getElementById("student-photo-border-radius");
   photoRadiusInput.value = "50";
   document.documentElement.style.setProperty("--student-photo-border-radius", "50%");
   photoRadiusInput.addEventListener("input", e => {
     document.documentElement.style.setProperty("--student-photo-border-radius", e.target.value + "%");
-  });
-  photoRadiusInput.addEventListener("change", e => {
-    localStorage.setItem(LS_KEYS.photoBorderRadius, e.target.value);
   });
 
   applyPhotoObjectFit("cover");
@@ -1326,14 +1297,11 @@ function setupPickers() {
 
   const principalInput = document.getElementById("principal-signature-label");
   principalInput.value = "Principal Signature";
-  localStorage.setItem(LS_KEYS.principalLabel, "Principal Signature");
   applyPrincipalLabel("Principal Signature");
   principalInput.addEventListener("input", e => {
     applyPrincipalLabel(e.target.value);
-    localStorage.setItem(LS_KEYS.principalLabel, e.target.value);
   });
   principalInput.addEventListener("change", e => {
-    localStorage.setItem(LS_KEYS.principalLabel, e.target.value);
     applyPrincipalLabel(e.target.value);
   });
 
@@ -1365,13 +1333,10 @@ function setupPickers() {
     var parts = splitSchoolNameFallback(orgName);
     line1Input.value = parts.line1;
     line2Input.value = parts.line2;
-    localStorage.setItem(LS_KEYS.schoolNameLine1, parts.line1);
-    localStorage.setItem(LS_KEYS.schoolNameLine2, parts.line2);
   }
 
   twoLineToggle.addEventListener("change", e => {
     const enabled = e.target.checked;
-    localStorage.setItem(LS_KEYS.schoolNameTwoLine, enabled ? "true" : "false");
     twoLinePanel.classList.toggle("is-open", enabled);
     if (enabled) {
       fillSplitIntoLineInputs();
@@ -1380,39 +1345,23 @@ function setupPickers() {
     emitSchoolNameChange();
   });
 
-  line1Input.addEventListener("input", e => {
-    localStorage.setItem(LS_KEYS.schoolNameLine1, e.target.value);
-    emitSchoolNameChange();
-  });
-  line2Input.addEventListener("input", e => {
-    localStorage.setItem(LS_KEYS.schoolNameLine2, e.target.value);
-    emitSchoolNameChange();
-  });
+  line1Input.addEventListener("input", () => emitSchoolNameChange());
+  line2Input.addEventListener("input", () => emitSchoolNameChange());
 
   line1FontSizeInput.addEventListener("input", e => {
-    localStorage.setItem(LS_KEYS.schoolNameLine1FontSize, e.target.value);
     document.documentElement.style.setProperty("--school-name-line1-font-size", e.target.value + "px");
   });
-  line1FontSizeInput.addEventListener("change", e => {
-    localStorage.setItem(LS_KEYS.schoolNameLine1FontSize, e.target.value);
-    applySchoolNameLineStyles();
-  });
+  line1FontSizeInput.addEventListener("change", () => applySchoolNameLineStyles());
   line1FontFamilySelect.addEventListener("change", e => {
-    localStorage.setItem(LS_KEYS.schoolNameLine1FontFamily, e.target.value);
     document.documentElement.style.setProperty("--school-name-line1-font-family", e.target.value);
     applySchoolNameLineStyles();
   });
 
   line2FontSizeInput.addEventListener("input", e => {
-    localStorage.setItem(LS_KEYS.schoolNameLine2FontSize, e.target.value);
     document.documentElement.style.setProperty("--school-name-line2-font-size", e.target.value + "px");
   });
-  line2FontSizeInput.addEventListener("change", e => {
-    localStorage.setItem(LS_KEYS.schoolNameLine2FontSize, e.target.value);
-    applySchoolNameLineStyles();
-  });
+  line2FontSizeInput.addEventListener("change", () => applySchoolNameLineStyles());
   line2FontFamilySelect.addEventListener("change", e => {
-    localStorage.setItem(LS_KEYS.schoolNameLine2FontFamily, e.target.value);
     document.documentElement.style.setProperty("--school-name-line2-font-family", e.target.value);
     applySchoolNameLineStyles();
   });
@@ -1434,14 +1383,12 @@ function applySettingsToControls(config) {
   if (config.PrimaryColor) {
     const color = resolveColorName(config.PrimaryColor, "Blue");
     setColorSelectValue("school-color-picker", color);
-    localStorage.setItem(LS_KEYS.school, color);
     document.documentElement.style.setProperty("--school-color", color);
   }
 
   if (config.TextColor) {
     const color = resolveColorName(config.TextColor, "Black");
     setColorSelectValue("text-color-picker", color);
-    localStorage.setItem(LS_KEYS.text, color);
     document.documentElement.style.setProperty("--text-color", color);
   }
 
@@ -1449,21 +1396,18 @@ function applySettingsToControls(config) {
     const size = String(config.SchoolNameSize).replace(/px$/i, "");
     const fontInput = document.getElementById("school-name-fontsize");
     if (fontInput) fontInput.value = size;
-    localStorage.setItem(LS_KEYS.schoolNameSize, size);
     document.documentElement.style.setProperty("--school-name-font-size", size + "px");
   }
 
   if (config.PhotoHeight !== undefined && config.PhotoHeight !== null) {
     const h = String(config.PhotoHeight);
     document.getElementById("student-photo-height").value = h;
-    localStorage.setItem(LS_KEYS.photoHeight, h);
     document.documentElement.style.setProperty("--student-photo-height", h + "px");
   }
 
   if (config.PhotoBorderRadius !== undefined && config.PhotoBorderRadius !== null) {
     const r = String(config.PhotoBorderRadius);
     document.getElementById("student-photo-border-radius").value = r;
-    localStorage.setItem(LS_KEYS.photoBorderRadius, r);
     document.documentElement.style.setProperty("--student-photo-border-radius", r + "%");
   }
 
@@ -1474,58 +1418,61 @@ function applySettingsToControls(config) {
   }
 
   if (config.BackgroundImage !== undefined && config.BackgroundImage !== null) {
-    const bg = String(config.BackgroundImage);
-    document.getElementById("background-image-id").value = bg;
-    localStorage.setItem(LS_KEYS.backgroundImage, bg);
+    document.getElementById("background-image-id").value = String(config.BackgroundImage);
+  }
+
+  if (config.BackgroundOpacity !== undefined && config.BackgroundOpacity !== null && config.BackgroundOpacity !== "") {
+    applyBackgroundOpacity(config.BackgroundOpacity);
+  } else {
+    applyBackgroundOpacity(1);
   }
 
   if (config.PrincipalSignature || config.PrincipalLabel) {
     const label = config.PrincipalSignature || config.PrincipalLabel;
     document.getElementById("principal-signature-label").value = label;
-    localStorage.setItem(LS_KEYS.principalLabel, label);
     applyPrincipalLabel(label);
   } else {
-    const label = "Principal Signature";
-    document.getElementById("principal-signature-label").value = label;
-    localStorage.setItem(LS_KEYS.principalLabel, label);
-    applyPrincipalLabel(label);
+    document.getElementById("principal-signature-label").value = "Principal Signature";
+    applyPrincipalLabel("Principal Signature");
   }
 
-  if (config.SchoolNameTwoLine === true || config.SchoolNameTwoLine === 1 || config.SchoolNameTwoLine === "true") {
-    const twoLineToggle = document.getElementById("school-name-twoline-toggle");
-    const twoLinePanel = document.getElementById("school-name-twoline-panel");
+  const twoLineToggle = document.getElementById("school-name-twoline-toggle");
+  const twoLinePanel = document.getElementById("school-name-twoline-panel");
+  const twoLineOn = config.SchoolNameTwoLine === true || config.SchoolNameTwoLine === 1 || config.SchoolNameTwoLine === "true";
+
+  if (twoLineOn) {
     twoLineToggle.checked = true;
     twoLinePanel.classList.add("is-open");
-    localStorage.setItem(LS_KEYS.schoolNameTwoLine, "true");
 
     if (config.SchoolNameLine1) {
       document.getElementById("school-name-line1").value = config.SchoolNameLine1;
-      localStorage.setItem(LS_KEYS.schoolNameLine1, config.SchoolNameLine1);
     }
     if (config.SchoolNameLine2 !== undefined && config.SchoolNameLine2 !== null) {
       document.getElementById("school-name-line2").value = config.SchoolNameLine2;
-      localStorage.setItem(LS_KEYS.schoolNameLine2, config.SchoolNameLine2);
     }
     if (config.SchoolNameLine1FontSize) {
       document.getElementById("school-name-line1-fontsize").value = config.SchoolNameLine1FontSize;
-      localStorage.setItem(LS_KEYS.schoolNameLine1FontSize, String(config.SchoolNameLine1FontSize));
     } else if (config.SchoolNameSize !== undefined && config.SchoolNameSize !== null) {
-      const size = String(config.SchoolNameSize).replace(/px$/i, "");
-      document.getElementById("school-name-line1-fontsize").value = size;
-      localStorage.setItem(LS_KEYS.schoolNameLine1FontSize, size);
+      document.getElementById("school-name-line1-fontsize").value = String(config.SchoolNameSize).replace(/px$/i, "");
     }
     if (config.SchoolNameLine2FontSize) {
       document.getElementById("school-name-line2-fontsize").value = config.SchoolNameLine2FontSize;
-      localStorage.setItem(LS_KEYS.schoolNameLine2FontSize, String(config.SchoolNameLine2FontSize));
     }
     if (config.SchoolNameLine1FontFamily) {
       document.getElementById("school-name-line1-fontfamily").value = config.SchoolNameLine1FontFamily;
-      localStorage.setItem(LS_KEYS.schoolNameLine1FontFamily, config.SchoolNameLine1FontFamily);
     }
     if (config.SchoolNameLine2FontFamily) {
       document.getElementById("school-name-line2-fontfamily").value = config.SchoolNameLine2FontFamily;
-      localStorage.setItem(LS_KEYS.schoolNameLine2FontFamily, config.SchoolNameLine2FontFamily);
     }
+    applySchoolNameLineStyles();
+    window.dispatchEvent(new CustomEvent("idcard-schoolname-change"));
+  } else {
+    twoLineToggle.checked = false;
+    twoLinePanel.classList.remove("is-open");
+    document.getElementById("school-name-line1-fontsize").value = "12";
+    document.getElementById("school-name-line1-fontfamily").value = "Arial, Helvetica, sans-serif";
+    document.getElementById("school-name-line2-fontsize").value = "11";
+    document.getElementById("school-name-line2-fontfamily").value = "Arial, Helvetica, sans-serif";
     applySchoolNameLineStyles();
     window.dispatchEvent(new CustomEvent("idcard-schoolname-change"));
   }
@@ -1535,7 +1482,6 @@ function applySettingsToControls(config) {
     const format = normalizeFormat(
       config.Format !== undefined && config.Format !== null ? config.Format : "1"
     );
-    localStorage.setItem(LS_KEYS.contentFormat, format);
     document.getElementById("content-format-picker").value = format;
     applyBodyFormat(format);
     window.dispatchEvent(new CustomEvent("idcard-format-change", { detail: { format } }));
@@ -1596,7 +1542,7 @@ angular.module('myApp', ['ngSanitize'])
     return `
       <div class="id-card">
         <div class="card-identifier">${bg.index}</div>
-        <div class="bg-image" style="background-image:url('${bg.url}');opacity:${bg.opacity};background-size:${bg.size};"></div>
+        <div class="bg-image" style="background-image:url('${bg.url}');background-size:${bg.size};"></div>
         <div class="main-content">
           <div class="school-info">
             <div class="school-logo">
@@ -1604,8 +1550,8 @@ angular.module('myApp', ['ngSanitize'])
             </div>
             <div class="school-name">
               ${renderSchoolNameHtml(org.Name)}
-              <p class="school-caption text-color">${escapeHtml(org.Caption || '')}</p>
-              <p class="school-affliate text-color">${escapeHtml(org.Affiliation || '')}</p>
+              <p class="school-caption text-color">${escapeHtml(org.Description || '')}</p>
+              <p class="school-affliate text-color">${escapeHtml(org.AffiliationInfo || org.Affiliation || '')}</p>
               <p class="school-address text-color">${escapeHtml(org.FullAddress || '')}</p>
             </div>
           </div>
@@ -1645,7 +1591,7 @@ angular.module('myApp', ['ngSanitize'])
     const nameParts = isSchoolNameTwoLine()
       ? getSchoolNameLines(org.Name)
       : splitSchoolName(org.Name);
-    const caption = org.Caption || org.Description || "";
+    const caption = org.Description || "";
     const taglineHtml = caption
       ? `<div class="school-tagline"><span>${escapeHtml(caption)}</span></div>`
       : "";
@@ -1669,6 +1615,7 @@ angular.module('myApp', ['ngSanitize'])
                 ${line2Html}
               </span>
               ${taglineHtml}
+              <p class="school-affliate">${escapeHtml(org.AffiliationInfo || org.Affiliation || '')}</p>
               <p class="school-address">${escapeHtml(org.FullAddress || '')}</p>
             </div>
           </div>
@@ -1703,7 +1650,7 @@ angular.module('myApp', ['ngSanitize'])
     return `
       <div class="id-card">
         <div class="card-identifier">${bg.index}</div>
-        <div class="bg-image" style="background-image:url('${bg.url}');opacity:0.2;background-size:${bg.size};"></div>
+        <div class="bg-image" style="background-image:url('${bg.url}');background-size:${bg.size};"></div>
         <div class="main-content">
           <div class="school-info">
             <div class="school-logo">
@@ -1711,8 +1658,8 @@ angular.module('myApp', ['ngSanitize'])
             </div>
             <div class="school-name">
               ${renderSchoolNameHtml(org.Name)}
-              <p class="school-caption text-color">${escapeHtml(org.Caption || '')}</p>
-              <p class="school-affliate text-color">${escapeHtml(org.Affiliation || '')}</p>
+              <p class="school-caption text-color">${escapeHtml(org.Description || '')}</p>
+              <p class="school-affliate text-color">${escapeHtml(org.AffiliationInfo || org.Affiliation || '')}</p>
               <p class="school-address text-color">${escapeHtml(org.FullAddress || '')}</p>
             </div>
           </div>
