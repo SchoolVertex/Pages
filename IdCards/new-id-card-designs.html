@@ -997,6 +997,12 @@
     </div>
     <div class="control-group">
       <label>
+        <input type="checkbox" id="hide-signature-toggle" />
+        Hide Signature
+      </label>
+    </div>
+    <div class="control-group">
+      <label>
         <input type="checkbox" id="school-name-twoline-toggle" />
         Two-line School Name
       </label>
@@ -1299,6 +1305,11 @@ function getPrincipalLabel() {
   return "Principal Signature";
 }
 
+function isHideSignature() {
+  var toggle = document.getElementById("hide-signature-toggle");
+  return !!(toggle && toggle.checked);
+}
+
 function isSchoolNameTwoLine() {
   var toggle = document.getElementById("school-name-twoline-toggle");
   return !!(toggle && toggle.checked);
@@ -1353,6 +1364,7 @@ function buildCurrentSettingsJson() {
     BackgroundImage: getBackgroundImageId(),
     BackgroundOpacity: getBackgroundOpacity(),
     PrincipalSignature: getPrincipalLabel(),
+    HideSignature: isHideSignature(),
     SchoolNameTwoLine: isSchoolNameTwoLine()
   };
   if (settings.SchoolNameTwoLine) {
@@ -1498,6 +1510,12 @@ function setupPickers() {
     applyPrincipalLabel(e.target.value);
   });
 
+  const hideSignatureToggle = document.getElementById("hide-signature-toggle");
+  hideSignatureToggle.checked = false;
+  hideSignatureToggle.addEventListener("change", () => {
+    window.dispatchEvent(new CustomEvent("idcard-schoolname-change"));
+  });
+
   const twoLineToggle = document.getElementById("school-name-twoline-toggle");
   const twoLinePanel = document.getElementById("school-name-twoline-panel");
   const line1Input = document.getElementById("school-name-line1");
@@ -1629,6 +1647,12 @@ function applySettingsToControls(config) {
     applyPrincipalLabel("Principal Signature");
   }
 
+  {
+    const hideToggle = document.getElementById("hide-signature-toggle");
+    const hideOn = config.HideSignature === true || config.HideSignature === 1 || config.HideSignature === "true";
+    hideToggle.checked = hideOn;
+  }
+
   const twoLineToggle = document.getElementById("school-name-twoline-toggle");
   const twoLinePanel = document.getElementById("school-name-twoline-panel");
   const twoLineOn = config.SchoolNameTwoLine === true || config.SchoolNameTwoLine === 1 || config.SchoolNameTwoLine === "true";
@@ -1732,6 +1756,7 @@ angular.module('myApp', ['ngSanitize'])
   }
 
   function renderPrincipalSignatureHtml(org, labelClass) {
+    if (isHideSignature()) return "";
     var sign = org && org.Sign ? String(org.Sign).trim() : "";
     var signHtml = sign
       ? `<div class="principal-sign"><img src="${escapeHtml(sign)}" alt="Signature"></div>`
