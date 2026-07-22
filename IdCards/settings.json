@@ -12,10 +12,24 @@
         "BackgroundImage": 8
     },
     "153": {
-        "PrimaryColor": "midnightblue",
-        "TextColor": "black",
-        "SchoolNameSize": 16,
-        "BackgroundImage": 2
+      "Format": 2,
+      "PrimaryColor": "MidnightBlue",
+      "TextColor": "Black",
+      "SchoolNameSize": 16,
+      "PhotoHeight": 80,
+      "PhotoBorderRadius": 50,
+      "PhotoObjectFit": "cover",
+      "BackgroundImage": 2,
+      "BackgroundOpacity": 0.5,
+      "PrincipalSignature": "Principal Signature",
+      "HideSignature": false,
+      "SchoolNameTwoLine": true,
+      "SchoolNameLine1": "GVR Global",
+      "SchoolNameLine2": "Erudite School",
+      "SchoolNameLine1FontSize": 19,
+      "SchoolNameLine1FontFamily": "Georgia, serif",
+      "SchoolNameLine2FontSize": 14,
+      "SchoolNameLine2FontFamily": "Georgia, serif"
     },
     "143": {
       "Format": 2,
