@@ -751,7 +751,7 @@
         </div>
       </div>
 
-      <div class="principal-signature-area">
+      <div class="principal-signature-area" ng-if="!hideSignature">
         <div class="principal-sign" ng-if="org.Sign">
           <img ng-src="{{org.Sign}}" alt="Signature">
         </div>
@@ -848,7 +848,7 @@
       </div>
 
       <div class="card-footer">
-        <div class="principal-signature-area">
+        <div class="principal-signature-area" ng-if="!hideSignature">
           <div class="principal-sign" ng-if="org.Sign">
             <img ng-src="{{org.Sign}}" alt="Signature">
           </div>
@@ -889,7 +889,7 @@
         <div class="simple-class-line" ng-if="userInfo.ClassName">{{userInfo.ClassName}}</div>
       </div>
 
-      <div class="principal-signature-area">
+      <div class="principal-signature-area" ng-if="!hideSignature">
         <div class="principal-sign" ng-if="org.Sign">
           <img ng-src="{{org.Sign}}" alt="Signature">
         </div>
@@ -908,6 +908,7 @@
       $scope.bodyFormatClass = "format-standard";
       $scope.templateUrl = "standard-template.html";
       $scope.principalLabel = "Principal Signature";
+      $scope.hideSignature = false;
       $scope.schoolNameLine1 = "";
       $scope.schoolNameLine2 = "";
       $scope.useTwoLineSchoolName = false;
@@ -1103,6 +1104,7 @@
         } else {
           $scope.principalLabel = "Principal Signature";
         }
+        $scope.hideSignature = config.HideSignature === true || config.HideSignature === 1 || config.HideSignature === "true";
 
         var twoLineOn = config.SchoolNameTwoLine === true || config.SchoolNameTwoLine === 1 || config.SchoolNameTwoLine === "true";
         $scope.useTwoLineSchoolName = !!twoLineOn;
