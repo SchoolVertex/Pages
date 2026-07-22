@@ -69,6 +69,100 @@
       vertical-align: middle;
     }
 
+    .color-select {
+      position: relative;
+      display: inline-block;
+      min-width: 170px;
+      vertical-align: middle;
+    }
+
+    .color-select-trigger {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 4px 8px;
+      font-size: 13px;
+      font-family: inherit;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .color-select-trigger:hover,
+    .color-select.is-open .color-select-trigger {
+      border-color: #888;
+    }
+
+    .color-swatch {
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+      border: 1px solid rgba(0, 0, 0, 0.25);
+      flex-shrink: 0;
+      box-sizing: border-box;
+    }
+
+    .color-select-label {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .color-select-caret {
+      color: #666;
+      font-size: 11px;
+      line-height: 1;
+    }
+
+    .color-select-menu {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      max-height: 260px;
+      overflow-y: auto;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      z-index: 1200;
+      padding: 4px;
+    }
+
+    .color-select.is-open .color-select-menu {
+      display: block;
+    }
+
+    .color-select-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 6px 8px;
+      border: none;
+      background: transparent;
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      text-align: left;
+      border-radius: 3px;
+      color: #222;
+    }
+
+    .color-select-option:hover,
+    .color-select-option.is-selected {
+      background: #f0f3f7;
+    }
+
+    .color-select-option.is-selected {
+      font-weight: 600;
+    }
+
     .control-panel-extra {
       display: none;
       width: 100%;
@@ -357,6 +451,8 @@
 
     .format-standard .principal-sign img {
       height: 20px;
+      max-width: 90px;
+      object-fit: contain;
     }
 
     .format-standard .principal-label {
@@ -630,6 +726,19 @@
       margin-top: 0;
     }
 
+    .format-ridgeboard .principal-sign {
+      min-height: 16px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .format-ridgeboard .principal-sign img {
+      height: 18px;
+      max-width: 70px;
+      object-fit: contain;
+    }
+
     .format-ridgeboard .principal-label {
       font-size: 7px;
       font-weight: 700;
@@ -857,11 +966,11 @@
     </div>
     <div class="control-group">
       <label>Primary Color</label>
-      <select id="school-color-picker"></select>
+      <div id="school-color-picker" class="color-select" data-value="Blue" data-css-var="--school-color"></div>
     </div>
     <div class="control-group">
       <label>Text Color</label>
-      <select id="text-color-picker"></select>
+      <div id="text-color-picker" class="color-select" data-value="Black" data-css-var="--text-color"></div>
     </div>
     <div class="control-group">
       <label>School Name Size</label>
@@ -998,17 +1107,70 @@ const commonColors = [
   "MediumSpringGreen","MediumTurquoise","MediumVioletRed","MidnightBlue","MintCream"
 ];
 
+function isLightColorName(name) {
+  return [
+    "White", "Ivory", "LightYellow", "Beige", "Azure", "HoneyDew", "GhostWhite",
+    "FloralWhite", "AliceBlue", "MintCream", "Snow", "Seashell", "Linen",
+    "LavenderBlush", "OldLace", "Cornsilk", "LemonChiffon", "LightCyan",
+    "LightGoldenRodYellow", "LightGray", "Gainsboro", "Whitesmoke"
+  ].some(c => c.toLowerCase() === String(name).toLowerCase());
+}
+
 function populateColorDropdown(selectId, savedValue, defaultColor) {
-  const select = document.getElementById(selectId);
-  select.innerHTML = "";
+  const root = document.getElementById(selectId);
+  if (!root) return;
+  root.classList.add("color-select");
+  root.innerHTML = "";
+
+  const trigger = document.createElement("button");
+  trigger.type = "button";
+  trigger.className = "color-select-trigger";
+  trigger.setAttribute("aria-haspopup", "listbox");
+  trigger.innerHTML =
+    '<span class="color-swatch"></span>' +
+    '<span class="color-select-label"></span>' +
+    '<span class="color-select-caret">▾</span>';
+
+  const menu = document.createElement("div");
+  menu.className = "color-select-menu";
+  menu.setAttribute("role", "listbox");
+
   commonColors.forEach(name => {
-    const opt = document.createElement("option");
-    opt.value = name;
-    opt.textContent = name;
-    opt.style.backgroundColor = name;
-    opt.style.color = ["White","Ivory","LightYellow","Beige"].includes(name) ? "black" : "white";
-    select.appendChild(opt);
+    const opt = document.createElement("button");
+    opt.type = "button";
+    opt.className = "color-select-option";
+    opt.setAttribute("role", "option");
+    opt.dataset.value = name;
+    opt.innerHTML =
+      '<span class="color-swatch" style="background-color:' + name + ';"></span>' +
+      "<span>" + name + "</span>";
+    opt.addEventListener("click", function (e) {
+      e.stopPropagation();
+      setColorSelectValue(selectId, name);
+      root.classList.remove("is-open");
+      root.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    menu.appendChild(opt);
   });
+
+  root.appendChild(trigger);
+  root.appendChild(menu);
+
+  trigger.addEventListener("click", function (e) {
+    e.stopPropagation();
+    document.querySelectorAll(".color-select.is-open").forEach(el => {
+      if (el !== root) el.classList.remove("is-open");
+    });
+    root.classList.toggle("is-open");
+  });
+
+  if (!window.__colorSelectDocCloseBound) {
+    window.__colorSelectDocCloseBound = true;
+    document.addEventListener("click", function () {
+      document.querySelectorAll(".color-select.is-open").forEach(el => el.classList.remove("is-open"));
+    });
+  }
+
   setColorSelectValue(selectId, savedValue || defaultColor);
 }
 
@@ -1019,19 +1181,46 @@ function resolveColorName(value, fallback) {
 }
 
 function setColorSelectValue(selectId, value) {
-  const select = document.getElementById(selectId);
-  const resolved = resolveColorName(value, select.options[0] ? select.options[0].value : "Blue");
-  const match = Array.from(select.options).find(o => o.value.toLowerCase() === resolved.toLowerCase());
-  if (match) {
-    select.value = match.value;
-  } else {
-    const opt = document.createElement("option");
-    opt.value = resolved;
-    opt.textContent = resolved;
-    opt.style.backgroundColor = resolved;
-    select.appendChild(opt);
-    select.value = resolved;
+  const root = document.getElementById(selectId);
+  if (!root) return;
+  const resolved = resolveColorName(value, root.dataset.value || "Blue");
+  let match = Array.from(root.querySelectorAll(".color-select-option")).find(
+    o => o.dataset.value.toLowerCase() === resolved.toLowerCase()
+  );
+
+  if (!match) {
+    match = document.createElement("button");
+    match.type = "button";
+    match.className = "color-select-option";
+    match.setAttribute("role", "option");
+    match.dataset.value = resolved;
+    match.innerHTML =
+      '<span class="color-swatch" style="background-color:' + resolved + ';"></span>' +
+      "<span>" + resolved + "</span>";
+    match.addEventListener("click", function (e) {
+      e.stopPropagation();
+      setColorSelectValue(selectId, resolved);
+      root.classList.remove("is-open");
+      root.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    const menu = root.querySelector(".color-select-menu");
+    if (menu) menu.insertBefore(match, menu.firstChild);
   }
+
+  root.dataset.value = match.dataset.value;
+  root.querySelectorAll(".color-select-option").forEach(o => {
+    o.classList.toggle("is-selected", o === match);
+  });
+
+  const swatch = root.querySelector(".color-select-trigger .color-swatch");
+  const label = root.querySelector(".color-select-trigger .color-select-label");
+  if (swatch) {
+    swatch.style.backgroundColor = match.dataset.value;
+    swatch.style.borderColor = isLightColorName(match.dataset.value)
+      ? "rgba(0,0,0,0.35)"
+      : "rgba(0,0,0,0.2)";
+  }
+  if (label) label.textContent = match.dataset.value;
 }
 
 function getOrgIdFromQuery() {
@@ -1040,7 +1229,11 @@ function getOrgIdFromQuery() {
 
 function getElValue(id, fallback) {
   var el = document.getElementById(id);
-  if (!el || el.value === undefined || el.value === null || el.value === "") return fallback;
+  if (!el) return fallback;
+  if (el.classList && el.classList.contains("color-select")) {
+    return el.dataset.value || fallback;
+  }
+  if (el.value === undefined || el.value === null || el.value === "") return fallback;
   return el.value;
 }
 
@@ -1261,12 +1454,12 @@ function setupPickers() {
     window.dispatchEvent(new CustomEvent("idcard-format-change", { detail: { format } }));
   });
 
-  document.getElementById("school-color-picker").addEventListener("input", e => {
-    document.documentElement.style.setProperty("--school-color", e.target.value);
+  document.getElementById("school-color-picker").addEventListener("change", e => {
+    document.documentElement.style.setProperty("--school-color", e.currentTarget.dataset.value);
   });
 
-  document.getElementById("text-color-picker").addEventListener("input", e => {
-    document.documentElement.style.setProperty("--text-color", e.target.value);
+  document.getElementById("text-color-picker").addEventListener("change", e => {
+    document.documentElement.style.setProperty("--text-color", e.currentTarget.dataset.value);
   });
 
   const fontInput = document.getElementById("school-name-fontsize");
@@ -1538,6 +1731,19 @@ angular.module('myApp', ['ngSanitize'])
     return escapeHtmlGlobal(str);
   }
 
+  function renderPrincipalSignatureHtml(org, labelClass) {
+    var sign = org && org.Sign ? String(org.Sign).trim() : "";
+    var signHtml = sign
+      ? `<div class="principal-sign"><img src="${escapeHtml(sign)}" alt="Signature"></div>`
+      : `<div class="principal-sign"></div>`;
+    var labelCls = labelClass ? `principal-label ${labelClass}` : "principal-label";
+    return `
+            <div class="principal-signature-area">
+              ${signHtml}
+              <div class="${labelCls}">${escapeHtml(getPrincipalLabel())}</div>
+            </div>`;
+  }
+
   function buildStandardCard(org, bg) {
     return `
       <div class="id-card">
@@ -1570,10 +1776,7 @@ angular.module('myApp', ['ngSanitize'])
             <div class="info-row"><div class="info-label school-color">Address</div><div class="info-value text-color">Flat No 502, Block Sri Lakshmi Krishna Paradise, Wid Colony</div></div>
           </div>
 
-          <div class="principal-signature-area">
-            <div class="principal-sign"></div>
-            <div class="principal-label text-color">${escapeHtml(getPrincipalLabel())}</div>
-          </div>
+          ${renderPrincipalSignatureHtml(org, "text-color")}
         </div>
       </div>`;
   }
@@ -1638,9 +1841,7 @@ angular.module('myApp', ['ngSanitize'])
           </div>
 
           <div class="card-footer">
-            <div class="principal-signature-area">
-              <div class="principal-label">${escapeHtml(getPrincipalLabel())}</div>
-            </div>
+            ${renderPrincipalSignatureHtml(org)}
           </div>
         </div>
       </div>`;
@@ -1674,10 +1875,7 @@ angular.module('myApp', ['ngSanitize'])
             <div class="simple-class-line">Grade 6</div>
           </div>
 
-          <div class="principal-signature-area">
-            <div class="principal-sign"></div>
-            <div class="principal-label text-color">${escapeHtml(getPrincipalLabel())}</div>
-          </div>
+          ${renderPrincipalSignatureHtml(org, "text-color")}
         </div>
       </div>`;
   }
