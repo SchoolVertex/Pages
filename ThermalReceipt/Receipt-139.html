@@ -90,7 +90,7 @@
       const receiptUrl = `${baseUrl}/Fee/GetFeeReceiptInfo/139/${userId}`;
 
       // Due Amount code starts
-      const feeSummaryUrl = `${baseUrl}/Fee/GetUserFeeSummary/${userId}/8`;
+      const feeSummaryUrl = `${baseUrl}/Fee/GetUserFeeSummary/${userId}/9`;
       const summaryPromise = $http.get(feeSummaryUrl).then(function(response1) {
         $scope.dueAmount = response1.data.Total - (response1.data.Received + response1.data.Concession);
       });
