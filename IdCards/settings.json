@@ -89,7 +89,7 @@
       "SchoolNameSize": 12,
       "PhotoHeight": 120,
       "PhotoBorderRadius": 20,
-      "PhotoObjectFit": "cover",
+      "PhotoObjectFit": "fill",
       "BackgroundImage": 17,
       "BackgroundOpacity": 1,
       "PrincipalSignature": "Correspondent",
