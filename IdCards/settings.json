@@ -51,10 +51,24 @@
       "SchoolNameLine2FontFamily": "Georgia, serif"
     },
     "151": {
-        "PrimaryColor": "red",
-        "TextColor": "black",
-        "SchoolNameSize": 13,
-        "BackgroundImage": 45
+      "Format": 1,
+      "PrimaryColor": "Red",
+      "TextColor": "Black",
+      "SchoolNameSize": 13,
+      "PhotoHeight": 100,
+      "PhotoBorderRadius": 10,
+      "PhotoObjectFit": "cover",
+      "BackgroundImage": 45,
+      "BackgroundOpacity": 1,
+      "PrincipalSignature": "Principal Signature",
+      "HideSignature": false,
+      "SchoolNameTwoLine": true,
+      "SchoolNameLine1": "VIDYANIKETAN",
+      "SchoolNameLine2": "Model High School",
+      "SchoolNameLine1FontSize": 17,
+      "SchoolNameLine1FontFamily": "Arial, Helvetica, sans-serif",
+      "SchoolNameLine2FontSize": 13,
+      "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
     },
     "184": {
         "PrimaryColor": "midnightblue",
