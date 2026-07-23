@@ -898,11 +898,134 @@
     </div>
   </script>
 
+  <!--
+    Reusable no-photo helpers — copy this whole <script> block into other
+    customisable ID-card HTML files, then call IdCardNoPhotoHelper.afterCardsLoaded(...)
+  -->
+  <script>
+    (function (global) {
+      var PLACEHOLDER_SNIPPETS = [
+        "user avatar",
+        "user-avatar",
+        "user_avatar",
+        "useravatar",
+        "default photo",
+        "default-photo",
+        "default_photo",
+        "defaultphoto",
+        "default image",
+        "default-image",
+        "default_image",
+        "defaultimage",
+        "no-image",
+        "no_image",
+        "noimage",
+        "placeholder",
+        "avatar.png",
+        "avatar.jpg",
+        "blank-avatar",
+        "blank_avatar"
+      ];
+
+      function normalizeImageValue(imageUrl) {
+        if (imageUrl == null) return "";
+        return String(imageUrl).trim().toLowerCase();
+      }
+
+      /** True when Image is empty or looks like a default/placeholder avatar URL/path. */
+      function isMissingOrPlaceholderPhoto(imageUrl) {
+        var value = normalizeImageValue(imageUrl);
+        if (!value) return true;
+        for (var i = 0; i < PLACEHOLDER_SNIPPETS.length; i++) {
+          if (value.indexOf(PLACEHOLDER_SNIPPETS[i]) !== -1) return true;
+        }
+        return false;
+      }
+
+      function userHasRealPhoto(user) {
+        if (!user) return false;
+        return !isMissingOrPlaceholderPhoto(user.Image);
+      }
+
+      function countCardsWithoutPhoto(users) {
+        var list = Array.isArray(users) ? users : (users ? [users] : []);
+        var count = 0;
+        for (var i = 0; i < list.length; i++) {
+          if (!userHasRealPhoto(list[i])) count++;
+        }
+        return count;
+      }
+
+      function filterUsersWithPhotos(users) {
+        var list = Array.isArray(users) ? users : [];
+        var kept = [];
+        for (var i = 0; i < list.length; i++) {
+          if (userHasRealPhoto(list[i])) kept.push(list[i]);
+        }
+        return kept;
+      }
+
+      /**
+       * After cards are already shown: ask whether to hide cards without photos.
+       * Does nothing (no confirm) when every card already has a real photo.
+       * onHide(filteredUsersOrNull) — for bulk, filtered array; for single, user or null.
+       * Copy this helper into custom files and call the same way.
+       */
+      function promptHideCardsWithoutPhotos(usersOrUser, isBulk, onHide) {
+        var withoutCount = countCardsWithoutPhoto(usersOrUser);
+        // No missing/placeholder photos → never show the confirmation
+        if (!withoutCount) return false;
+
+        var message =
+          withoutCount === 1
+            ? "1 ID card has no student photo (or only a default avatar).\n\nHide ID cards without photos?"
+            : withoutCount +
+              " ID cards have no student photo (or only a default avatar).\n\nHide ID cards without photos?";
+
+        var shouldHide = global.confirm(message);
+        if (!shouldHide) return false;
+
+        if (typeof onHide !== "function") return true;
+
+        if (isBulk) {
+          onHide(filterUsersWithPhotos(usersOrUser));
+        } else {
+          onHide(userHasRealPhoto(usersOrUser) ? usersOrUser : null);
+        }
+        return true;
+      }
+
+      /**
+       * Convenience: wait briefly so cards paint, then prompt (only if needed).
+       * applyHide(result) receives filtered userList (bulk) or userInfo/null (single).
+       */
+      function afterCardsLoaded(usersOrUser, isBulk, applyHide, delayMs) {
+        // Skip timer + confirm entirely when all cards have real photos
+        if (countCardsWithoutPhoto(usersOrUser) <= 0) return;
+
+        var wait = delayMs == null ? 300 : delayMs;
+        global.setTimeout(function () {
+          promptHideCardsWithoutPhotos(usersOrUser, isBulk, applyHide);
+        }, wait);
+      }
+
+      global.IdCardNoPhotoHelper = {
+        PLACEHOLDER_SNIPPETS: PLACEHOLDER_SNIPPETS,
+        isMissingOrPlaceholderPhoto: isMissingOrPlaceholderPhoto,
+        userHasRealPhoto: userHasRealPhoto,
+        countCardsWithoutPhoto: countCardsWithoutPhoto,
+        filterUsersWithPhotos: filterUsersWithPhotos,
+        promptHideCardsWithoutPhotos: promptHideCardsWithoutPhotos,
+        afterCardsLoaded: afterCardsLoaded
+      };
+    })(window);
+  </script>
+
   <script>
     var app = angular.module("myApp", []);
     const baseApiUrl = "https://api.schoolvertex.com/api";
 
-    app.controller("myCtrl", function ($scope, $http) {
+    app.controller("myCtrl", function ($scope, $http, $timeout) {
       $scope.userList = [];
       $scope.contentFormat = "1";
       $scope.bodyFormatClass = "format-standard";
@@ -1230,10 +1353,35 @@
         console.error("Design config API failed — using defaults:", error.status, error.statusText);
       });
 
+      function offerHideCardsWithoutPhotos(usersOrUser, isBulk) {
+        if (!window.IdCardNoPhotoHelper) return;
+        // No placeholder/missing photos → do not show confirmation
+        if (window.IdCardNoPhotoHelper.countCardsWithoutPhoto(usersOrUser) <= 0) return;
+
+        // Cards are already bound; wait a tick so they appear, then ask.
+        $timeout(function () {
+          window.IdCardNoPhotoHelper.afterCardsLoaded(
+            usersOrUser,
+            isBulk,
+            function (result) {
+              $scope.$applyAsync(function () {
+                if (isBulk) {
+                  $scope.userList = result || [];
+                } else {
+                  $scope.userInfo = result;
+                }
+              });
+            },
+            300
+          );
+        }, 0);
+      }
+
       if (userId) {
         var url = baseApiUrl + "/Fee/GetIdCardInfo/" + orgId + "/" + userId;
         $http.get(url).then(function (response) {
           $scope.userInfo = response.data;
+          offerHideCardsWithoutPhotos($scope.userInfo, false);
         });
       } else if (sectionId > 0 || classId > 0) {
         var bulkUrl = null;
@@ -1244,7 +1392,8 @@
         }
         if (bulkUrl) {
           $http.get(bulkUrl).then(function (response) {
-            $scope.userList = response.data;
+            $scope.userList = response.data || [];
+            offerHideCardsWithoutPhotos($scope.userList, true);
           });
         }
       }
