@@ -135,4 +135,24 @@
   "SchoolNameLine2FontSize": 11,
   "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
 },
+    "183": {
+  "Format": 2,
+  "PrimaryColor": "Maroon",
+  "TextColor": "Navy",
+  "SchoolNameSize": 12,
+  "PhotoHeight": 80,
+  "PhotoBorderRadius": 20,
+  "PhotoObjectFit": "cover",
+  "BackgroundImage": 10,
+  "BackgroundOpacity": 1,
+  "PrincipalSignature": "Principal Signature",
+  "HideSignature": false,
+  "SchoolNameTwoLine": true,
+  "SchoolNameLine1": "NEW TAKSHASILA",
+  "SchoolNameLine2": "HIGH SCHOOL",
+  "SchoolNameLine1FontSize": 12,
+  "SchoolNameLine1FontFamily": "Arial, Helvetica, sans-serif",
+  "SchoolNameLine2FontSize": 11,
+  "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
+},
 }
