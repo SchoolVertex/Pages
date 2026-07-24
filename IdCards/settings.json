@@ -144,10 +144,24 @@
     "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
   },
   "184": {
-    "PrimaryColor": "midnightblue",
-    "TextColor": "black",
+    "Format": 1,
+    "PrimaryColor": "MidnightBlue",
+    "TextColor": "Black",
     "SchoolNameSize": 14,
-    "BackgroundImage": 50
+    "PhotoHeight": 100,
+    "PhotoBorderRadius": 50,
+    "PhotoObjectFit": "cover",
+    "BackgroundImage": 50,
+    "BackgroundOpacity": 1,
+    "PrincipalSignature": "Principal Signature",
+    "HideSignature": false,
+    "SchoolNameTwoLine": true,
+    "SchoolNameLine1": "NOVA",
+    "SchoolNameLine2": "GRAMMAR SCHOOL",
+    "SchoolNameLine1FontSize": 20,
+    "SchoolNameLine1FontFamily": "Verdana, Geneva, sans-serif",
+    "SchoolNameLine2FontSize": 12,
+    "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
   },
   "All": {
     "PrimaryColor": "black",
