@@ -151,7 +151,7 @@
     "PhotoHeight": 120,
     "PhotoBorderRadius": 50,
     "PhotoObjectFit": "cover",
-    "BackgroundImage": 50,
+    "BackgroundImage": 17,
     "BackgroundOpacity": 1,
     "PrincipalSignature": "Principal Signature",
     "HideSignature": false,
