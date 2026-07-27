@@ -52,6 +52,27 @@
     "SchoolNameLine2FontSize": 13,
     "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
   },
+  "152": {
+    "Format": 3,
+    "PrimaryColor": "Navy",
+    "TextColor": "Black",
+    "SchoolNameSize": 18,
+    "PhotoHeight": 120,
+    "PhotoBorderRadius": 50,
+    "SchoolLogoBorderRadius": 10,
+    "PhotoObjectFit": "cover",
+    "BackgroundImage": 20,
+    "BackgroundOpacity": 0.8,
+    "PrincipalSignature": "Principal Signature",
+    "HideSignature": false,
+    "SchoolNameTwoLine": false,
+    "ShowAcademicYear": false,
+    "AcademicYear": "2026-27",
+    "StudentFields": [
+      "Grade",
+      "RollNumber"
+    ]
+},
   "153": {
     "Format": 2,
     "PrimaryColor": "MidnightBlue",
