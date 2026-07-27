@@ -168,7 +168,10 @@
       position: relative;
       z-index: 1;
       overflow: hidden;
-      /* View-only print-area guide — outline does not change the box model */
+    }
+
+    /* View-only print-area guide — outline does not change the box model */
+    .show-print-area .main-content {
       outline: 1px solid red;
       outline-offset: -1px;
     }
@@ -810,7 +813,7 @@
         margin: var(--id-text-part-margin-y) auto;
         padding: var(--id-text-part-padding-y) var(--id-text-part-padding-x);
         box-sizing: border-box;
-        outline: none;
+        outline: none !important;
       }
     }
 
@@ -821,7 +824,7 @@
   </style>
 </head>
 
-<body ng-controller="myCtrl" id="page-body" ng-class="bodyFormatClass">
+<body ng-controller="myCtrl" id="page-body" ng-class="[bodyFormatClass, {'show-print-area': showPrintArea}]">
 
   <div class="control-bar" ng-cloak>
     <div class="control-group">
@@ -834,6 +837,12 @@
       <label>
         <input type="checkbox" ng-model="showOnlyTrimmedCards" ng-change="applyCardFilters()" />
         Show only trimmed cards
+      </label>
+    </div>
+    <div class="control-group">
+      <label>
+        <input type="checkbox" ng-model="showPrintArea" />
+        Show print area
       </label>
     </div>
     <div class="control-group" ng-if="trimmedCardsCount !== null">
@@ -1260,6 +1269,7 @@
       $scope.academicYear = "2026-27";
       $scope.hideCardsWithoutPhotos = false;
       $scope.showOnlyTrimmedCards = false;
+      $scope.showPrintArea = false;
       $scope.trimmedCardsCount = null;
       $scope._allUserList = [];
       $scope._allUserInfo = null;
