@@ -42,6 +42,10 @@
       --id-text-part-width: 50mm;
       --id-text-part-height: 82mm;
       --id-safe-inset: 6mm;
+      /* (91.5 - 82) / 2 = 4.75mm · inner pad so text is 6mm from card edge */
+      --id-text-part-margin-y: 4.75mm;
+      --id-text-part-padding-y: 1.25mm;
+      --id-text-part-padding-x: 2.5mm;
     }
 
     body {
@@ -463,11 +467,17 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin: 4.75mm auto 0;
-      padding: 1.25mm 2.5mm;
+      margin: var(--id-text-part-margin-y) auto;
+      padding: var(--id-text-part-padding-y) var(--id-text-part-padding-x);
       position: relative;
       z-index: 1;
       overflow: hidden;
+    }
+
+    /* View-only print-area guide — outline does not change the box model */
+    .show-print-area .main-content {
+      outline: 1px solid red;
+      outline-offset: -1px;
     }
 
     /* ══════════════ STANDARD FORMAT ══════════════ */
@@ -1103,9 +1113,10 @@
       .format-simple .main-content {
         width: var(--id-text-part-width);
         height: var(--id-text-part-height);
-        margin: 4.75mm auto 0;
-        padding: 1.25mm 2.5mm;
+        margin: var(--id-text-part-margin-y) auto;
+        padding: var(--id-text-part-padding-y) var(--id-text-part-padding-x);
         box-sizing: border-box;
+        outline: none !important;
       }
     }
 
@@ -1318,6 +1329,12 @@
       </div>
     </div>
 
+    <div class="control-group">
+      <label>
+        <input type="checkbox" id="show-print-area-toggle" />
+        Show print area
+      </label>
+    </div>
     <div class="control-group">
       <button type="button" class="settings-json-btn" id="show-settings-json-btn">Copy Settings JSON</button>
     </div>
@@ -1995,6 +2012,18 @@ function setupPickers() {
   showAcademicYearToggle.addEventListener("change", emitCardRefresh);
   academicYearInput.addEventListener("input", emitCardRefresh);
   academicYearInput.addEventListener("change", emitCardRefresh);
+
+  const showPrintAreaToggle = document.getElementById("show-print-area-toggle");
+  function applyShowPrintArea(enabled) {
+    var body = document.getElementById("page-body");
+    if (!body) return;
+    body.classList.toggle("show-print-area", !!enabled);
+  }
+  showPrintAreaToggle.checked = false;
+  applyShowPrintArea(false);
+  showPrintAreaToggle.addEventListener("change", function () {
+    applyShowPrintArea(showPrintAreaToggle.checked);
+  });
 
   const studentFieldsPicker = document.getElementById("student-fields-picker");
   const studentFieldsTrigger = document.getElementById("student-fields-trigger");
