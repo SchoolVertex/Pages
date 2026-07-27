@@ -32,6 +32,12 @@
       --school-name-line1-font-family: Arial, Helvetica, sans-serif;
       --school-name-line2-font-size: 11px;
       --school-name-line2-font-family: Arial, Helvetica, sans-serif;
+      /* Print card: 57×91.5mm · Text Part: 50×82mm · text safe inset: 6mm */
+      --id-card-width: 57mm;
+      --id-card-height: 91.5mm;
+      --id-text-part-width: 50mm;
+      --id-text-part-height: 82mm;
+      --id-safe-inset: 6mm;
     }
 
     body {
@@ -40,6 +46,61 @@
       margin: 0;
       padding: 0;
       display: block !important;
+    }
+
+    .control-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px 20px;
+      align-items: center;
+      background: #fff;
+      padding: 10px 14px;
+      border-bottom: 1px solid #ccc;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .control-bar .control-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .control-bar .control-group label {
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .control-bar input[type="checkbox"] {
+      margin: 0;
+      vertical-align: middle;
+    }
+
+    .control-bar .print-btn {
+      font-size: 14px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #f5f5f5;
+      cursor: pointer;
+    }
+
+    .control-bar .print-btn:hover {
+      background: #ebebeb;
+    }
+
+    .control-bar .control-hint {
+      font-size: 13px;
+      font-weight: 600;
+      color: #c02026;
+    }
+
+    [ng\:cloak], [ng-cloak], .ng-cloak {
+      display: none !important;
     }
 
     .school-name-two-line {
@@ -61,8 +122,8 @@
     }
 
     .id-card {
-      width: 57mm;
-      height: 91.5mm;
+      width: var(--id-card-width);
+      height: var(--id-card-height);
       border-radius: 16px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
       position: relative;
@@ -87,20 +148,29 @@
       z-index: 0;
     }
 
-    /* ══════════════ STANDARD FORMAT ══════════════ */
-    /* Print safe zone: 6mm inset → text area ~45×79.5mm within 57×91.5mm card */
-    .format-standard .main-content {
-      height: 100%;
+    /* Text Part 50×82mm centered in card; inner padding keeps text 6mm from outer edges */
+    .format-standard .main-content,
+    .format-ridgeboard .main-content,
+    .format-simple .main-content {
+      width: var(--id-text-part-width);
+      height: var(--id-text-part-height);
+      max-width: 100%;
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin: 0;
-      padding: 6mm;
-      border-radius: 10px;
+      margin: 4.75mm auto 0;
+      padding: 1.25mm 2.5mm;
       position: relative;
       z-index: 1;
       overflow: hidden;
+      /* View-only guide for the printable Text Part area */
+      border: 1px solid red;
+    }
+
+    /* ══════════════ STANDARD FORMAT ══════════════ */
+    .format-standard .main-content {
+      border-radius: 10px;
     }
 
     .format-standard .school-info {
@@ -247,17 +317,7 @@
     }
 
     .format-ridgeboard .main-content {
-      height: 100%;
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin: 0;
-      padding: 6mm;
-      position: relative;
-      z-index: 1;
       font-family: 'Source Sans 3', sans-serif;
-      overflow: hidden;
     }
 
     .format-ridgeboard .school-info {
@@ -556,17 +616,7 @@
     }
 
     .format-simple .main-content {
-      height: 100%;
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin: 0;
-      padding: 6mm;
       border-radius: 10px;
-      position: relative;
-      z-index: 1;
-      overflow: hidden;
     }
 
     .format-simple .school-info {
@@ -728,13 +778,17 @@
         background: #fff;
         margin: 0;
         padding: 0;
-        width: 57mm;
-        height: 91.5mm;
+        width: var(--id-card-width);
+        height: var(--id-card-height);
+      }
+
+      .control-bar {
+        display: none !important;
       }
 
       .id-card {
-        width: 57mm;
-        height: 91.5mm;
+        width: var(--id-card-width);
+        height: var(--id-card-height);
         box-shadow: none;
         border-radius: 0;
         margin: 0;
@@ -746,9 +800,12 @@
       .format-standard .main-content,
       .format-ridgeboard .main-content,
       .format-simple .main-content {
-        padding: 6mm;
-        margin: 0;
+        width: var(--id-text-part-width);
+        height: var(--id-text-part-height);
+        margin: 4.75mm auto 0;
+        padding: 1.25mm 2.5mm;
         box-sizing: border-box;
+        border: none;
       }
     }
 
@@ -760,6 +817,27 @@
 </head>
 
 <body ng-controller="myCtrl" id="page-body" ng-class="bodyFormatClass">
+
+  <div class="control-bar" ng-cloak>
+    <div class="control-group">
+      <label>
+        <input type="checkbox" ng-model="hideCardsWithoutPhotos" ng-change="applyCardFilters()" />
+        Hide cards without photos
+      </label>
+    </div>
+    <div class="control-group">
+      <label>
+        <input type="checkbox" ng-model="showOnlyTrimmedCards" ng-change="applyCardFilters()" />
+        Show only trimmed cards
+      </label>
+    </div>
+    <div class="control-group" ng-if="trimmedCardsCount !== null">
+      <span class="control-hint">{{trimmedCardsCount}} trimmed</span>
+    </div>
+    <div class="control-group">
+      <button type="button" class="print-btn" ng-click="printCards()">Print</button>
+    </div>
+  </div>
 
   <!-- Single Card -->
   <div class="id-card" ng-if="userInfo && !userList.length">
@@ -1175,6 +1253,12 @@
       $scope.currentPhotoObjectFit = "cover";
       $scope.showAcademicYear = false;
       $scope.academicYear = "2026-27";
+      $scope.hideCardsWithoutPhotos = false;
+      $scope.showOnlyTrimmedCards = false;
+      $scope.trimmedCardsCount = null;
+      $scope._allUserList = [];
+      $scope._allUserInfo = null;
+      $scope._trimScanToken = 0;
       $scope.studentFields = [
         "Grade",
         "AdmissionNumber",
@@ -1189,6 +1273,152 @@
       $scope.isStudentFieldVisible = function (fieldKey) {
         return ($scope.studentFields || []).indexOf(fieldKey) !== -1;
       };
+
+      $scope.printCards = function () {
+        window.print();
+      };
+
+      function getPhotoFilteredList() {
+        var helper = window.IdCardNoPhotoHelper;
+        var list = Array.isArray($scope._allUserList) ? $scope._allUserList : [];
+        if ($scope.hideCardsWithoutPhotos && helper) {
+          return helper.filterUsersWithPhotos(list);
+        }
+        return list.slice();
+      }
+
+      function getPhotoFilteredSingle() {
+        var helper = window.IdCardNoPhotoHelper;
+        var user = $scope._allUserInfo;
+        if (!user) return null;
+        if ($scope.hideCardsWithoutPhotos && helper && !helper.userHasRealPhoto(user)) {
+          return null;
+        }
+        return user;
+      }
+
+      /** True when content extends beyond the red Text Part border (.main-content). */
+      function cardContentOverflows(cardEl) {
+        if (!cardEl) return false;
+        var main = cardEl.querySelector(".main-content");
+        if (!main) return false;
+        var tol = 1.5;
+        if (main.scrollHeight > main.clientHeight + tol) return true;
+        if (main.scrollWidth > main.clientWidth + tol) return true;
+
+        var mainRect = main.getBoundingClientRect();
+        var nodes = main.querySelectorAll("*");
+        for (var i = 0; i < nodes.length; i++) {
+          var el = nodes[i];
+          var style = window.getComputedStyle(el);
+          if (style.display === "none" || style.visibility === "hidden") continue;
+          var r = el.getBoundingClientRect();
+          if (r.width < 0.5 && r.height < 0.5) continue;
+          if (
+            r.bottom > mainRect.bottom + tol ||
+            r.right > mainRect.right + tol ||
+            r.top < mainRect.top - tol ||
+            r.left < mainRect.left - tol
+          ) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      function collectOverflowingUsers(baseList) {
+        var cards = document.querySelectorAll(".id-card");
+        var trimmed = [];
+        var limit = Math.min(cards.length, baseList.length);
+        for (var i = 0; i < limit; i++) {
+          if (cardContentOverflows(cards[i])) {
+            trimmed.push(baseList[i]);
+          }
+        }
+        return trimmed;
+      }
+
+      function afterCardsPainted(callback) {
+        $timeout(function () {
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              $timeout(callback, 250);
+            });
+          });
+        }, 0);
+      }
+
+      function applyTrimmedFilterFromDom(baseList, token) {
+        if (token !== $scope._trimScanToken) return;
+        if (!$scope.showOnlyTrimmedCards) return;
+
+        var trimmed = collectOverflowingUsers(baseList);
+        $scope.$applyAsync(function () {
+          if (token !== $scope._trimScanToken) return;
+          $scope.trimmedCardsCount = trimmed.length;
+          $scope.userList = trimmed;
+          $scope.userInfo = null;
+        });
+      }
+
+      function applyTrimmedFilterSingleFromDom(user, token) {
+        if (token !== $scope._trimScanToken) return;
+        if (!$scope.showOnlyTrimmedCards) return;
+
+        var card = document.querySelector(".id-card");
+        var overflows = cardContentOverflows(card);
+        $scope.$applyAsync(function () {
+          if (token !== $scope._trimScanToken) return;
+          $scope.trimmedCardsCount = overflows ? 1 : 0;
+          $scope.userInfo = overflows ? user : null;
+          $scope.userList = [];
+        });
+      }
+
+      $scope.applyCardFilters = function () {
+        var token = ++$scope._trimScanToken;
+
+        if ($scope._allUserList && $scope._allUserList.length) {
+          var base = getPhotoFilteredList();
+          $scope.userInfo = null;
+
+          if (!$scope.showOnlyTrimmedCards) {
+            $scope.trimmedCardsCount = null;
+            $scope.userList = base;
+            return;
+          }
+
+          // Render full photo-filtered set first, then keep only overflowing cards.
+          $scope.userList = base;
+          afterCardsPainted(function () {
+            applyTrimmedFilterFromDom(base, token);
+          });
+          return;
+        }
+
+        var single = getPhotoFilteredSingle();
+        $scope.userList = [];
+
+        if (!$scope.showOnlyTrimmedCards) {
+          $scope.trimmedCardsCount = null;
+          $scope.userInfo = single;
+          return;
+        }
+
+        if (!single) {
+          $scope.trimmedCardsCount = 0;
+          $scope.userInfo = null;
+          return;
+        }
+
+        $scope.userInfo = single;
+        afterCardsPainted(function () {
+          applyTrimmedFilterSingleFromDom(single, token);
+        });
+      };
+
+      // Back-compat alias used by older call sites
+      $scope.applyHideCardsWithoutPhotos = $scope.applyCardFilters;
 
       function applySchoolInfoOverrides() {
         if (!$scope.org) return;
@@ -1545,27 +1775,15 @@
       });
 
       function offerHideCardsWithoutPhotos(usersOrUser, isBulk) {
-        if (!window.IdCardNoPhotoHelper) return;
-        // No placeholder/missing photos → do not show confirmation
-        if (window.IdCardNoPhotoHelper.countCardsWithoutPhoto(usersOrUser) <= 0) return;
-
-        // Cards are already bound; wait a tick so they appear, then ask.
-        $timeout(function () {
-          window.IdCardNoPhotoHelper.afterCardsLoaded(
-            usersOrUser,
-            isBulk,
-            function (result) {
-              $scope.$applyAsync(function () {
-                if (isBulk) {
-                  $scope.userList = result || [];
-                } else {
-                  $scope.userInfo = result;
-                }
-              });
-            },
-            300
-          );
-        }, 0);
+        // Store full dataset; filtering is controlled by the top checkbox.
+        if (isBulk) {
+          $scope._allUserList = Array.isArray(usersOrUser) ? usersOrUser.slice() : [];
+          $scope._allUserInfo = null;
+        } else {
+          $scope._allUserInfo = usersOrUser || null;
+          $scope._allUserList = [];
+        }
+        $scope.applyCardFilters();
       }
 
       if (userId) {
