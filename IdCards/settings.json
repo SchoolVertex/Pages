@@ -55,7 +55,7 @@
   "SchoolNameSize": 13,
   "PhotoHeight": 90,
   "PhotoBorderRadius": 10,
-  "SchoolLogoBorderRadius": 50,
+  "SchoolLogoBorderRadius": 10,
   "PhotoObjectFit": "fill",
   "BackgroundImage": 45,
   "BackgroundOpacity": 1,
