@@ -1,0 +1,1813 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student ID Card</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --school-color: Blue;
+      --text-color: Black;
+      --school-name-font-size: 12px;
+      --student-photo-height: 80px;
+      --student-photo-border-radius: 50%;
+      --school-logo-border-radius: 50%;
+      --student-photo-object-fit: cover;
+      --bg-image-opacity: 1;
+      --accent-color: #c02026;
+      --school-name-line1-font-size: 12px;
+      --school-name-line1-font-family: Arial, Helvetica, sans-serif;
+      --school-name-line2-font-size: 11px;
+      --school-name-line2-font-family: Arial, Helvetica, sans-serif;
+      /* Print card: 57×91.5mm · Text Part: 50×82mm · text safe inset: 6mm */
+      --id-card-width: 57mm;
+      --id-card-height: 91.5mm;
+      --id-text-part-width: 50mm;
+      --id-text-part-height: 82mm;
+      --id-safe-inset: 6mm;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #e9eef2;
+      margin: 0;
+      padding: 0;
+      display: block !important;
+    }
+
+    .control-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px 20px;
+      align-items: center;
+      background: #fff;
+      padding: 10px 14px;
+      border-bottom: 1px solid #ccc;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .control-bar .control-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .control-bar .control-group label {
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .control-bar input[type="checkbox"] {
+      margin: 0;
+      vertical-align: middle;
+    }
+
+    .control-bar .print-btn {
+      font-size: 14px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #f5f5f5;
+      cursor: pointer;
+    }
+
+    .control-bar .print-btn:hover {
+      background: #ebebeb;
+    }
+
+    .control-bar .control-hint {
+      font-size: 13px;
+      font-weight: 600;
+      color: #c02026;
+    }
+
+    [ng\:cloak], [ng-cloak], .ng-cloak {
+      display: none !important;
+    }
+
+    .school-name-two-line {
+      display: block;
+      line-height: 1.15;
+      font-weight: 700;
+    }
+
+    .school-name-two-line .school-name-line1 {
+      display: block;
+      font-family: var(--school-name-line1-font-family, Arial, Helvetica, sans-serif);
+      font-size: var(--school-name-line1-font-size, 12px);
+    }
+
+    .school-name-two-line .school-name-line2 {
+      display: block;
+      font-family: var(--school-name-line2-font-family, Arial, Helvetica, sans-serif);
+      font-size: var(--school-name-line2-font-size, 11px);
+    }
+
+    .id-card {
+      width: var(--id-card-width);
+      height: var(--id-card-height);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      position: relative;
+      overflow: hidden;
+      background: #fff;
+      margin: 0 auto;
+      page-break-after: always;
+      break-after: page;
+      box-sizing: border-box;
+    }
+
+    .bg-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: var(--bg-image-opacity, 1);
+      z-index: 0;
+    }
+
+    /* Text Part 50×82mm centered in card; inner padding keeps text 6mm from outer edges */
+    .format-standard .main-content,
+    .format-ridgeboard .main-content,
+    .format-simple .main-content {
+      width: var(--id-text-part-width);
+      height: var(--id-text-part-height);
+      max-width: 100%;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 4.75mm auto 0;
+      padding: 1.25mm 2.5mm;
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+      /* View-only guide for the printable Text Part area */
+      border: 1px solid red;
+    }
+
+    /* ══════════════ STANDARD FORMAT ══════════════ */
+    .format-standard .main-content {
+      border-radius: 10px;
+    }
+
+    .format-standard .school-info {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      width: 100%;
+      color: #2c3e50;
+      border-bottom: 1px solid var(--school-color);
+      text-align: center;
+    }
+
+    .format-standard .school-logo {
+      height: 47px;
+    }
+
+    .format-standard .school-logo img {
+      width: 45px;
+      height: 45px;
+      border-radius: var(--school-logo-border-radius);
+      object-fit: cover;
+    }
+
+    .format-standard .school-name {
+      font-size: var(--school-name-font-size, 12px);
+      font-weight: 700;
+    }
+
+    /* Description / school caption — keep original caption look */
+    .format-standard .school-name > .school-caption,
+    .format-standard .school-caption {
+      font-size: 6px;
+      font-weight: 600;
+      font-style: italic;
+      line-height: 1.25;
+      display: block;
+      margin: 1px 0 0;
+    }
+
+    .format-standard .school-affliate,
+    .format-standard .school-address {
+      font-size: 6px;
+      font-weight: 600;
+      font-style: italic;
+    }
+
+    .format-standard .school-address {
+      font-size: 5px;
+      font-weight: bold;
+      font-style: normal;
+    }
+
+    .format-standard .student-photo-area {
+      width: var(--student-photo-height);
+      height: var(--student-photo-height);
+      border-radius: var(--student-photo-border-radius);
+      border: 2px solid #fff;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      flex-shrink: 0;
+      overflow: hidden;
+      margin-top: 3px;
+    }
+
+    .format-standard .student-photo-area img {
+      width: 100%;
+      height: 100%;
+      object-fit: var(--student-photo-object-fit, cover);
+    }
+
+    .format-standard .student-name {
+      margin-top: 2px;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .format-standard .student-info {
+      text-align: left;
+      padding-top: 2px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .format-standard .info-row {
+      display: flex;
+      margin-bottom: 3px;
+      font-size: 8px;
+      color: #000;
+      font-weight: 600;
+    }
+
+    .format-standard .info-label {
+      font-weight: 600;
+      width: 42px;
+      flex-shrink: 0;
+    }
+
+    .format-standard .principal-signature-area {
+      color: #000;
+      padding-bottom: 0;
+      text-align: center;
+      margin-top: auto;
+      flex-shrink: 0;
+      width: 100%;
+    }
+
+    .format-standard .principal-sign {
+      margin: -5px;
+    }
+
+    .format-standard .principal-sign img {
+      height: 20px;
+    }
+
+    .format-standard .principal-label {
+      font-size: 8px;
+      letter-spacing: 0.5px;
+      border-top: 1px solid #000;
+    }
+
+    .format-standard .school-color {
+      color: var(--school-color);
+    }
+
+    .format-standard .school-name-dynamic {
+      font-size: var(--school-name-font-size);
+    }
+
+    .format-standard .school-name-two-line {
+      color: var(--school-color);
+    }
+
+    .format-standard .text-color {
+      color: var(--text-color);
+    }
+
+    /* ══════════════ RIDGEBOARD / BOXED FORMAT ══════════════ */
+    .format-ridgeboard .id-card {
+      border-radius: 10px;
+    }
+
+    .format-ridgeboard .bg-image {
+      background-size: cover;
+    }
+
+    .format-ridgeboard .main-content {
+      font-family: 'Source Sans 3', sans-serif;
+    }
+
+    .format-ridgeboard .school-info {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      width: 100%;
+      border-bottom: none;
+    }
+
+    .format-ridgeboard .school-logo {
+      flex-shrink: 0;
+      width: 48px;
+      height: 48px;
+    }
+
+    .format-ridgeboard .school-logo img {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--school-logo-border-radius);
+      object-fit: cover;
+    }
+
+    .format-ridgeboard .school-name-block {
+      flex: 1;
+      min-width: 0;
+      text-align: center;
+      padding-top: 1px;
+    }
+
+    .format-ridgeboard .school-title {
+      font-family: 'Libre Baskerville', serif;
+      font-weight: 700;
+      font-size: var(--school-name-font-size);
+      line-height: 1.15;
+      color: var(--school-color);
+      display: block;
+    }
+
+    .format-ridgeboard .school-title.school-name-two-line,
+    .format-ridgeboard .school-name-two-line {
+      color: var(--school-color);
+    }
+
+    .format-ridgeboard .school-title-sub {
+      display: block;
+    }
+
+    .format-ridgeboard .school-name-two-line .school-name-line2.school-title-sub {
+      font-size: var(--school-name-line2-font-size, 11px);
+    }
+
+    .format-ridgeboard .school-tagline {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      margin: 3px 0 2px;
+    }
+
+    .format-ridgeboard .school-tagline::before,
+    .format-ridgeboard .school-tagline::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--accent-color);
+      max-width: 28px;
+    }
+
+    /* Description renders as school-tagline in boxed format */
+    .format-ridgeboard .school-tagline span {
+      font-family: 'Libre Baskerville', serif;
+      font-style: italic;
+      font-size: 7px;
+      color: var(--accent-color);
+      line-height: 1.2;
+      text-align: center;
+      white-space: normal;
+    }
+
+    .format-ridgeboard .school-affliate {
+      font-size: 5.5px;
+      font-weight: 600;
+      color: var(--text-color);
+      line-height: 1.25;
+      text-align: center;
+      font-style: italic;
+      margin: 1px 0;
+    }
+
+    .format-ridgeboard .school-address {
+      font-size: 5.5px;
+      font-weight: 600;
+      color: var(--text-color);
+      line-height: 1.25;
+      text-align: center;
+      font-style: normal;
+    }
+
+    .format-ridgeboard .header-divider {
+      width: 100%;
+      height: 1px;
+      background: var(--school-color);
+      margin: 2px 0;
+      flex-shrink: 0;
+    }
+
+    .format-ridgeboard .student-photo-area {
+      width: var(--student-photo-height);
+      height: var(--student-photo-height);
+      border-radius: var(--student-photo-border-radius);
+      border: 1.5px solid var(--school-color);
+      overflow: hidden;
+      flex-shrink: 0;
+      background: #ddd;
+      position: relative;
+      z-index: 2;
+      box-shadow: none;
+      margin-top: 2px;
+    }
+
+    .format-ridgeboard .student-photo-area img {
+      width: 100%;
+      height: 100%;
+      object-fit: var(--student-photo-object-fit, cover);
+      display: block;
+    }
+
+    .format-ridgeboard .student-name-banner {
+      margin-top: 2px;
+      background: var(--school-color);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      text-align: center;
+      padding: 2px 22px;
+      width: 100%;
+      box-sizing: border-box;
+      line-height: 1.25;
+      position: relative;
+      z-index: 1;
+      clip-path: polygon(
+        0% 0%,
+        100% 0%,
+        calc(100% - 14px) 50%,
+        100% 100%,
+        0% 100%,
+        14px 50%
+      );
+    }
+
+    .format-ridgeboard .student-info {
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 3px;
+      border: 1.25px solid var(--school-color);
+      border-radius: 10px;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: #fff;
+      text-align: left;
+      padding-top: 0;
+    }
+
+    .format-ridgeboard .info-row {
+      display: grid;
+      grid-template-columns: 18px 54px 1fr;
+      min-height: 16px;
+      border-bottom: 1px solid #b8bfcc;
+      margin-bottom: 0;
+      font-size: inherit;
+    }
+
+    .format-ridgeboard .info-row:last-child {
+      border-bottom: none;
+    }
+
+    .format-ridgeboard .info-icon-cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--school-color);
+      padding: 2px 0;
+    }
+
+    .format-ridgeboard .info-icon-cell .icon {
+      width: 10px;
+      height: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .format-ridgeboard .info-icon-cell .icon svg {
+      width: 10px;
+      height: 10px;
+      fill: #fff;
+    }
+
+    .format-ridgeboard .info-label-cell {
+      display: flex;
+      align-items: center;
+      background: var(--school-color);
+      color: #fff;
+      padding: 2px 2px 2px 0;
+      font-size: 7px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .format-ridgeboard .info-value {
+      display: flex;
+      align-items: center;
+      background: #fff;
+      padding: 2px 5px;
+      font-size: 7px;
+      font-weight: 700;
+      color: var(--text-color);
+      line-height: 1.2;
+      word-break: break-word;
+    }
+
+    .format-ridgeboard .info-row.address-row {
+      min-height: 22px;
+    }
+
+    .format-ridgeboard .info-row.address-row .info-value {
+      font-size: 6.5px;
+    }
+
+    .format-ridgeboard .card-footer {
+      margin-top: auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 0;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .format-ridgeboard .principal-signature-area {
+      text-align: center;
+      width: 55%;
+      padding-bottom: 0;
+      margin-top: 0;
+    }
+
+    .format-ridgeboard .principal-sign {
+      min-height: 16px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .format-ridgeboard .principal-sign img {
+      height: 18px;
+      max-width: 70px;
+      object-fit: contain;
+    }
+
+    .format-ridgeboard .principal-label {
+      font-size: 7px;
+      font-weight: 700;
+      color: var(--text-color);
+      border-top: 1px solid var(--text-color);
+      letter-spacing: 0.2px;
+    }
+
+    /* ══════════════ SIMPLE FORMAT ══════════════ */
+    .format-simple .id-card {
+      border-radius: 10px;
+    }
+
+    .format-simple .side-accent {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 42px;
+      height: 72%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .format-simple .side-accent svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .format-simple .bg-image {
+      background-size: cover;
+    }
+
+    .format-simple .main-content {
+      border-radius: 10px;
+    }
+
+    .format-simple .school-info {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      width: 100%;
+      color: #2c3e50;
+      border-bottom: 1px solid var(--school-color);
+      text-align: center;
+    }
+
+    .format-simple .school-logo {
+      height: 47px;
+    }
+
+    .format-simple .school-logo img {
+      width: 45px;
+      height: 45px;
+      border-radius: var(--school-logo-border-radius);
+      object-fit: cover;
+    }
+
+    .format-simple .school-name {
+      font-size: var(--school-name-font-size, 12px);
+      font-weight: 700;
+    }
+
+    /* Description / school caption — keep original caption look */
+    .format-simple .school-name > .school-caption,
+    .format-simple .school-caption {
+      font-size: 6px;
+      font-weight: 600;
+      font-style: italic;
+      line-height: 1.25;
+      display: block;
+      margin: 1px 0 0;
+    }
+
+    .format-simple .school-affliate,
+    .format-simple .school-address {
+      font-size: 6px;
+      font-weight: 600;
+      font-style: italic;
+    }
+
+    .format-simple .school-address {
+      font-size: 5px;
+      font-weight: bold;
+      font-style: normal;
+    }
+
+    .format-simple .school-color {
+      color: var(--school-color);
+    }
+
+    .format-simple .school-name-dynamic {
+      font-size: var(--school-name-font-size);
+    }
+
+    .format-simple .school-name-two-line {
+      color: var(--school-color);
+    }
+
+    .format-simple .text-color {
+      color: var(--text-color);
+    }
+
+    .format-simple .student-photo-area {
+      width: var(--student-photo-height);
+      height: var(--student-photo-height);
+      border-radius: var(--student-photo-border-radius);
+      border: 1.5px solid #87ceeb;
+      box-shadow: none;
+      flex-shrink: 0;
+      overflow: hidden;
+      margin-top: 14px;
+      background: #eee;
+    }
+
+    .format-simple .student-photo-area img {
+      width: 100%;
+      height: 100%;
+      object-fit: var(--student-photo-object-fit, cover);
+      display: block;
+    }
+
+    .format-simple .student-name {
+      margin-top: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
+      color: var(--school-color);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      width: 100%;
+      box-sizing: border-box;
+      line-height: 1.2;
+    }
+
+    .format-simple .simple-class-info {
+      margin-top: 3px;
+      text-align: center;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .format-simple .simple-class-line {
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--text-color);
+      letter-spacing: 0.15px;
+      line-height: 1.35;
+      text-transform: none;
+    }
+
+    .format-simple .simple-class-line .simple-field-label {
+      font-weight: 700;
+      color: var(--school-color);
+    }
+
+    .format-simple .principal-signature-area {
+      margin-top: auto;
+      align-self: flex-end;
+      text-align: center;
+      padding: 0;
+      width: auto;
+      min-width: 70px;
+      flex-shrink: 0;
+    }
+
+    .format-simple .principal-sign {
+      margin: 0;
+      min-height: 18px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .format-simple .principal-sign img {
+      height: 22px;
+      max-width: 80px;
+      object-fit: contain;
+    }
+
+    .format-simple .principal-label {
+      font-size: 7px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      color: var(--text-color);
+      border-top: none;
+      margin-top: 2px;
+    }
+
+    @media print {
+      html,
+      body {
+        background: #fff;
+        margin: 0;
+        padding: 0;
+        width: var(--id-card-width);
+        height: var(--id-card-height);
+      }
+
+      .control-bar {
+        display: none !important;
+      }
+
+      .id-card {
+        width: var(--id-card-width);
+        height: var(--id-card-height);
+        box-shadow: none;
+        border-radius: 0;
+        margin: 0;
+        overflow: hidden;
+        page-break-after: always;
+        break-after: page;
+      }
+
+      .format-standard .main-content,
+      .format-ridgeboard .main-content,
+      .format-simple .main-content {
+        width: var(--id-text-part-width);
+        height: var(--id-text-part-height);
+        margin: 4.75mm auto 0;
+        padding: 1.25mm 2.5mm;
+        box-sizing: border-box;
+        border: none;
+      }
+    }
+
+    @page {
+      size: 57mm 91.5mm;
+      margin: 0;
+    }
+  </style>
+</head>
+
+<body ng-controller="myCtrl" id="page-body" ng-class="bodyFormatClass">
+
+  <div class="control-bar" ng-cloak>
+    <div class="control-group">
+      <label>
+        <input type="checkbox" ng-model="hideCardsWithoutPhotos" ng-change="applyCardFilters()" />
+        Hide cards without photos
+      </label>
+    </div>
+    <div class="control-group">
+      <label>
+        <input type="checkbox" ng-model="showOnlyTrimmedCards" ng-change="applyCardFilters()" />
+        Show only trimmed cards
+      </label>
+    </div>
+    <div class="control-group" ng-if="trimmedCardsCount !== null">
+      <span class="control-hint">{{trimmedCardsCount}} trimmed</span>
+    </div>
+    <div class="control-group">
+      <button type="button" class="print-btn" ng-click="printCards()">Print</button>
+    </div>
+  </div>
+
+  <!-- Single Card -->
+  <div class="id-card" ng-if="userInfo && !userList.length">
+    <div ng-include="templateUrl" ng-init="userInfo=userInfo"></div>
+  </div>
+
+  <!-- Bulk Cards -->
+  <div class="id-card" ng-repeat="userInfo in userList">
+    <div ng-include="templateUrl"></div>
+  </div>
+
+  <!-- ── Standard Format Template ── -->
+  <script type="text/ng-template" id="standard-template.html">
+    <div class="bg-image" ng-style="bgStyle"></div>
+    <div class="main-content">
+      <div class="school-info">
+        <div class="school-logo">
+          <img ng-src="{{org.Image}}" alt="School Logo">
+        </div>
+        <div class="school-name">
+          <span class="school-color school-name-two-line" ng-if="useTwoLineSchoolName">
+            <span class="school-name-line1">{{schoolNameLine1}}</span>
+            <span class="school-name-line2" ng-if="schoolNameLine2">{{schoolNameLine2}}</span>
+          </span>
+          <span class="school-color school-name-dynamic" ng-if="!useTwoLineSchoolName">{{org.Name}}</span>
+          <p class="school-caption text-color" ng-if="org.Description">{{org.Description}}</p>
+          <p class="school-affliate text-color" ng-if="org.AffiliationInfo">{{org.AffiliationInfo}}</p>
+          <p class="school-address text-color" ng-if="org.fullAddress">{{org.fullAddress}}</p>
+          <p class="school-address text-color" ng-if="org.Mobile">{{org.Mobile}}</p>
+        </div>
+      </div>
+
+      <div class="student-photo-area">
+        <img ng-src="{{userInfo.Image}}" alt="Student Photo">
+      </div>
+
+      <div class="student-name school-color">{{userInfo.StudentName}}</div>
+
+      <div class="student-info">
+        <div class="info-row" ng-if="showAcademicYear && academicYear">
+          <div class="info-label school-color">AC Year</div>
+          <div class="info-value text-color">{{academicYear}}</div>
+        </div>
+        <div class="info-row" ng-if="isStudentFieldVisible('Grade')">
+          <div class="info-label school-color">Grade</div>
+          <div class="info-value text-color">{{userInfo.ClassName}}<span ng-if="userInfo.SectionName"> / {{userInfo.SectionName}}</span></div>
+        </div>
+        <div class="info-row" ng-if="isStudentFieldVisible('AdmissionNumber')">
+          <div class="info-label school-color">Adm' No</div>
+          <div class="info-value text-color">{{userInfo.AdmissionNumber}}</div>
+        </div>
+        <div class="info-row" ng-if="isStudentFieldVisible('RollNumber')">
+          <div class="info-label school-color">Roll No</div>
+          <div class="info-value text-color">{{userInfo.RollNumber}}</div>
+        </div>
+        <div class="info-row" ng-if="isStudentFieldVisible('DateOfBirth')">
+          <div class="info-label school-color">D.O.B</div>
+          <div class="info-value text-color">{{userInfo.DateOfBirth | date:'dd-MMM-yyyy'}}</div>
+        </div>
+        <div class="info-row" ng-if="isStudentFieldVisible('ParentName')">
+          <div class="info-label school-color">P' Name</div>
+          <div class="info-value text-color">{{userInfo.ParentName}}</div>
+        </div>
+        <div class="info-row" ng-if="isStudentFieldVisible('Mobile')">
+          <div class="info-label school-color">Phone No</div>
+          <div class="info-value text-color">{{userInfo.Mobile}}</div>
+        </div>
+        <div class="info-row" ng-if="isStudentFieldVisible('Address')">
+          <div class="info-label school-color">Address</div>
+          <div class="info-value text-color">{{userInfo.Address}}</div>
+        </div>
+      </div>
+
+      <div class="principal-signature-area" ng-if="!hideSignature">
+        <div class="principal-sign" ng-if="org.Sign">
+          <img ng-src="{{org.Sign}}" alt="Signature">
+        </div>
+        <div class="principal-label text-color">{{principalLabel}}</div>
+      </div>
+    </div>
+  </script>
+
+  <!-- ── Ridge Board / Boxed Format Template ── -->
+  <script type="text/ng-template" id="ridgeboard-template.html">
+    <div class="bg-image" ng-style="bgStyle"></div>
+    <div class="main-content">
+      <div class="school-info">
+        <div class="school-logo">
+          <img ng-src="{{org.Image}}" alt="School Logo">
+        </div>
+        <div class="school-name-block">
+          <span class="school-title" ng-if="!useTwoLineSchoolName">{{org.Name || schoolNameLine1}}</span>
+          <span class="school-title school-name-two-line" ng-if="useTwoLineSchoolName">
+            <span class="school-name-line1">{{schoolNameLine1}}</span>
+            <span class="school-name-line2 school-title-sub" ng-if="schoolNameLine2">{{schoolNameLine2}}</span>
+          </span>
+          <div class="school-tagline" ng-if="org.Description">
+            <span>{{org.Description}}</span>
+          </div>
+          <p class="school-affliate" ng-if="org.AffiliationInfo">{{org.AffiliationInfo}}</p>
+          <p class="school-address" ng-if="org.fullAddress">{{org.fullAddress}}</p>
+          <p class="school-address" ng-if="org.Mobile">PHONE: {{org.Mobile}}</p>
+        </div>
+      </div>
+
+      <div class="header-divider"></div>
+
+      <div class="student-photo-area">
+        <img ng-src="{{userInfo.Image}}" alt="Student Photo">
+      </div>
+
+      <div class="student-name-banner">{{userInfo.StudentName}}</div>
+
+      <div class="student-info">
+        <div class="info-row" ng-if="showAcademicYear && academicYear">
+          <div class="info-icon-cell">
+            <span class="icon">
+              <svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zM7 12h5v5H7v-5z"/></svg>
+            </span>
+          </div>
+          <div class="info-label-cell">AC Year</div>
+          <div class="info-value">{{academicYear}}</div>
+        </div>
+        <div class="info-row" ng-if="isStudentFieldVisible('Grade')">
+          <div class="info-icon-cell">
+            <span class="icon">
+              <svg viewBox="0 0 24 24"><path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z"/></svg>
+            </span>
+          </div>
+          <div class="info-label-cell">Grade</div>
+          <div class="info-value">{{userInfo.ClassName}}<span ng-if="userInfo.SectionName"> / {{userInfo.SectionName}}</span></div>
+        </div>
+        <div class="info-row" ng-if="isStudentFieldVisible('AdmissionNumber')">
+          <div class="info-icon-cell">
+            <span class="icon">
+              <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4V6h16v12zM6 10h4v4H6v-4zm6 0h6v2h-6v-2zm0 4h4v2h-4v-2z"/></svg>
+            </span>
+          </div>
+          <div class="info-label-cell">Adm' No</div>
+          <div class="info-value">{{userInfo.AdmissionNumber}}</div>
+        </div>
+        <div class="info-row" ng-if="isStudentFieldVisible('RollNumber')">
+          <div class="info-icon-cell">
+            <span class="icon">
+              <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11zM8 12h8v2H8v-2zm0 4h5v2H8v-2z"/></svg>
+            </span>
+          </div>
+          <div class="info-label-cell">Roll No</div>
+          <div class="info-value">{{userInfo.RollNumber}}</div>
+        </div>
+        <div class="info-row" ng-if="isStudentFieldVisible('DateOfBirth')">
+          <div class="info-icon-cell">
+            <span class="icon">
+              <svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zM7 12h5v5H7v-5z"/></svg>
+            </span>
+          </div>
+          <div class="info-label-cell">D.O.B</div>
+          <div class="info-value">{{userInfo.DateOfBirth | date:'dd-MMM-yyyy'}}</div>
+        </div>
+        <div class="info-row" ng-if="isStudentFieldVisible('ParentName')">
+          <div class="info-icon-cell">
+            <span class="icon">
+              <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            </span>
+          </div>
+          <div class="info-label-cell">P' Name</div>
+          <div class="info-value">{{userInfo.ParentName}}</div>
+        </div>
+        <div class="info-row" ng-if="isStudentFieldVisible('Mobile')">
+          <div class="info-icon-cell">
+            <span class="icon">
+              <svg viewBox="0 0 24 24"><path d="M6.62 10.79a15.15 15.15 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.4 21 3 13.6 3 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.57a1 1 0 01-.25 1.02l-2.2 2.2z"/></svg>
+            </span>
+          </div>
+          <div class="info-label-cell">Phone No</div>
+          <div class="info-value">{{userInfo.Mobile}}</div>
+        </div>
+        <div class="info-row address-row" ng-if="isStudentFieldVisible('Address')">
+          <div class="info-icon-cell">
+            <span class="icon">
+              <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1114.5 9 2.5 2.5 0 0112 11.5z"/></svg>
+            </span>
+          </div>
+          <div class="info-label-cell">Address</div>
+          <div class="info-value">{{userInfo.Address}}</div>
+        </div>
+      </div>
+
+      <div class="card-footer">
+        <div class="principal-signature-area" ng-if="!hideSignature">
+          <div class="principal-sign" ng-if="org.Sign">
+            <img ng-src="{{org.Sign}}" alt="Signature">
+          </div>
+          <div class="principal-label">{{principalLabel}}</div>
+        </div>
+      </div>
+    </div>
+  </script>
+
+  <!-- ── Simple Format Template ── -->
+  <script type="text/ng-template" id="simple-template.html">
+    <div class="bg-image" ng-style="bgStyle"></div>
+    <div class="main-content">
+      <div class="school-info">
+        <div class="school-logo">
+          <img ng-src="{{org.Image}}" alt="School Logo">
+        </div>
+        <div class="school-name">
+          <span class="school-color school-name-two-line" ng-if="useTwoLineSchoolName">
+            <span class="school-name-line1">{{schoolNameLine1}}</span>
+            <span class="school-name-line2" ng-if="schoolNameLine2">{{schoolNameLine2}}</span>
+          </span>
+          <span class="school-color school-name-dynamic" ng-if="!useTwoLineSchoolName">{{org.Name}}</span>
+          <p class="school-caption text-color" ng-if="org.Description">{{org.Description}}</p>
+          <p class="school-affliate text-color" ng-if="org.AffiliationInfo">{{org.AffiliationInfo}}</p>
+          <p class="school-address text-color" ng-if="org.fullAddress">{{org.fullAddress}}</p>
+          <p class="school-address text-color" ng-if="org.Mobile">{{org.Mobile}}</p>
+        </div>
+      </div>
+
+      <div class="student-photo-area">
+        <img ng-src="{{userInfo.Image}}" alt="Student Photo">
+      </div>
+
+      <div class="student-name school-color">{{userInfo.StudentName}}</div>
+
+      <div class="simple-class-info">
+        <div class="simple-class-line" ng-if="showAcademicYear && academicYear">
+          <span class="simple-field-label">AC Year</span> : {{academicYear}}
+        </div>
+        <div class="simple-class-line" ng-if="isStudentFieldVisible('Grade') && userInfo.ClassName">
+          <span class="simple-field-label">Grade</span> : {{userInfo.ClassName}}<span ng-if="userInfo.SectionName"> / {{userInfo.SectionName}}</span>
+        </div>
+        <div class="simple-class-line" ng-if="isStudentFieldVisible('AdmissionNumber') && userInfo.AdmissionNumber">
+          <span class="simple-field-label">Adm' No</span> : {{userInfo.AdmissionNumber}}
+        </div>
+        <div class="simple-class-line" ng-if="isStudentFieldVisible('RollNumber') && userInfo.RollNumber">
+          <span class="simple-field-label">Roll No</span> : {{userInfo.RollNumber}}
+        </div>
+        <div class="simple-class-line" ng-if="isStudentFieldVisible('DateOfBirth') && userInfo.DateOfBirth">
+          <span class="simple-field-label">D.O.B</span> : {{userInfo.DateOfBirth | date:'dd-MMM-yyyy'}}
+        </div>
+        <div class="simple-class-line" ng-if="isStudentFieldVisible('ParentName') && userInfo.ParentName">
+          <span class="simple-field-label">P' Name</span> : {{userInfo.ParentName}}
+        </div>
+        <div class="simple-class-line" ng-if="isStudentFieldVisible('Mobile') && userInfo.Mobile">
+          <span class="simple-field-label">Phone No</span> : {{userInfo.Mobile}}
+        </div>
+        <div class="simple-class-line" ng-if="isStudentFieldVisible('Address') && userInfo.Address">
+          <span class="simple-field-label">Address</span> : {{userInfo.Address}}
+        </div>
+      </div>
+
+      <div class="principal-signature-area" ng-if="!hideSignature">
+        <div class="principal-sign" ng-if="org.Sign">
+          <img ng-src="{{org.Sign}}" alt="Signature">
+        </div>
+        <div class="principal-label text-color">{{principalLabel}}</div>
+      </div>
+    </div>
+  </script>
+
+  <!--
+    Reusable no-photo helpers — copy this whole <script> block into other
+    customisable ID-card HTML files, then call IdCardNoPhotoHelper.afterCardsLoaded(...)
+  -->
+  <script>
+    (function (global) {
+      var PLACEHOLDER_SNIPPETS = [
+        "user avatar",
+        "user-avatar",
+        "user_avatar",
+        "useravatar",
+        "default photo",
+        "default-photo",
+        "default_photo",
+        "defaultphoto",
+        "default image",
+        "default-image",
+        "default_image",
+        "defaultimage",
+        "no-image",
+        "no_image",
+        "noimage",
+        "placeholder",
+        "avatar.png",
+        "avatar.jpg",
+        "blank-avatar",
+        "blank_avatar"
+      ];
+
+      function normalizeImageValue(imageUrl) {
+        if (imageUrl == null) return "";
+        return String(imageUrl).trim().toLowerCase();
+      }
+
+      /** True when Image is empty or looks like a default/placeholder avatar URL/path. */
+      function isMissingOrPlaceholderPhoto(imageUrl) {
+        var value = normalizeImageValue(imageUrl);
+        if (!value) return true;
+        for (var i = 0; i < PLACEHOLDER_SNIPPETS.length; i++) {
+          if (value.indexOf(PLACEHOLDER_SNIPPETS[i]) !== -1) return true;
+        }
+        return false;
+      }
+
+      function userHasRealPhoto(user) {
+        if (!user) return false;
+        return !isMissingOrPlaceholderPhoto(user.Image);
+      }
+
+      function countCardsWithoutPhoto(users) {
+        var list = Array.isArray(users) ? users : (users ? [users] : []);
+        var count = 0;
+        for (var i = 0; i < list.length; i++) {
+          if (!userHasRealPhoto(list[i])) count++;
+        }
+        return count;
+      }
+
+      function filterUsersWithPhotos(users) {
+        var list = Array.isArray(users) ? users : [];
+        var kept = [];
+        for (var i = 0; i < list.length; i++) {
+          if (userHasRealPhoto(list[i])) kept.push(list[i]);
+        }
+        return kept;
+      }
+
+      /**
+       * After cards are already shown: ask whether to hide cards without photos.
+       * Does nothing (no confirm) when every card already has a real photo.
+       * onHide(filteredUsersOrNull) — for bulk, filtered array; for single, user or null.
+       * Copy this helper into custom files and call the same way.
+       */
+      function promptHideCardsWithoutPhotos(usersOrUser, isBulk, onHide) {
+        var withoutCount = countCardsWithoutPhoto(usersOrUser);
+        // No missing/placeholder photos → never show the confirmation
+        if (!withoutCount) return false;
+
+        var message =
+          withoutCount === 1
+            ? "1 ID card has no student photo (or only a default avatar).\n\nHide ID cards without photos?"
+            : withoutCount +
+              " ID cards have no student photo (or only a default avatar).\n\nHide ID cards without photos?";
+
+        var shouldHide = global.confirm(message);
+        if (!shouldHide) return false;
+
+        if (typeof onHide !== "function") return true;
+
+        if (isBulk) {
+          onHide(filterUsersWithPhotos(usersOrUser));
+        } else {
+          onHide(userHasRealPhoto(usersOrUser) ? usersOrUser : null);
+        }
+        return true;
+      }
+
+      /**
+       * Convenience: wait briefly so cards paint, then prompt (only if needed).
+       * applyHide(result) receives filtered userList (bulk) or userInfo/null (single).
+       */
+      function afterCardsLoaded(usersOrUser, isBulk, applyHide, delayMs) {
+        // Skip timer + confirm entirely when all cards have real photos
+        if (countCardsWithoutPhoto(usersOrUser) <= 0) return;
+
+        var wait = delayMs == null ? 300 : delayMs;
+        global.setTimeout(function () {
+          promptHideCardsWithoutPhotos(usersOrUser, isBulk, applyHide);
+        }, wait);
+      }
+
+      global.IdCardNoPhotoHelper = {
+        PLACEHOLDER_SNIPPETS: PLACEHOLDER_SNIPPETS,
+        isMissingOrPlaceholderPhoto: isMissingOrPlaceholderPhoto,
+        userHasRealPhoto: userHasRealPhoto,
+        countCardsWithoutPhoto: countCardsWithoutPhoto,
+        filterUsersWithPhotos: filterUsersWithPhotos,
+        promptHideCardsWithoutPhotos: promptHideCardsWithoutPhotos,
+        afterCardsLoaded: afterCardsLoaded
+      };
+    })(window);
+  </script>
+
+  <script>
+    var app = angular.module("myApp", []);
+    const baseApiUrl = "https://api.schoolvertex.com/api";
+
+    app.controller("myCtrl", function ($scope, $http, $timeout) {
+      $scope.userList = [];
+      $scope.contentFormat = "1";
+      $scope.bodyFormatClass = "format-standard";
+      $scope.templateUrl = "standard-template.html";
+      $scope.principalLabel = "Principal Signature";
+      $scope.hideSignature = false;
+      $scope.schoolNameLine1 = "";
+      $scope.schoolNameLine2 = "";
+      $scope.useTwoLineSchoolName = false;
+      $scope.schoolNameLine1FontSize = 12;
+      $scope.schoolNameLine1FontFamily = "Arial, Helvetica, sans-serif";
+      $scope.schoolNameLine2FontSize = 11;
+      $scope.schoolNameLine2FontFamily = "Arial, Helvetica, sans-serif";
+      $scope.currentBackgroundImage = 8;
+      $scope.currentBackgroundOpacity = 1;
+      $scope.currentPrimaryColor = "Blue";
+      $scope.currentTextColor = "Black";
+      $scope.currentSchoolNameSize = 12;
+      $scope.schoolNameFontSize = "12px";
+      $scope.currentPhotoHeight = 80;
+      $scope.currentPhotoBorderRadius = 50;
+      $scope.currentSchoolLogoBorderRadius = 50;
+      $scope.currentPhotoObjectFit = "cover";
+      $scope.showAcademicYear = false;
+      $scope.academicYear = "2026-27";
+      $scope.hideCardsWithoutPhotos = false;
+      $scope.showOnlyTrimmedCards = false;
+      $scope.trimmedCardsCount = null;
+      $scope._allUserList = [];
+      $scope._allUserInfo = null;
+      $scope._trimScanToken = 0;
+      $scope.studentFields = [
+        "Grade",
+        "AdmissionNumber",
+        "RollNumber",
+        "DateOfBirth",
+        "ParentName",
+        "Mobile",
+        "Address"
+      ];
+      $scope.schoolInfoOverrides = {};
+
+      $scope.isStudentFieldVisible = function (fieldKey) {
+        return ($scope.studentFields || []).indexOf(fieldKey) !== -1;
+      };
+
+      $scope.printCards = function () {
+        window.print();
+      };
+
+      function getPhotoFilteredList() {
+        var helper = window.IdCardNoPhotoHelper;
+        var list = Array.isArray($scope._allUserList) ? $scope._allUserList : [];
+        if ($scope.hideCardsWithoutPhotos && helper) {
+          return helper.filterUsersWithPhotos(list);
+        }
+        return list.slice();
+      }
+
+      function getPhotoFilteredSingle() {
+        var helper = window.IdCardNoPhotoHelper;
+        var user = $scope._allUserInfo;
+        if (!user) return null;
+        if ($scope.hideCardsWithoutPhotos && helper && !helper.userHasRealPhoto(user)) {
+          return null;
+        }
+        return user;
+      }
+
+      /** True when content extends beyond the red Text Part border (.main-content). */
+      function cardContentOverflows(cardEl) {
+        if (!cardEl) return false;
+        var main = cardEl.querySelector(".main-content");
+        if (!main) return false;
+        var tol = 1.5;
+        if (main.scrollHeight > main.clientHeight + tol) return true;
+        if (main.scrollWidth > main.clientWidth + tol) return true;
+
+        var mainRect = main.getBoundingClientRect();
+        var nodes = main.querySelectorAll("*");
+        for (var i = 0; i < nodes.length; i++) {
+          var el = nodes[i];
+          var style = window.getComputedStyle(el);
+          if (style.display === "none" || style.visibility === "hidden") continue;
+          var r = el.getBoundingClientRect();
+          if (r.width < 0.5 && r.height < 0.5) continue;
+          if (
+            r.bottom > mainRect.bottom + tol ||
+            r.right > mainRect.right + tol ||
+            r.top < mainRect.top - tol ||
+            r.left < mainRect.left - tol
+          ) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      function collectOverflowingUsers(baseList) {
+        var cards = document.querySelectorAll(".id-card");
+        var trimmed = [];
+        var limit = Math.min(cards.length, baseList.length);
+        for (var i = 0; i < limit; i++) {
+          if (cardContentOverflows(cards[i])) {
+            trimmed.push(baseList[i]);
+          }
+        }
+        return trimmed;
+      }
+
+      function afterCardsPainted(callback) {
+        $timeout(function () {
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              $timeout(callback, 250);
+            });
+          });
+        }, 0);
+      }
+
+      function applyTrimmedFilterFromDom(baseList, token) {
+        if (token !== $scope._trimScanToken) return;
+        if (!$scope.showOnlyTrimmedCards) return;
+
+        var trimmed = collectOverflowingUsers(baseList);
+        $scope.$applyAsync(function () {
+          if (token !== $scope._trimScanToken) return;
+          $scope.trimmedCardsCount = trimmed.length;
+          $scope.userList = trimmed;
+          $scope.userInfo = null;
+        });
+      }
+
+      function applyTrimmedFilterSingleFromDom(user, token) {
+        if (token !== $scope._trimScanToken) return;
+        if (!$scope.showOnlyTrimmedCards) return;
+
+        var card = document.querySelector(".id-card");
+        var overflows = cardContentOverflows(card);
+        $scope.$applyAsync(function () {
+          if (token !== $scope._trimScanToken) return;
+          $scope.trimmedCardsCount = overflows ? 1 : 0;
+          $scope.userInfo = overflows ? user : null;
+          $scope.userList = [];
+        });
+      }
+
+      $scope.applyCardFilters = function () {
+        var token = ++$scope._trimScanToken;
+
+        if ($scope._allUserList && $scope._allUserList.length) {
+          var base = getPhotoFilteredList();
+          $scope.userInfo = null;
+
+          if (!$scope.showOnlyTrimmedCards) {
+            $scope.trimmedCardsCount = null;
+            $scope.userList = base;
+            return;
+          }
+
+          // Render full photo-filtered set first, then keep only overflowing cards.
+          $scope.userList = base;
+          afterCardsPainted(function () {
+            applyTrimmedFilterFromDom(base, token);
+          });
+          return;
+        }
+
+        var single = getPhotoFilteredSingle();
+        $scope.userList = [];
+
+        if (!$scope.showOnlyTrimmedCards) {
+          $scope.trimmedCardsCount = null;
+          $scope.userInfo = single;
+          return;
+        }
+
+        if (!single) {
+          $scope.trimmedCardsCount = 0;
+          $scope.userInfo = null;
+          return;
+        }
+
+        $scope.userInfo = single;
+        afterCardsPainted(function () {
+          applyTrimmedFilterSingleFromDom(single, token);
+        });
+      };
+
+      // Back-compat alias used by older call sites
+      $scope.applyHideCardsWithoutPhotos = $scope.applyCardFilters;
+
+      function applySchoolInfoOverrides() {
+        if (!$scope.org) return;
+        var o = $scope.schoolInfoOverrides || {};
+        if (o.Description !== undefined && o.Description !== null) {
+          $scope.org.Description = o.Description;
+        }
+        if (o.AffiliationInfo !== undefined && o.AffiliationInfo !== null) {
+          $scope.org.AffiliationInfo = o.AffiliationInfo;
+        }
+        if (o.FullAddress !== undefined && o.FullAddress !== null) {
+          $scope.org.fullAddress = o.FullAddress;
+          $scope.org.FullAddress = o.FullAddress;
+        }
+        if (o.Mobile !== undefined && o.Mobile !== null) {
+          $scope.org.Mobile = o.Mobile;
+        }
+      }
+
+      var designBaseUrl = "https://cdn.jsdelivr.net/gh/gitcdnsv/svcdn/IdCardBg/";
+      var designMap = {};
+      for (var i = 1; i <= 102; i++) {
+        designMap[i] = designBaseUrl + i + ".jpg";
+      }
+
+      var defaults = {
+        designNumber: 8,
+        primaryColor: "Blue",
+        secondaryColor: "Black",
+        accentColor: "#c02026"
+      };
+
+      $scope.bgStyle = {
+        "background-image": "url('" + designMap[defaults.designNumber] + "')"
+      };
+
+      function setCssVar(name, value) {
+        document.documentElement.style.setProperty(name, value);
+      }
+
+      function normalizePhotoObjectFit(value) {
+        var key = String(value == null ? "cover" : value).toLowerCase().trim();
+        return key === "fill" ? "fill" : "cover";
+      }
+
+      function normalizeBackgroundOpacity(value) {
+        var n = parseFloat(value);
+        if (isNaN(n)) n = 1;
+        if (n < 0) n = 0;
+        if (n > 1) n = 1;
+        return Math.round(n * 10) / 10;
+      }
+
+      function applyPhotoObjectFit(value) {
+        var fit = normalizePhotoObjectFit(value);
+        $scope.currentPhotoObjectFit = fit;
+        setCssVar("--student-photo-object-fit", fit);
+      }
+
+      function applyBackgroundOpacity(value) {
+        var opacity = normalizeBackgroundOpacity(value);
+        $scope.currentBackgroundOpacity = opacity;
+        setCssVar("--bg-image-opacity", String(opacity));
+      }
+
+      function applyTwoLineFontStyles() {
+        setCssVar("--school-name-line1-font-size", $scope.schoolNameLine1FontSize + "px");
+        setCssVar("--school-name-line1-font-family", $scope.schoolNameLine1FontFamily);
+        setCssVar("--school-name-line2-font-size", $scope.schoolNameLine2FontSize + "px");
+        setCssVar("--school-name-line2-font-family", $scope.schoolNameLine2FontFamily);
+      }
+
+      function normalizeFormat(format) {
+        var key = String(format == null ? "1" : format).toLowerCase();
+        if (key === "2" || key === "ridgeboard" || key === "boxed") return "2";
+        if (key === "3" || key === "simple") return "3";
+        return "1";
+      }
+
+      function applyContentFormat(format) {
+        var normalized = normalizeFormat(format);
+        $scope.contentFormat = normalized;
+        if (normalized === "2") {
+          $scope.bodyFormatClass = "format-ridgeboard";
+          $scope.templateUrl = "ridgeboard-template.html";
+        } else if (normalized === "3") {
+          $scope.bodyFormatClass = "format-simple";
+          $scope.templateUrl = "simple-template.html";
+        } else {
+          $scope.bodyFormatClass = "format-standard";
+          $scope.templateUrl = "standard-template.html";
+        }
+      }
+
+      function splitSchoolName(name) {
+        if (!name) {
+          $scope.schoolNameLine1 = "";
+          $scope.schoolNameLine2 = "";
+          return;
+        }
+        var match = name.match(/^(.*?)\s+(International\s+School.*)$/i);
+        if (match) {
+          $scope.schoolNameLine1 = match[1];
+          $scope.schoolNameLine2 = match[2];
+          return;
+        }
+        var parts = name.trim().split(/\s+/);
+        if (parts.length > 2) {
+          $scope.schoolNameLine1 = parts.slice(0, 2).join(" ");
+          $scope.schoolNameLine2 = parts.slice(2).join(" ");
+        } else {
+          $scope.schoolNameLine1 = name;
+          $scope.schoolNameLine2 = "";
+        }
+      }
+
+      function resolveColorName(value, fallback) {
+        if (!value) return fallback;
+        var named = [
+          "Black","White","Gray","Silver","Red","Maroon","Yellow","Olive","Lime","Green",
+          "Aqua","Teal","Blue","Navy","Fuchsia","Purple","AliceBlue","AntiqueWhite",
+          "Aquamarine","Azure","Beige","Bisque","BlanchedAlmond","BlueViolet","Brown",
+          "BurlyWood","CadetBlue","Chartreuse","Chocolate","Coral","CornflowerBlue",
+          "Cornsilk","Crimson","Cyan","DarkBlue","DarkCyan","DarkGoldenRod","DarkGray",
+          "DarkGreen","DarkKhaki","DarkMagenta","DarkOliveGreen","DarkOrange","DarkOrchid",
+          "DarkRed","DarkSalmon","DarkSeaGreen","DarkSlateBlue","DarkSlateGray",
+          "DarkTurquoise","DarkViolet","DeepPink","DeepSkyBlue","DimGray","DodgerBlue",
+          "FireBrick","FloralWhite","ForestGreen","Gainsboro","GhostWhite","Gold",
+          "GoldenRod","GreenYellow","HoneyDew","HotPink","IndianRed","Indigo","Ivory",
+          "Khaki","Lavender","LavenderBlush","LawnGreen","LemonChiffon","LightBlue",
+          "LightCoral","LightCyan","LightGoldenRodYellow","LightGray","LightGreen",
+          "LightPink","LightSalmon","LightSeaGreen","LightSkyBlue","LightSlateGray",
+          "LightSteelBlue","LightYellow","LimeGreen","Linen","Magenta","MediumAquaMarine",
+          "MediumBlue","MediumOrchid","MediumPurple","MediumSeaGreen","MediumSlateBlue",
+          "MediumSpringGreen","MediumTurquoise","MediumVioletRed","MidnightBlue","MintCream"
+        ];
+        var found = named.find(function (c) {
+          return c.toLowerCase() === String(value).toLowerCase();
+        });
+        return found || String(value);
+      }
+
+      function applyDesignConfig(config) {
+        if (!config) return;
+
+        if (config.BackgroundImage && designMap[config.BackgroundImage]) {
+          $scope.currentBackgroundImage = config.BackgroundImage;
+          $scope.bgStyle = {
+            "background-image": "url('" + designMap[config.BackgroundImage] + "')"
+          };
+        }
+        if (config.BackgroundOpacity !== undefined && config.BackgroundOpacity !== null && config.BackgroundOpacity !== "") {
+          $scope.currentBackgroundOpacity = normalizeBackgroundOpacity(config.BackgroundOpacity);
+          setCssVar("--bg-image-opacity", String($scope.currentBackgroundOpacity));
+        } else {
+          $scope.currentBackgroundOpacity = 1;
+          setCssVar("--bg-image-opacity", "1");
+        }
+        if (config.PrimaryColor) {
+          var primary = resolveColorName(config.PrimaryColor, "Blue");
+          $scope.currentPrimaryColor = primary;
+          setCssVar("--school-color", primary);
+        }
+        if (config.TextColor) {
+          var text = resolveColorName(config.TextColor, "Black");
+          $scope.currentTextColor = text;
+          setCssVar("--text-color", text);
+        }
+        if (config.AccentColor) {
+          setCssVar("--accent-color", config.AccentColor);
+        }
+        if (config.SchoolNameSize !== undefined && config.SchoolNameSize !== null && config.SchoolNameSize !== "") {
+          var size = String(config.SchoolNameSize).replace(/px$/i, "");
+          $scope.currentSchoolNameSize = parseInt(size, 10) || size;
+          $scope.schoolNameFontSize = size + "px";
+          setCssVar("--school-name-font-size", size + "px");
+        }
+        if (config.PhotoHeight !== undefined && config.PhotoHeight !== null) {
+          $scope.currentPhotoHeight = config.PhotoHeight;
+          setCssVar("--student-photo-height", config.PhotoHeight + "px");
+        }
+        if (config.PhotoBorderRadius !== undefined && config.PhotoBorderRadius !== null) {
+          $scope.currentPhotoBorderRadius = config.PhotoBorderRadius;
+          setCssVar("--student-photo-border-radius", config.PhotoBorderRadius + "%");
+        }
+        if (config.SchoolLogoBorderRadius !== undefined && config.SchoolLogoBorderRadius !== null) {
+          $scope.currentSchoolLogoBorderRadius = config.SchoolLogoBorderRadius;
+          setCssVar("--school-logo-border-radius", config.SchoolLogoBorderRadius + "%");
+        }
+        if (config.PhotoObjectFit || config.PhotoFit) {
+          $scope.currentPhotoObjectFit = normalizePhotoObjectFit(config.PhotoObjectFit || config.PhotoFit);
+          setCssVar("--student-photo-object-fit", $scope.currentPhotoObjectFit);
+        } else {
+          $scope.currentPhotoObjectFit = "cover";
+          setCssVar("--student-photo-object-fit", "cover");
+        }
+        if (config.PrincipalSignature || config.PrincipalLabel) {
+          $scope.principalLabel = config.PrincipalSignature || config.PrincipalLabel;
+        } else {
+          $scope.principalLabel = "Principal Signature";
+        }
+        $scope.hideSignature = config.HideSignature === true || config.HideSignature === 1 || config.HideSignature === "true";
+
+        if (config.ShowAcademicYear !== undefined && config.ShowAcademicYear !== null) {
+          $scope.showAcademicYear = config.ShowAcademicYear === true || config.ShowAcademicYear === 1 || config.ShowAcademicYear === "true";
+        } else if (config.AcademicYear !== undefined && config.AcademicYear !== null) {
+          $scope.showAcademicYear = String(config.AcademicYear).trim() !== "";
+        } else {
+          $scope.showAcademicYear = false;
+        }
+        if (config.AcademicYear !== undefined && config.AcademicYear !== null) {
+          $scope.academicYear = String(config.AcademicYear);
+        } else if (!$scope.academicYear) {
+          $scope.academicYear = "2026-27";
+        }
+
+        if (Array.isArray(config.StudentFields)) {
+          $scope.studentFields = config.StudentFields.map(String);
+        } else if (typeof config.StudentFields === "string" && config.StudentFields.trim()) {
+          $scope.studentFields = config.StudentFields.split(",").map(function (s) { return s.trim(); }).filter(Boolean);
+        }
+
+        $scope.schoolInfoOverrides = {};
+        if (config.SchoolDescription !== undefined) $scope.schoolInfoOverrides.Description = config.SchoolDescription;
+        if (config.SchoolAffiliationInfo !== undefined) $scope.schoolInfoOverrides.AffiliationInfo = config.SchoolAffiliationInfo;
+        if (config.SchoolFullAddress !== undefined) $scope.schoolInfoOverrides.FullAddress = config.SchoolFullAddress;
+        if (config.SchoolMobile !== undefined) $scope.schoolInfoOverrides.Mobile = config.SchoolMobile;
+        applySchoolInfoOverrides();
+
+        var twoLineOn = config.SchoolNameTwoLine === true || config.SchoolNameTwoLine === 1 || config.SchoolNameTwoLine === "true";
+        $scope.useTwoLineSchoolName = !!twoLineOn;
+
+        if (twoLineOn) {
+          if (config.SchoolNameLine1) {
+            $scope.schoolNameLine1 = config.SchoolNameLine1;
+          }
+          if (config.SchoolNameLine2 !== undefined && config.SchoolNameLine2 !== null) {
+            $scope.schoolNameLine2 = config.SchoolNameLine2;
+          }
+          if (!$scope.schoolNameLine1 && $scope.org && $scope.org.Name) {
+            splitSchoolName($scope.org.Name);
+          }
+          if (config.SchoolNameLine1FontSize || config.SchoolNameLineFontSize) {
+            $scope.schoolNameLine1FontSize = config.SchoolNameLine1FontSize || config.SchoolNameLineFontSize;
+          } else if (config.SchoolNameSize !== undefined && config.SchoolNameSize !== null && config.SchoolNameSize !== "") {
+            $scope.schoolNameLine1FontSize = String(config.SchoolNameSize).replace(/px$/i, "");
+          }
+          if (config.SchoolNameLine1FontFamily || config.SchoolNameLineFontFamily) {
+            $scope.schoolNameLine1FontFamily = config.SchoolNameLine1FontFamily || config.SchoolNameLineFontFamily;
+          }
+          if (config.SchoolNameLine2FontSize || config.SchoolNameLineFontSize) {
+            $scope.schoolNameLine2FontSize = config.SchoolNameLine2FontSize || config.SchoolNameLineFontSize;
+          }
+          if (config.SchoolNameLine2FontFamily || config.SchoolNameLineFontFamily) {
+            $scope.schoolNameLine2FontFamily = config.SchoolNameLine2FontFamily || config.SchoolNameLineFontFamily;
+          }
+          applyTwoLineFontStyles();
+        } else {
+          $scope.schoolNameLine1FontSize = 12;
+          $scope.schoolNameLine1FontFamily = "Arial, Helvetica, sans-serif";
+          $scope.schoolNameLine2FontSize = 11;
+          $scope.schoolNameLine2FontFamily = "Arial, Helvetica, sans-serif";
+          if ($scope.org && $scope.org.Name) {
+            splitSchoolName($scope.org.Name);
+          }
+          applyTwoLineFontStyles();
+        }
+
+        // Always apply format; missing Format → Standard (1)
+        if (config.Format !== undefined && config.Format !== null) {
+          applyContentFormat(config.Format);
+        } else if (config.ContentFormat) {
+          applyContentFormat(config.ContentFormat);
+        } else {
+          applyContentFormat("1");
+        }
+      }
+
+      // Defaults on CSS vars
+      setCssVar("--school-color", defaults.primaryColor);
+      setCssVar("--text-color", defaults.secondaryColor);
+      setCssVar("--accent-color", defaults.accentColor);
+      setCssVar("--school-name-font-size", "12px");
+      $scope.schoolNameFontSize = "12px";
+      setCssVar("--student-photo-height", "80px");
+      setCssVar("--student-photo-border-radius", "50%");
+      setCssVar("--school-logo-border-radius", "50%");
+      setCssVar("--student-photo-object-fit", "cover");
+      setCssVar("--bg-image-opacity", "1");
+      $scope.currentPhotoObjectFit = "cover";
+      $scope.currentBackgroundOpacity = 1;
+
+      function getQueryParams() {
+        var params = {};
+        location.search
+          .substr(1)
+          .split("&")
+          .forEach(function (item) {
+            var parts = item.split("=");
+            if (parts[0]) params[parts[0]] = decodeURIComponent(parts[1] || "");
+          });
+        return params;
+      }
+
+      var query = getQueryParams();
+      var userId = query.userId;
+      var classId = parseInt(query.classId || 0);
+      var sectionId = parseInt(query.sectionId || 0);
+      var orgId = query.orgId;
+
+      // Optional format override via query: ?format=1|2|3
+      if (query.format) {
+        applyContentFormat(query.format);
+      }
+
+      $scope.org = {};
+      var orgApiUrl = baseApiUrl + "/Organisation/GetInfoForCertificate/" + orgId;
+      $http.get(orgApiUrl).then(function (response) {
+        var data = response.data;
+          if (data) {
+          $scope.org = data;
+          if ($scope.useTwoLineSchoolName) {
+            if (!$scope.schoolNameLine1) {
+              splitSchoolName(data.Name);
+            }
+          } else {
+            splitSchoolName(data.Name);
+          }
+          if (data.FullAddress) {
+            $scope.org.fullAddress = data.FullAddress;
+          } else if (data.AddressInfo) {
+            var a = data.AddressInfo;
+            var parts = [a.Plot_HouseNumber, a.LandMark, a.Street, a.City, a.State, a.ZipCode].filter(Boolean);
+            $scope.org.fullAddress = parts.join(", ");
+          }
+          applySchoolInfoOverrides();
+        }
+      }, function (error) {
+        console.error("Organisation API failed:", error.status, error.statusText);
+      });
+
+      var designApiUrl = "https://schoolvertex.github.io/Pages/IdCards/settings.json";
+      $http.get(designApiUrl).then(function (response) {
+        var data = response.data || {};
+        var key = orgId != null ? String(orgId) : "All";
+        var config = data[key] || data["All"] || {};
+        applyDesignConfig(config);
+        // Query format wins over settings if provided
+        if (query.format) {
+          applyContentFormat(query.format);
+        }
+      }, function (error) {
+        console.error("Design config API failed — using defaults:", error.status, error.statusText);
+      });
+
+      function offerHideCardsWithoutPhotos(usersOrUser, isBulk) {
+        // Store full dataset; filtering is controlled by the top checkbox.
+        if (isBulk) {
+          $scope._allUserList = Array.isArray(usersOrUser) ? usersOrUser.slice() : [];
+          $scope._allUserInfo = null;
+        } else {
+          $scope._allUserInfo = usersOrUser || null;
+          $scope._allUserList = [];
+        }
+        $scope.applyCardFilters();
+      }
+
+      if (userId) {
+        var url = baseApiUrl + "/Fee/GetIdCardInfo/" + orgId + "/" + userId;
+        $http.get(url).then(function (response) {
+          $scope.userInfo = response.data;
+          offerHideCardsWithoutPhotos($scope.userInfo, false);
+        });
+      } else if (sectionId > 0 || classId > 0) {
+        var bulkUrl = null;
+        if (sectionId > 0) {
+          bulkUrl = baseApiUrl + "/Fee/GetSectionIdCardInfo/" + sectionId;
+        } else if (classId > 0) {
+          bulkUrl = baseApiUrl + "/Fee/GetBatchIdCardInfo/" + classId;
+        }
+        if (bulkUrl) {
+          $http.get(bulkUrl).then(function (response) {
+            $scope.userList = response.data || [];
+            offerHideCardsWithoutPhotos($scope.userList, true);
+          });
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>
