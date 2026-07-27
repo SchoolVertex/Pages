@@ -36,6 +36,12 @@
       --school-name-line1-font-family: Arial, Helvetica, sans-serif;
       --school-name-line2-font-size: 11px;
       --school-name-line2-font-family: Arial, Helvetica, sans-serif;
+      /* Print card: 57×91.5mm · Text Part: 50×82mm · text safe inset: 6mm */
+      --id-card-width: 57mm;
+      --id-card-height: 91.5mm;
+      --id-text-part-width: 50mm;
+      --id-text-part-height: 82mm;
+      --id-safe-inset: 6mm;
     }
 
     body {
@@ -400,13 +406,14 @@
     }
 
     .id-card {
-      width: 2.125in;
-      height: 3.375in;
+      width: var(--id-card-width);
+      height: var(--id-card-height);
       border-radius: 16px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
       position: relative;
       overflow: hidden;
       background: #fff;
+      box-sizing: border-box;
       transform: scale(0.95);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
@@ -445,16 +452,27 @@
       z-index: 0;
     }
 
-    /* ══════════════ STANDARD FORMAT ══════════════ */
-    .format-standard .main-content {
-      height: 325px;
+    /* Text Part 50×82mm centered in card; inner padding keeps text 6mm from outer edges */
+    .format-standard .main-content,
+    .format-ridgeboard .main-content,
+    .format-simple .main-content {
+      width: var(--id-text-part-width);
+      height: var(--id-text-part-height);
+      max-width: 100%;
+      box-sizing: border-box;
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin: 4mm;
-      border-radius: 10px;
+      margin: 4.75mm auto 0;
+      padding: 1.25mm 2.5mm;
       position: relative;
       z-index: 1;
+      overflow: hidden;
+    }
+
+    /* ══════════════ STANDARD FORMAT ══════════════ */
+    .format-standard .main-content {
+      border-radius: 10px;
     }
 
     .format-standard .school-info {
@@ -526,7 +544,7 @@
 
     .format-standard .student-name {
       margin-top: 2px;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
       text-align: center;
     }
@@ -534,7 +552,8 @@
     .format-standard .student-info {
       text-align: left;
       padding-top: 2px;
-      width: 90%;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     .format-standard .info-row {
@@ -553,9 +572,11 @@
 
     .format-standard .principal-signature-area {
       color: #000;
-      padding-bottom: 25px;
+      padding-bottom: 0;
       text-align: center;
       margin-top: auto;
+      flex-shrink: 0;
+      width: 100%;
     }
 
     .format-standard .principal-sign {
@@ -601,13 +622,6 @@
     }
 
     .format-ridgeboard .main-content {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 8px 8px 0;
-      position: relative;
-      z-index: 1;
       font-family: 'Source Sans 3', sans-serif;
     }
 
@@ -742,7 +756,8 @@
       text-transform: uppercase;
       text-align: center;
       padding: 2px 22px;
-      width: 96%;
+      width: 100%;
+      box-sizing: border-box;
       line-height: 1.25;
       position: relative;
       z-index: 1;
@@ -757,7 +772,8 @@
     }
 
     .format-ridgeboard .student-info {
-      width: 94%;
+      width: 100%;
+      box-sizing: border-box;
       margin-top: 3px;
       border: 1.25px solid var(--school-color);
       border-radius: 10px;
@@ -840,7 +856,8 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding-bottom: 12px;
+      padding-bottom: 0;
+      flex-shrink: 0;
       position: relative;
       z-index: 1;
     }
@@ -895,15 +912,7 @@
     }
 
     .format-simple .main-content {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin: 0;
-      padding: 4mm 4mm 3mm;
       border-radius: 10px;
-      position: relative;
-      z-index: 1;
     }
 
     .format-simple .school-info {
@@ -999,14 +1008,16 @@
       color: var(--school-color);
       text-transform: uppercase;
       letter-spacing: 0.4px;
-      width: 90%;
+      width: 100%;
+      box-sizing: border-box;
       line-height: 1.2;
     }
 
     .format-simple .simple-class-info {
       margin-top: 3px;
       text-align: center;
-      width: 92%;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     .format-simple .simple-class-line {
@@ -1027,9 +1038,10 @@
       margin-top: auto;
       align-self: flex-end;
       text-align: center;
-      padding: 0 6px 4px 0;
+      padding: 0;
       width: auto;
       min-width: 70px;
+      flex-shrink: 0;
     }
 
     .format-simple .principal-sign {
@@ -1057,10 +1069,13 @@
     }
 
     @media print {
+      html,
       body {
         margin: 0;
         padding: 0;
         background: #fff;
+        width: var(--id-card-width);
+        height: var(--id-card-height);
       }
 
       .control-bar {
@@ -1072,15 +1087,30 @@
       }
 
       .id-card {
+        width: var(--id-card-width);
+        height: var(--id-card-height);
         page-break-after: always;
         break-after: page;
         box-shadow: none;
+        border-radius: 0;
+        margin: 0;
+        overflow: hidden;
         transform: none;
+      }
+
+      .format-standard .main-content,
+      .format-ridgeboard .main-content,
+      .format-simple .main-content {
+        width: var(--id-text-part-width);
+        height: var(--id-text-part-height);
+        margin: 4.75mm auto 0;
+        padding: 1.25mm 2.5mm;
+        box-sizing: border-box;
       }
     }
 
     @page {
-      size: 2.125in 3.375in;
+      size: 57mm 91.5mm;
       margin: 0;
     }
   </style>
@@ -1217,7 +1247,7 @@
 
     <div class="control-group">
       <label>
-        <input type="checkbox" id="show-academic-year-toggle" checked />
+        <input type="checkbox" id="show-academic-year-toggle" />
         Show Academic Year
       </label>
     </div>
@@ -1960,7 +1990,7 @@ function setupPickers() {
 
   const showAcademicYearToggle = document.getElementById("show-academic-year-toggle");
   const academicYearInput = document.getElementById("academic-year");
-  showAcademicYearToggle.checked = true;
+  showAcademicYearToggle.checked = false;
   academicYearInput.value = "2026-27";
   showAcademicYearToggle.addEventListener("change", emitCardRefresh);
   academicYearInput.addEventListener("input", emitCardRefresh);
@@ -2147,7 +2177,7 @@ function applySettingsToControls(config) {
     } else if (config.AcademicYear !== undefined && config.AcademicYear !== null) {
       showAy.checked = String(config.AcademicYear).trim() !== "";
     } else {
-      showAy.checked = true;
+      showAy.checked = false;
     }
     if (config.AcademicYear !== undefined && config.AcademicYear !== null) {
       ayInput.value = String(config.AcademicYear);
