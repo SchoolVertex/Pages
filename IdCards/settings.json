@@ -25,6 +25,7 @@
     "BackgroundImage": 2,
     "BackgroundOpacity": 0.5,
     "PrincipalSignature": "Chairman Signature",
+    "PrincipalSignHeight": 30,
     "HideSignature": false,
     "SchoolNameTwoLine": true,
     "ShowAcademicYear": false,
