@@ -26,6 +26,7 @@
       --student-photo-border-radius: 50%;
       --school-logo-border-radius: 50%;
       --student-photo-object-fit: cover;
+      --principal-sign-height: 20px;
       --bg-image-opacity: 1;
       --accent-color: #c02026;
       --school-name-line1-font-size: 12px;
@@ -292,7 +293,9 @@
     }
 
     .format-standard .principal-sign img {
-      height: 20px;
+      height: var(--principal-sign-height);
+      max-width: 90px;
+      object-fit: contain;
     }
 
     .format-standard .principal-label {
@@ -579,7 +582,7 @@
     }
 
     .format-ridgeboard .principal-sign img {
-      height: 18px;
+      height: var(--principal-sign-height);
       max-width: 70px;
       object-fit: contain;
     }
@@ -759,7 +762,7 @@
     }
 
     .format-simple .principal-sign img {
-      height: 22px;
+      height: var(--principal-sign-height);
       max-width: 80px;
       object-fit: contain;
     }
@@ -1287,6 +1290,7 @@
       $scope.currentPhotoBorderRadius = 50;
       $scope.currentSchoolLogoBorderRadius = 50;
       $scope.currentPhotoObjectFit = "cover";
+      $scope.currentPrincipalSignHeight = 20;
       $scope.showAcademicYear = false;
       $scope.academicYear = "2026-27";
       $scope.hideCardsWithoutPhotos = false;
@@ -1687,6 +1691,10 @@
         } else {
           $scope.principalLabel = "Principal Signature";
         }
+        if (config.PrincipalSignHeight !== undefined && config.PrincipalSignHeight !== null) {
+          $scope.currentPrincipalSignHeight = config.PrincipalSignHeight;
+          setCssVar("--principal-sign-height", config.PrincipalSignHeight + "px");
+        }
         $scope.hideSignature = config.HideSignature === true || config.HideSignature === 1 || config.HideSignature === "true";
 
         if (config.ShowAcademicYear !== undefined && config.ShowAcademicYear !== null) {
@@ -1774,6 +1782,7 @@
       setCssVar("--student-photo-border-radius", "50%");
       setCssVar("--school-logo-border-radius", "50%");
       setCssVar("--student-photo-object-fit", "cover");
+      setCssVar("--principal-sign-height", "20px");
       setCssVar("--bg-image-opacity", "1");
       $scope.currentPhotoObjectFit = "cover";
       $scope.currentBackgroundOpacity = 1;
