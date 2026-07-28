@@ -31,7 +31,6 @@
     "AcademicYear": "2026-27",
     "StudentFields": [
       "Grade",
-      "AdmissionNumber",
       "DateOfBirth",
       "ParentName",
       "Mobile",
@@ -114,7 +113,6 @@
     "AcademicYear": "2026-27",
     "StudentFields": [
       "Grade",
-      "AdmissionNumber",
       "DateOfBirth",
       "ParentName",
       "Mobile",
