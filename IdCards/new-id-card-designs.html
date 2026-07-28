@@ -30,6 +30,7 @@
       --student-photo-border-radius: 50%;
       --school-logo-border-radius: 50%;
       --student-photo-object-fit: cover;
+      --principal-sign-height: 20px;
       --bg-image-opacity: 1;
       --accent-color: #c02026;
       --school-name-line1-font-size: 12px;
@@ -596,7 +597,7 @@
     }
 
     .format-standard .principal-sign img {
-      height: 20px;
+      height: var(--principal-sign-height);
       max-width: 90px;
       object-fit: contain;
     }
@@ -881,7 +882,7 @@
     }
 
     .format-ridgeboard .principal-sign img {
-      height: 18px;
+      height: var(--principal-sign-height);
       max-width: 70px;
       object-fit: contain;
     }
@@ -1057,7 +1058,7 @@
     }
 
     .format-simple .principal-sign img {
-      height: 22px;
+      height: var(--principal-sign-height);
       max-width: 80px;
       object-fit: contain;
     }
@@ -1213,6 +1214,10 @@
     <div class="control-group">
       <label>Principal Signature</label>
       <input type="text" id="principal-signature-label" style="width:160px" />
+    </div>
+    <div class="control-group">
+      <label>Sign Height</label>
+      <input type="number" id="principal-sign-height" min="8" max="60" step="1" style="width:70px" />
     </div>
     <div class="control-group">
       <label>
@@ -1808,6 +1813,7 @@ function buildCurrentSettingsJson() {
     BackgroundImage: getBackgroundImageId(),
     BackgroundOpacity: getBackgroundOpacity(),
     PrincipalSignature: getPrincipalLabel(),
+    PrincipalSignHeight: parseInt(getElValue("principal-sign-height", "20"), 10),
     HideSignature: isHideSignature(),
     SchoolNameTwoLine: isSchoolNameTwoLine(),
     ShowAcademicYear: isShowAcademicYear(),
@@ -1969,6 +1975,13 @@ function setupPickers() {
   });
   principalInput.addEventListener("change", e => {
     applyPrincipalLabel(e.target.value);
+  });
+
+  const principalSignHeightInput = document.getElementById("principal-sign-height");
+  principalSignHeightInput.value = "20";
+  document.documentElement.style.setProperty("--principal-sign-height", "20px");
+  principalSignHeightInput.addEventListener("input", e => {
+    document.documentElement.style.setProperty("--principal-sign-height", e.target.value + "px");
   });
 
   const hideSignatureToggle = document.getElementById("hide-signature-toggle");
@@ -2182,6 +2195,12 @@ function applySettingsToControls(config) {
   } else {
     document.getElementById("principal-signature-label").value = "Principal Signature";
     applyPrincipalLabel("Principal Signature");
+  }
+
+  if (config.PrincipalSignHeight !== undefined && config.PrincipalSignHeight !== null) {
+    const sh = String(config.PrincipalSignHeight);
+    document.getElementById("principal-sign-height").value = sh;
+    document.documentElement.style.setProperty("--principal-sign-height", sh + "px");
   }
 
   {
