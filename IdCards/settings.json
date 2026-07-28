@@ -153,10 +153,35 @@
     "SchoolNameLine2FontFamily": "\"Times New Roman\", Times, serif"
   },
   "170": {
-    "PrimaryColor": "midnightblue",
-    "TextColor": "black",
+    "Format": 1,
+    "PrimaryColor": "MidnightBlue",
+    "TextColor": "Black",
     "SchoolNameSize": 10,
-    "BackgroundImage": 1
+    "PhotoHeight": 90,
+    "PhotoBorderRadius": 20,
+    "SchoolLogoBorderRadius": 50,
+    "PhotoObjectFit": "cover",
+    "BackgroundImage": 1,
+    "BackgroundOpacity": 1,
+    "PrincipalSignature": "Principal Signature",
+    "HideSignature": false,
+    "SchoolNameTwoLine": true,
+    "ShowAcademicYear": false,
+    "AcademicYear": "2026-27",
+    "StudentFields": [
+      "Grade",
+      "AdmissionNumber",
+      "DateOfBirth",
+      "ParentName",
+      "Mobile",
+      "Address"
+    ],
+    "SchoolNameLine1": "SRI CHAKRA",
+    "SchoolNameLine2": "High School",
+    "SchoolNameLine1FontSize": 18,
+    "SchoolNameLine1FontFamily": "Arial, Helvetica, sans-serif",
+    "SchoolNameLine2FontSize": 14,
+    "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
   },
   "180": {
   "Format": 2,
