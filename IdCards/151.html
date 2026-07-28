@@ -32,12 +32,16 @@
       --school-name-line1-font-family: Arial, Helvetica, sans-serif;
       --school-name-line2-font-size: 11px;
       --school-name-line2-font-family: Arial, Helvetica, sans-serif;
-      /* Print card: 57×91.5mm · Text Part: 50×82mm · text safe inset: 6mm */
-      --id-card-width: 57mm;
+      /* Exact PVC print size (printer: 57.2×91.5mm) · Text Part: 50×82mm · text safe inset: 6mm */
+      --id-card-width: 57.2mm;
       --id-card-height: 91.5mm;
       --id-text-part-width: 50mm;
       --id-text-part-height: 82mm;
       --id-safe-inset: 6mm;
+      /* (91.5 - 82) / 2 = 4.75mm · (57.2 - 50) / 2 = 3.6mm · pad so text is 6mm from edge */
+      --id-text-part-margin-y: 4.75mm;
+      --id-text-part-padding-y: 1.25mm;
+      --id-text-part-padding-x: 2.4mm;
     }
 
     body {
@@ -139,6 +143,8 @@
       position: absolute;
       top: 0;
       left: 0;
+      right: 0;
+      bottom: 0;
       width: 100%;
       height: 100%;
       background-size: cover;
@@ -159,13 +165,17 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin: 4.75mm auto 0;
-      padding: 1.25mm 2.5mm;
+      margin: var(--id-text-part-margin-y) auto;
+      padding: var(--id-text-part-padding-y) var(--id-text-part-padding-x);
       position: relative;
       z-index: 1;
       overflow: hidden;
-      /* View-only guide for the printable Text Part area */
-      border: 1px solid red;
+    }
+
+    /* View-only print-area guide — outline does not change the box model */
+    .show-print-area .main-content {
+      outline: 1px solid red;
+      outline-offset: -1px;
     }
 
     /* ══════════════ STANDARD FORMAT ══════════════ */
@@ -391,7 +401,7 @@
     .format-ridgeboard .school-tagline span {
       font-family: 'Libre Baskerville', serif;
       font-style: italic;
-      font-size: 7px;
+      font-size: 6px;
       color: var(--accent-color);
       line-height: 1.2;
       text-align: center;
@@ -540,14 +550,6 @@
       color: var(--text-color);
       line-height: 1.2;
       word-break: break-word;
-    }
-
-    .format-ridgeboard .info-row.address-row {
-      min-height: 22px;
-    }
-
-    .format-ridgeboard .info-row.address-row .info-value {
-      font-size: 6.5px;
     }
 
     .format-ridgeboard .card-footer {
@@ -775,11 +777,15 @@
     @media print {
       html,
       body {
-        background: #fff;
-        margin: 0;
-        padding: 0;
-        width: var(--id-card-width);
-        height: var(--id-card-height);
+        background: #fff !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 57.2mm !important;
+        min-height: 91.5mm;
+        height: auto !important;
+        overflow: visible !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
 
       .control-bar {
@@ -787,14 +793,38 @@
       }
 
       .id-card {
-        width: var(--id-card-width);
-        height: var(--id-card-height);
-        box-shadow: none;
-        border-radius: 0;
-        margin: 0;
-        overflow: hidden;
+        width: 57.2mm !important;
+        height: 91.5mm !important;
+        min-width: 57.2mm !important;
+        min-height: 91.5mm !important;
+        max-width: 57.2mm !important;
+        max-height: 91.5mm !important;
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
         page-break-after: always;
         break-after: page;
+        page-break-inside: avoid;
+        break-inside: avoid;
+        transform: none !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .bg-image {
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        background-size: cover !important;
+        background-position: center !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
 
       .format-standard .main-content,
@@ -802,21 +832,21 @@
       .format-simple .main-content {
         width: var(--id-text-part-width);
         height: var(--id-text-part-height);
-        margin: 4.75mm auto 0;
-        padding: 1.25mm 2.5mm;
+        margin: var(--id-text-part-margin-y) auto;
+        padding: var(--id-text-part-padding-y) var(--id-text-part-padding-x);
         box-sizing: border-box;
-        border: none;
+        outline: none !important;
       }
     }
 
     @page {
-      size: 57mm 91.5mm;
+      size: 57.2mm 91.5mm;
       margin: 0;
     }
   </style>
 </head>
 
-<body ng-controller="myCtrl" id="page-body" ng-class="bodyFormatClass">
+<body ng-controller="myCtrl" id="page-body" ng-class="[bodyFormatClass, {'show-print-area': showPrintArea}]">
 
   <div class="control-bar" ng-cloak>
     <div class="control-group">
@@ -829,6 +859,12 @@
       <label>
         <input type="checkbox" ng-model="showOnlyTrimmedCards" ng-change="applyCardFilters()" />
         Show only trimmed cards
+      </label>
+    </div>
+    <div class="control-group">
+      <label>
+        <input type="checkbox" ng-model="showPrintArea" />
+        Show print area
       </label>
     </div>
     <div class="control-group" ng-if="trimmedCardsCount !== null">
@@ -881,31 +917,31 @@
           <div class="info-label school-color">AC Year</div>
           <div class="info-value text-color">{{academicYear}}</div>
         </div>
-        <div class="info-row" ng-if="isStudentFieldVisible('Grade')">
+        <div class="info-row" ng-if="showStudentField('Grade', userInfo)">
           <div class="info-label school-color">Grade</div>
           <div class="info-value text-color">{{userInfo.ClassName}}<span ng-if="userInfo.SectionName"> / {{userInfo.SectionName}}</span></div>
         </div>
-        <div class="info-row" ng-if="isStudentFieldVisible('AdmissionNumber')">
+        <div class="info-row" ng-if="showStudentField('AdmissionNumber', userInfo)">
           <div class="info-label school-color">Adm' No</div>
           <div class="info-value text-color">{{userInfo.AdmissionNumber}}</div>
         </div>
-        <div class="info-row" ng-if="isStudentFieldVisible('RollNumber')">
+        <div class="info-row" ng-if="showStudentField('RollNumber', userInfo)">
           <div class="info-label school-color">Roll No</div>
           <div class="info-value text-color">{{userInfo.RollNumber}}</div>
         </div>
-        <div class="info-row" ng-if="isStudentFieldVisible('DateOfBirth')">
+        <div class="info-row" ng-if="showStudentField('DateOfBirth', userInfo)">
           <div class="info-label school-color">D.O.B</div>
           <div class="info-value text-color">{{userInfo.DateOfBirth | date:'dd-MMM-yyyy'}}</div>
         </div>
-        <div class="info-row" ng-if="isStudentFieldVisible('ParentName')">
+        <div class="info-row" ng-if="showStudentField('ParentName', userInfo)">
           <div class="info-label school-color">P' Name</div>
           <div class="info-value text-color">{{userInfo.ParentName}}</div>
         </div>
-        <div class="info-row" ng-if="isStudentFieldVisible('Mobile')">
+        <div class="info-row" ng-if="showStudentField('Mobile', userInfo)">
           <div class="info-label school-color">Phone No</div>
           <div class="info-value text-color">{{userInfo.Mobile}}</div>
         </div>
-        <div class="info-row" ng-if="isStudentFieldVisible('Address')">
+        <div class="info-row" ng-if="showStudentField('Address', userInfo)">
           <div class="info-label school-color">Address</div>
           <div class="info-value text-color">{{userInfo.Address}}</div>
         </div>
@@ -961,7 +997,7 @@
           <div class="info-label-cell">AC Year</div>
           <div class="info-value">{{academicYear}}</div>
         </div>
-        <div class="info-row" ng-if="isStudentFieldVisible('Grade')">
+        <div class="info-row" ng-if="showStudentField('Grade', userInfo)">
           <div class="info-icon-cell">
             <span class="icon">
               <svg viewBox="0 0 24 24"><path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z"/></svg>
@@ -970,7 +1006,7 @@
           <div class="info-label-cell">Grade</div>
           <div class="info-value">{{userInfo.ClassName}}<span ng-if="userInfo.SectionName"> / {{userInfo.SectionName}}</span></div>
         </div>
-        <div class="info-row" ng-if="isStudentFieldVisible('AdmissionNumber')">
+        <div class="info-row" ng-if="showStudentField('AdmissionNumber', userInfo)">
           <div class="info-icon-cell">
             <span class="icon">
               <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4V6h16v12zM6 10h4v4H6v-4zm6 0h6v2h-6v-2zm0 4h4v2h-4v-2z"/></svg>
@@ -979,7 +1015,7 @@
           <div class="info-label-cell">Adm' No</div>
           <div class="info-value">{{userInfo.AdmissionNumber}}</div>
         </div>
-        <div class="info-row" ng-if="isStudentFieldVisible('RollNumber')">
+        <div class="info-row" ng-if="showStudentField('RollNumber', userInfo)">
           <div class="info-icon-cell">
             <span class="icon">
               <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11zM8 12h8v2H8v-2zm0 4h5v2H8v-2z"/></svg>
@@ -988,7 +1024,7 @@
           <div class="info-label-cell">Roll No</div>
           <div class="info-value">{{userInfo.RollNumber}}</div>
         </div>
-        <div class="info-row" ng-if="isStudentFieldVisible('DateOfBirth')">
+        <div class="info-row" ng-if="showStudentField('DateOfBirth', userInfo)">
           <div class="info-icon-cell">
             <span class="icon">
               <svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zM7 12h5v5H7v-5z"/></svg>
@@ -997,7 +1033,7 @@
           <div class="info-label-cell">D.O.B</div>
           <div class="info-value">{{userInfo.DateOfBirth | date:'dd-MMM-yyyy'}}</div>
         </div>
-        <div class="info-row" ng-if="isStudentFieldVisible('ParentName')">
+        <div class="info-row" ng-if="showStudentField('ParentName', userInfo)">
           <div class="info-icon-cell">
             <span class="icon">
               <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
@@ -1006,7 +1042,7 @@
           <div class="info-label-cell">P' Name</div>
           <div class="info-value">{{userInfo.ParentName}}</div>
         </div>
-        <div class="info-row" ng-if="isStudentFieldVisible('Mobile')">
+        <div class="info-row" ng-if="showStudentField('Mobile', userInfo)">
           <div class="info-icon-cell">
             <span class="icon">
               <svg viewBox="0 0 24 24"><path d="M6.62 10.79a15.15 15.15 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.4 21 3 13.6 3 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.57a1 1 0 01-.25 1.02l-2.2 2.2z"/></svg>
@@ -1015,7 +1051,7 @@
           <div class="info-label-cell">Phone No</div>
           <div class="info-value">{{userInfo.Mobile}}</div>
         </div>
-        <div class="info-row address-row" ng-if="isStudentFieldVisible('Address')">
+        <div class="info-row address-row" ng-if="showStudentField('Address', userInfo)">
           <div class="info-icon-cell">
             <span class="icon">
               <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1114.5 9 2.5 2.5 0 0112 11.5z"/></svg>
@@ -1068,25 +1104,25 @@
         <div class="simple-class-line" ng-if="showAcademicYear && academicYear">
           <span class="simple-field-label">AC Year</span> : {{academicYear}}
         </div>
-        <div class="simple-class-line" ng-if="isStudentFieldVisible('Grade') && userInfo.ClassName">
+        <div class="simple-class-line" ng-if="showStudentField('Grade', userInfo)">
           <span class="simple-field-label">Grade</span> : {{userInfo.ClassName}}<span ng-if="userInfo.SectionName"> / {{userInfo.SectionName}}</span>
         </div>
-        <div class="simple-class-line" ng-if="isStudentFieldVisible('AdmissionNumber') && userInfo.AdmissionNumber">
+        <div class="simple-class-line" ng-if="showStudentField('AdmissionNumber', userInfo)">
           <span class="simple-field-label">Adm' No</span> : {{userInfo.AdmissionNumber}}
         </div>
-        <div class="simple-class-line" ng-if="isStudentFieldVisible('RollNumber') && userInfo.RollNumber">
+        <div class="simple-class-line" ng-if="showStudentField('RollNumber', userInfo)">
           <span class="simple-field-label">Roll No</span> : {{userInfo.RollNumber}}
         </div>
-        <div class="simple-class-line" ng-if="isStudentFieldVisible('DateOfBirth') && userInfo.DateOfBirth">
+        <div class="simple-class-line" ng-if="showStudentField('DateOfBirth', userInfo)">
           <span class="simple-field-label">D.O.B</span> : {{userInfo.DateOfBirth | date:'dd-MMM-yyyy'}}
         </div>
-        <div class="simple-class-line" ng-if="isStudentFieldVisible('ParentName') && userInfo.ParentName">
+        <div class="simple-class-line" ng-if="showStudentField('ParentName', userInfo)">
           <span class="simple-field-label">P' Name</span> : {{userInfo.ParentName}}
         </div>
-        <div class="simple-class-line" ng-if="isStudentFieldVisible('Mobile') && userInfo.Mobile">
+        <div class="simple-class-line" ng-if="showStudentField('Mobile', userInfo)">
           <span class="simple-field-label">Phone No</span> : {{userInfo.Mobile}}
         </div>
-        <div class="simple-class-line" ng-if="isStudentFieldVisible('Address') && userInfo.Address">
+        <div class="simple-class-line" ng-if="showStudentField('Address', userInfo)">
           <span class="simple-field-label">Address</span> : {{userInfo.Address}}
         </div>
       </div>
@@ -1255,6 +1291,7 @@
       $scope.academicYear = "2026-27";
       $scope.hideCardsWithoutPhotos = false;
       $scope.showOnlyTrimmedCards = false;
+      $scope.showPrintArea = false;
       $scope.trimmedCardsCount = null;
       $scope._allUserList = [];
       $scope._allUserInfo = null;
@@ -1272,6 +1309,36 @@
 
       $scope.isStudentFieldVisible = function (fieldKey) {
         return ($scope.studentFields || []).indexOf(fieldKey) !== -1;
+      };
+
+      function hasNonEmptyValue(value) {
+        if (value === undefined || value === null) return false;
+        if (typeof value === "string") return value.trim() !== "";
+        return true;
+      }
+
+      /** Field is enabled in settings AND has a real value for this student. */
+      $scope.showStudentField = function (fieldKey, user) {
+        if (!$scope.isStudentFieldVisible(fieldKey)) return false;
+        if (!user) return false;
+        switch (fieldKey) {
+          case "Grade":
+            return hasNonEmptyValue(user.ClassName) || hasNonEmptyValue(user.SectionName);
+          case "AdmissionNumber":
+            return hasNonEmptyValue(user.AdmissionNumber);
+          case "RollNumber":
+            return hasNonEmptyValue(user.RollNumber);
+          case "DateOfBirth":
+            return hasNonEmptyValue(user.DateOfBirth);
+          case "ParentName":
+            return hasNonEmptyValue(user.ParentName);
+          case "Mobile":
+            return hasNonEmptyValue(user.Mobile);
+          case "Address":
+            return hasNonEmptyValue(user.Address);
+          default:
+            return hasNonEmptyValue(user[fieldKey]);
+        }
       };
 
       $scope.printCards = function () {
