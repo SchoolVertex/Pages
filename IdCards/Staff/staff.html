@@ -55,6 +55,7 @@
       display: block;
       line-height: 1.15;
       font-weight: 700;
+      color: var(--school-color);
     }
 
     .school-name-two-line .school-name-line1 {
@@ -118,13 +119,15 @@
     .school-info {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 2px;
       width: 100%;
       color: #2c3e50;
-      padding-bottom: 0;
-      border-bottom: none;
+      border-bottom: 1px solid var(--school-color);
       text-align: center;
-      margin-bottom: 0;
+    }
+
+    .school-logo {
+      height: 47px;
     }
 
     .school-logo img {
@@ -138,32 +141,47 @@
     .school-name {
       font-size: var(--school-name-font-size, 13px);
       font-weight: 700;
-      line-height: 1;
-      color: var(--school-color);
       flex: 1;
       min-width: 0;
     }
 
-    .school-header-meta {
-      text-align: center;
-      padding-bottom: 5px;
-      border-bottom: 1px solid var(--school-color);
-      width: 100%;
+    .school-color {
+      color: var(--school-color);
     }
 
-    .school-caption,
-    .school-affliate,
-    .school-address {
-      font-size: 7px;
+    .school-name-dynamic {
+      font-size: var(--school-name-font-size, 13px);
+      color: var(--school-color);
+    }
+
+    /* Description — distinct caption style (not the same as AffiliationInfo) */
+    .school-name > .school-caption,
+    .school-caption {
+      font-size: 6px;
+      font-weight: 600;
+      font-style: italic;
+      line-height: 1.25;
+      display: block;
+      margin: 1px 0 0;
+      color: var(--text-color);
+    }
+
+    .school-affliate {
+      font-size: 6px;
       font-weight: 600;
       font-style: italic;
       color: var(--text-color);
     }
 
     .school-address {
-      font-size: 6px;
+      font-size: 5px;
       font-weight: bold;
       font-style: normal;
+      color: var(--text-color);
+    }
+
+    .text-color {
+      color: var(--text-color);
     }
 
     .staff-photo-area {
@@ -346,19 +364,16 @@
           <img ng-src="{{org.Image}}" alt="School Logo">
         </div>
         <div class="school-name">
-          <span class="school-name-two-line" ng-if="useTwoLineSchoolName">
+          <span class="school-color school-name-two-line" ng-if="useTwoLineSchoolName">
             <span class="school-name-line1">{{schoolNameLine1}}</span>
             <span class="school-name-line2" ng-if="schoolNameLine2">{{schoolNameLine2}}</span>
           </span>
-          <span ng-if="!useTwoLineSchoolName">{{org.Name}}</span>
+          <span class="school-color school-name-dynamic" ng-if="!useTwoLineSchoolName">{{org.Name}}</span>
+          <p class="school-caption text-color" ng-if="org.Description">{{org.Description}}</p>
+          <p class="school-affliate text-color" ng-if="org.AffiliationInfo || org.Affiliation">{{org.AffiliationInfo || org.Affiliation}}</p>
+          <p class="school-address text-color" ng-if="org.FullAddress || org.fullAddress">{{org.FullAddress || org.fullAddress}}</p>
+          <p class="school-address text-color" ng-if="org.Mobile">{{org.Mobile}}</p>
         </div>
-      </div>
-
-      <div class="school-header-meta">
-        <p class="school-affliate" ng-if="org.Description">{{org.Description}}</p>
-        <p class="school-affliate" ng-if="org.AffiliationInfo">{{org.AffiliationInfo}}</p>
-        <p class="school-address" ng-if="org.fullAddress">{{org.fullAddress}}</p>
-        <p class="school-address" ng-if="org.Mobile">PHONE: {{org.Mobile}}</p>
       </div>
 
       <div class="staff-photo-area">
@@ -370,26 +385,21 @@
       <div class="designation" ng-if="showStaffField('Designation', userInfo)">{{userInfo.Designation}}</div>
 
       <div class="staff-info">
-        <div class="info-row" ng-if="showStaffField('DateOfBirth', userInfo)">
-          <div class="info-label">D.O.B</div>
+        <div class="info-row"
+             ng-repeat="fieldKey in staffFields"
+             ng-if="fieldKey !== 'Designation' && showStaffField(fieldKey, userInfo)">
+          <div class="info-label">{{staffFieldLabel(fieldKey)}}</div>
           <div class="info-devider">:</div>
-          <div class="info-value">{{userInfo.DateOfBirth | date:'dd MMM yyyy'}}</div>
-        </div>
-        <div class="info-row" ng-if="showStaffField('Mobile', userInfo)">
-          <div class="info-label">Mobile</div>
-          <div class="info-devider">:</div>
-          <div class="info-value">{{userInfo.Mobile}}</div>
-        </div>
-        <div class="info-row" ng-if="showStaffField('Address', userInfo)">
-          <div class="info-label">Address</div>
-          <div class="info-devider">:</div>
-          <div class="info-value">{{userInfo.Address}}</div>
+          <div class="info-value" ng-switch="fieldKey">
+            <span ng-switch-when="DateOfBirth">{{userInfo.DateOfBirth | date:'dd MMM yyyy'}}</span>
+            <span ng-switch-default>{{userInfo[fieldKey]}}</span>
+          </div>
         </div>
       </div>
 
       <div class="principal-signature-area" ng-if="!hideSignature">
-        <div class="principal-sign" ng-if="org.Sign">
-          <img ng-src="{{org.Sign}}" alt="Signature">
+        <div class="principal-sign">
+          <img ng-if="org.Sign" ng-src="{{org.Sign}}" alt="Signature">
         </div>
         <div class="principal-label">{{principalLabel}}</div>
       </div>
@@ -406,7 +416,7 @@
       $scope.userList = [];
       $scope.org = {};
       $scope.bgStyle = {
-        "background-image": "url('" + designBaseUrl + "102.jpg')"
+        "background-image": "url('" + designBaseUrl + "1.jpg')"
       };
       $scope.principalLabel = "Principal Signature";
       $scope.hideSignature = false;
@@ -419,6 +429,25 @@
       $scope.schoolNameLine2FontFamily = "Arial, Helvetica, sans-serif";
       $scope.staffFields = ["Designation", "DateOfBirth", "Mobile", "Address"];
       $scope.schoolInfoOverrides = {};
+      var DEFAULT_STAFF_FIELDS = ["Designation", "DateOfBirth", "Mobile", "Address"];
+      var commonColors = [
+        "Black","White","Gray","Silver","Red","Maroon","Yellow","Olive","Lime","Green",
+        "Aqua","Teal","Blue","Navy","Fuchsia","Purple","AliceBlue","AntiqueWhite",
+        "Aquamarine","Azure","Beige","Bisque","BlueViolet","Brown","BurlyWood","CadetBlue",
+        "Chartreuse","Chocolate","Coral","CornflowerBlue","Crimson","Cyan","DarkBlue",
+        "DarkCyan","DarkGoldenRod","DarkGray","DarkGreen","DarkMagenta","DarkOrange",
+        "DarkOrchid","DarkRed","DarkSalmon","DarkSeaGreen","DarkSlateBlue","DarkViolet",
+        "DeepPink","DeepSkyBlue","DodgerBlue","FireBrick","ForestGreen","Gold","GoldenRod",
+        "GreenYellow","HotPink","IndianRed","Indigo","Khaki","Lavender","LightBlue",
+        "LightCoral","LightCyan","LightGray","LightGreen","LightPink","LightSalmon",
+        "LightSeaGreen","LightSkyBlue","LightSteelBlue","LimeGreen","Magenta","MediumBlue",
+        "MediumOrchid","MediumPurple","MediumSeaGreen","MediumSlateBlue","MediumSpringGreen",
+        "MediumTurquoise","MediumVioletRed","MidnightBlue","Orange","OrangeRed","Orchid",
+        "PaleGreen","PaleTurquoise","PaleVioletRed","Peru","Pink","Plum","PowderBlue",
+        "RosyBrown","RoyalBlue","SaddleBrown","Salmon","SandyBrown","SeaGreen","Sienna",
+        "SkyBlue","SlateBlue","SpringGreen","SteelBlue","Tan","Thistle","Tomato","Turquoise",
+        "Violet","Wheat","YellowGreen"
+      ];
 
       var designMap = {};
       for (var i = 1; i <= 102; i++) {
@@ -429,9 +458,13 @@
         document.documentElement.style.setProperty(name, value);
       }
 
-      function resolveColorName(name, fallback) {
-        var n = String(name || "").trim();
-        return n || fallback || "Black";
+      function resolveColorName(value, fallback) {
+        if (!value) return fallback || "Black";
+        var needle = String(value).toLowerCase().trim();
+        for (var i = 0; i < commonColors.length; i++) {
+          if (commonColors[i].toLowerCase() === needle) return commonColors[i];
+        }
+        return String(value).trim() || fallback || "Black";
       }
 
       function normalizePhotoObjectFit(v) {
@@ -471,6 +504,11 @@
         }
       };
 
+      $scope.staffFieldLabel = function (key) {
+        var map = { DateOfBirth: "D.O.B", Mobile: "Mobile", Address: "Address" };
+        return map[key] || key;
+      };
+
       function splitSchoolName(name) {
         var text = String(name || "").trim();
         if (!text) {
@@ -478,15 +516,20 @@
           $scope.schoolNameLine2 = "";
           return;
         }
-        var parts = text.split(/\s+/);
-        if (parts.length <= 2) {
-          $scope.schoolNameLine1 = text;
-          $scope.schoolNameLine2 = "";
+        var match = text.match(/^(.*?)\s+(International\s+School.*)$/i);
+        if (match) {
+          $scope.schoolNameLine1 = match[1];
+          $scope.schoolNameLine2 = match[2];
           return;
         }
-        var mid = Math.ceil(parts.length / 2);
-        $scope.schoolNameLine1 = parts.slice(0, mid).join(" ");
-        $scope.schoolNameLine2 = parts.slice(mid).join(" ");
+        var parts = text.split(/\s+/);
+        if (parts.length > 2) {
+          $scope.schoolNameLine1 = parts.slice(0, 2).join(" ");
+          $scope.schoolNameLine2 = parts.slice(2).join(" ");
+          return;
+        }
+        $scope.schoolNameLine1 = text;
+        $scope.schoolNameLine2 = "";
       }
 
       function applySchoolNameLineStyles() {
@@ -565,8 +608,10 @@
 
         if (Array.isArray(config.StaffFields)) {
           $scope.staffFields = config.StaffFields.map(String);
+          if (!$scope.staffFields.length) $scope.staffFields = DEFAULT_STAFF_FIELDS.slice();
         } else if (typeof config.StaffFields === "string" && config.StaffFields.trim()) {
           $scope.staffFields = config.StaffFields.split(",").map(function (s) { return s.trim(); }).filter(Boolean);
+          if (!$scope.staffFields.length) $scope.staffFields = DEFAULT_STAFF_FIELDS.slice();
         }
 
         $scope.schoolInfoOverrides = {};
@@ -579,20 +624,20 @@
         var twoLineOn = config.SchoolNameTwoLine === true || config.SchoolNameTwoLine === 1 || config.SchoolNameTwoLine === "true";
         $scope.useTwoLineSchoolName = !!twoLineOn;
         if (twoLineOn) {
-          if (config.SchoolNameLine1) $scope.schoolNameLine1 = config.SchoolNameLine1;
+          if (config.SchoolNameLine1 != null) $scope.schoolNameLine1 = config.SchoolNameLine1;
           if (config.SchoolNameLine2 !== undefined && config.SchoolNameLine2 !== null) {
             $scope.schoolNameLine2 = config.SchoolNameLine2;
           }
           if (config.SchoolNameLine1FontSize != null) {
             $scope.schoolNameLine1FontSize = parseInt(config.SchoolNameLine1FontSize, 10) || 13;
           }
-          if (config.SchoolNameLine1FontFamily) {
+          if (config.SchoolNameLine1FontFamily != null) {
             $scope.schoolNameLine1FontFamily = config.SchoolNameLine1FontFamily;
           }
           if (config.SchoolNameLine2FontSize != null) {
             $scope.schoolNameLine2FontSize = parseInt(config.SchoolNameLine2FontSize, 10) || 11;
           }
-          if (config.SchoolNameLine2FontFamily) {
+          if (config.SchoolNameLine2FontFamily != null) {
             $scope.schoolNameLine2FontFamily = config.SchoolNameLine2FontFamily;
           }
           if (!$scope.schoolNameLine1 && $scope.org && $scope.org.Name) {
@@ -628,18 +673,23 @@
       var userId = query.userId;
       var classId = parseInt(query.classId || 0);
       var sectionId = parseInt(query.sectionId || 0);
-      var orgId = query.orgId;
+      var orgId = query.orgId || query.orgid;
 
       $http.get(baseApiUrl + "/Organisation/GetInfoForCertificate/" + orgId).then(function (response) {
         var data = response.data;
         if (data) {
           $scope.org = data;
+          if (!data.AffiliationInfo && data.Affiliation) {
+            $scope.org.AffiliationInfo = data.Affiliation;
+          }
           if (data.FullAddress) {
             $scope.org.fullAddress = data.FullAddress;
+            $scope.org.FullAddress = data.FullAddress;
           } else if (data.AddressInfo) {
             var a = data.AddressInfo;
             var parts = [a.Plot_HouseNumber, a.LandMark, a.Street, a.City, a.State, a.ZipCode].filter(Boolean);
             $scope.org.fullAddress = parts.join(", ");
+            $scope.org.FullAddress = $scope.org.fullAddress;
           }
           if ($scope.useTwoLineSchoolName) {
             if (!$scope.schoolNameLine1) splitSchoolName(data.Name);
@@ -655,7 +705,7 @@
       $http.get(settingsUrl).then(function (response) {
         var data = response.data || {};
         var key = orgId != null ? String(orgId) : "All";
-        var config = data[key] || data["All"] || {};
+        var config = Object.assign({}, data["All"] || {}, data[key] || {});
         applyDesignConfig(config);
       }, function (error) {
         console.error("Staff design config failed — using defaults:", error.status, error.statusText);
