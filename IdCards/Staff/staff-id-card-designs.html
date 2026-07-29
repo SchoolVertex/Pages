@@ -295,6 +295,7 @@
       display: block;
       line-height: 1.15;
       font-weight: 700;
+      color: var(--school-color);
     }
 
     .school-name-two-line .school-name-line1 {
@@ -479,13 +480,15 @@
     .school-info {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 2px;
       width: 100%;
       color: #2c3e50;
-      padding-bottom: 0;
-      border-bottom: none;
+      border-bottom: 1px solid var(--school-color);
       text-align: center;
-      margin-bottom: 0;
+    }
+
+    .school-logo {
+      height: 47px;
     }
 
     .school-logo img {
@@ -499,32 +502,47 @@
     .school-name {
       font-size: var(--school-name-font-size, 13px);
       font-weight: 700;
-      line-height: 1;
-      color: var(--school-color);
       flex: 1;
       min-width: 0;
     }
 
-    .school-header-meta {
-      text-align: center;
-      padding-bottom: 5px;
-      border-bottom: 1px solid var(--school-color);
-      width: 100%;
+    .school-color {
+      color: var(--school-color);
     }
 
-    .school-caption,
-    .school-affliate,
-    .school-address {
-      font-size: 7px;
+    .school-name-dynamic {
+      font-size: var(--school-name-font-size, 13px);
+      color: var(--school-color);
+    }
+
+    /* Description — distinct caption style (not the same as AffiliationInfo) */
+    .school-name > .school-caption,
+    .school-caption {
+      font-size: 6px;
+      font-weight: 600;
+      font-style: italic;
+      line-height: 1.25;
+      display: block;
+      margin: 1px 0 0;
+      color: var(--text-color);
+    }
+
+    .school-affliate {
+      font-size: 6px;
       font-weight: 600;
       font-style: italic;
       color: var(--text-color);
     }
 
     .school-address {
-      font-size: 6px;
+      font-size: 5px;
       font-weight: bold;
       font-style: normal;
+      color: var(--text-color);
+    }
+
+    .text-color {
+      color: var(--text-color);
     }
 
     .staff-photo-area {
@@ -547,7 +565,7 @@
 
     .staff-name {
       margin-top: 5px;
-      font-size: 15px;
+      font-size: 12px;
       font-weight: 700;
       color: var(--school-color);
       text-align: center;
@@ -1490,12 +1508,12 @@ angular.module("myApp", ["ngSanitize"])
   function renderSchoolNameHtml(name) {
     if (isSchoolNameTwoLine()) {
       var lines = getSchoolNameLines(name);
-      return '<span class="school-name-two-line">' +
+      return '<span class="school-color school-name-two-line">' +
         '<span class="school-name-line1">' + escapeHtml(lines.line1) + "</span>" +
         (lines.line2 ? '<span class="school-name-line2">' + escapeHtml(lines.line2) + "</span>" : "") +
         "</span>";
     }
-    return escapeHtml(name || "");
+    return '<span class="school-color school-name-dynamic">' + escapeHtml(name || "") + "</span>";
   }
 
   function renderStaffInfoRows(staff) {
@@ -1545,6 +1563,28 @@ angular.module("myApp", ["ngSanitize"])
     );
   }
 
+  function schoolCaptionHtml(org) {
+    if (!org.Description) return "";
+    return '<p class="school-caption text-color">' + escapeHtml(org.Description) + "</p>";
+  }
+
+  function schoolAffiliateHtml(org) {
+    var text = org.AffiliationInfo || org.Affiliation || "";
+    if (!text) return "";
+    return '<p class="school-affliate text-color">' + escapeHtml(text) + "</p>";
+  }
+
+  function schoolAddressHtml(org) {
+    var text = org.FullAddress || org.fullAddress || "";
+    if (!text) return "";
+    return '<p class="school-address text-color">' + escapeHtml(text) + "</p>";
+  }
+
+  function schoolMobileHtml(org) {
+    if (!org.Mobile) return "";
+    return '<p class="school-address text-color">' + escapeHtml(org.Mobile) + "</p>";
+  }
+
   function buildCard(org, bgIndex) {
     org = getDisplayOrg(org);
     var staff = SAMPLE_STAFF;
@@ -1556,13 +1596,13 @@ angular.module("myApp", ["ngSanitize"])
       '<div class="main-content">' +
       '<div class="school-info">' +
       '<div class="school-logo"><img src="' + escapeHtml(org.Image || "") + '" alt="School Logo"></div>' +
-      '<div class="school-name">' + renderSchoolNameHtml(org.Name) + "</div>" +
+      '<div class="school-name">' +
+      renderSchoolNameHtml(org.Name) +
+      schoolCaptionHtml(org) +
+      schoolAffiliateHtml(org) +
+      schoolAddressHtml(org) +
+      schoolMobileHtml(org) +
       "</div>" +
-      '<div class="school-header-meta">' +
-      (org.Description ? '<p class="school-affliate">' + escapeHtml(org.Description) + "</p>" : "") +
-      (org.AffiliationInfo ? '<p class="school-affliate">' + escapeHtml(org.AffiliationInfo) + "</p>" : "") +
-      (org.fullAddress ? '<p class="school-address">' + escapeHtml(org.fullAddress) + "</p>" : "") +
-      (org.Mobile ? '<p class="school-address">PHONE: ' + escapeHtml(org.Mobile) + "</p>" : "") +
       "</div>" +
       '<div class="staff-photo-area"><img src="' + escapeHtml(staff.Image) + '" alt="Staff Photo"></div>' +
       '<div class="staff-name">' + escapeHtml(staff.Name) + "</div>" +
@@ -1584,12 +1624,9 @@ angular.module("myApp", ["ngSanitize"])
         Mobile: orgData.Mobile || ""
       });
     }
-    var bgId = getBackgroundImageId();
-    var html = buildCard(orgData, bgId);
-    // Show a few nearby backgrounds for preview variety
-    for (var i = 1; i <= 3; i++) {
-      var n = ((bgId - 1 + i) % 102) + 1;
-      html += buildCard(orgData, n);
+    var html = "";
+    for (var i = 1; i <= 102; i++) {
+      html += buildCard(orgData, i);
     }
     $scope.cardsHtml = $sce.trustAsHtml(html);
     if (!$scope.$$phase) $scope.$applyAsync();
