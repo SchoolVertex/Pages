@@ -4,18 +4,19 @@
     "TextColor": "Black",
     "SchoolNameSize": 13,
     "PhotoHeight": 100,
-    "PhotoBorderRadius": 0,
+    "PhotoBorderRadius": 20,
     "PhotoObjectFit": "cover",
-    "BackgroundImage": 102,
+    "BackgroundImage": 45,
     "BackgroundOpacity": 1,
     "PrincipalSignature": "Principal Signature",
-    "PrincipalSignHeight": 20,
+    "PrincipalSignHeight": 25,
     "HideSignature": false,
     "SchoolNameTwoLine": true,
     "StaffFields": [
       "Designation",
       "DateOfBirth",
-      "Mobile"
+      "Mobile",
+      "Address"
     ],
     "SchoolNameLine1": "VIDYANIKETHAN",
     "SchoolNameLine2": "Model High School",
