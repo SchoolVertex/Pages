@@ -1,0 +1,2640 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student ID Card - Design Previews</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-sanitize.min.js"></script>
+
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --school-color: blue;
+      --text-color: black;
+      --school-name-font-size: 12px;
+      --student-photo-height: 80px;
+      --student-photo-border-radius: 50%;
+      --school-logo-border-radius: 50%;
+      --student-photo-object-fit: cover;
+      --principal-sign-height: 20px;
+      --bg-image-opacity: 1;
+      --accent-color: #c02026;
+      --school-name-line1-font-size: 12px;
+      --school-name-line1-font-family: Arial, Helvetica, sans-serif;
+      --school-name-line2-font-size: 11px;
+      --school-name-line2-font-family: Arial, Helvetica, sans-serif;
+      /* Exact PVC print size (printer: 57.2×91.5mm) · Text Part: 50×82mm · text safe inset: 6mm */
+      --id-card-width: 57.2mm;
+      --id-card-height: 91.5mm;
+      --id-text-part-width: 50mm;
+      --id-text-part-height: 82mm;
+      --id-safe-inset: 6mm;
+      /* (91.5 - 82) / 2 = 4.75mm · (57.2 - 50) / 2 = 3.6mm · pad so text is 6mm from edge */
+      --id-text-part-margin-y: 4.75mm;
+      --id-text-part-padding-y: 1.25mm;
+      --id-text-part-padding-x: 2.4mm;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #e9eef2;
+      margin: 0;
+      padding: 0;
+      display: block !important;
+    }
+
+    .control-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px 20px;
+      align-items: center;
+      background: #fff;
+      padding: 10px 14px;
+      border-bottom: 1px solid #ccc;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .control-group label {
+      font-size: 14px;
+      margin-right: 6px;
+      font-weight: 600;
+    }
+
+    .control-group input[type="checkbox"] {
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    .color-select {
+      position: relative;
+      display: inline-block;
+      min-width: 170px;
+      vertical-align: middle;
+    }
+
+    .color-select-trigger {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 4px 8px;
+      font-size: 13px;
+      font-family: inherit;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .color-select-trigger:hover,
+    .color-select.is-open .color-select-trigger {
+      border-color: #888;
+    }
+
+    .color-swatch {
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+      border: 1px solid rgba(0, 0, 0, 0.25);
+      flex-shrink: 0;
+      box-sizing: border-box;
+    }
+
+    .color-select-label {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .color-select-caret {
+      color: #666;
+      font-size: 11px;
+      line-height: 1;
+    }
+
+    .color-select-menu {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      max-height: 260px;
+      overflow-y: auto;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      z-index: 1200;
+      padding: 4px;
+    }
+
+    .color-select.is-open .color-select-menu {
+      display: block;
+    }
+
+    .color-select-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 6px 8px;
+      border: none;
+      background: transparent;
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+      text-align: left;
+      border-radius: 3px;
+      color: #222;
+    }
+
+    .color-select-option:hover,
+    .color-select-option.is-selected {
+      background: #f0f3f7;
+    }
+
+    .color-select-option.is-selected {
+      font-weight: 600;
+    }
+
+    .control-panel-extra {
+      display: none;
+      width: 100%;
+      flex-basis: 100%;
+      gap: 16px 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      padding-top: 4px;
+      border-top: 1px dashed #ddd;
+      margin-top: 2px;
+    }
+
+    .control-panel-extra.is-open {
+      display: flex;
+    }
+
+    .multi-select {
+      position: relative;
+      display: inline-block;
+      min-width: 180px;
+      vertical-align: middle;
+    }
+
+    .multi-select-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      width: 100%;
+      padding: 4px 8px;
+      font-size: 13px;
+      font-family: inherit;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .multi-select.is-open .multi-select-trigger {
+      border-color: #888;
+    }
+
+    .multi-select-menu {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      min-width: 100%;
+      max-height: 240px;
+      overflow: auto;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+      z-index: 1100;
+      padding: 6px 0;
+    }
+
+    .multi-select.is-open .multi-select-menu {
+      display: block;
+    }
+
+    .multi-select-menu label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      margin: 0;
+    }
+
+    .multi-select-menu label:hover {
+      background: #f3f3f3;
+    }
+
+    .control-group textarea {
+      font-family: inherit;
+      font-size: 13px;
+      padding: 4px 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      resize: vertical;
+      min-height: 40px;
+      width: 200px;
+      vertical-align: middle;
+    }
+
+    .school-info-field {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 4px;
+      vertical-align: middle;
+    }
+
+    .school-info-field-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .school-info-clear-btn {
+      border: 1px solid #ccc;
+      background: #f7f7f7;
+      color: #333;
+      border-radius: 4px;
+      font-size: 12px;
+      padding: 2px 8px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .school-info-clear-btn:hover {
+      background: #eee;
+    }
+
+    .school-name-two-line {
+      display: block;
+      line-height: 1.15;
+      font-weight: 700;
+    }
+
+    .school-name-two-line .school-name-line1 {
+      display: block;
+      font-family: var(--school-name-line1-font-family, Arial, Helvetica, sans-serif);
+      font-size: var(--school-name-line1-font-size, 12px);
+    }
+
+    .school-name-two-line .school-name-line2 {
+      display: block;
+      font-family: var(--school-name-line2-font-family, Arial, Helvetica, sans-serif);
+      font-size: var(--school-name-line2-font-size, 11px);
+    }
+
+    .settings-json-btn {
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      background: #1a2b56;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+    }
+
+    .settings-json-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .settings-json-modal.is-open {
+      display: flex;
+    }
+
+    .settings-json-dialog {
+      background: #fff;
+      border-radius: 8px;
+      width: min(560px, 100%);
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+    }
+
+    .settings-json-dialog header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 14px;
+      border-bottom: 1px solid #ddd;
+      font-weight: 700;
+    }
+
+    .settings-json-dialog pre {
+      margin: 0;
+      padding: 14px;
+      overflow: auto;
+      font-size: 12px;
+      line-height: 1.4;
+      background: #f7f8fa;
+      flex: 1;
+    }
+
+    .settings-json-dialog footer {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      padding: 12px 14px;
+      border-top: 1px solid #ddd;
+    }
+
+    .settings-json-dialog button {
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      background: #fff;
+    }
+
+    .settings-json-dialog button.primary {
+      background: #1a2b56;
+      color: #fff;
+      border-color: #1a2b56;
+    }
+
+    select,
+    input[type="number"] {
+      padding: 4px;
+      font-size: 14px;
+    }
+
+    select {
+      min-width: 150px;
+    }
+
+    #id-card-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 40px;
+      justify-content: center;
+      padding: 20px;
+      max-width: 1800px;
+      margin: 0 auto;
+    }
+
+    .id-card {
+      width: var(--id-card-width);
+      height: var(--id-card-height);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      position: relative;
+      overflow: hidden;
+      background: #fff;
+      box-sizing: border-box;
+      transform: scale(0.95);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .id-card:hover {
+      transform: scale(1);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-identifier {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 20px;
+      height: 20px;
+      color: black;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      z-index: 10;
+    }
+
+    .bg-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: var(--bg-image-opacity, 1);
+      z-index: 0;
+    }
+
+    /* Text Part 50×82mm centered in card; inner padding keeps text 6mm from outer edges */
+    .format-standard .main-content,
+    .format-ridgeboard .main-content,
+    .format-simple .main-content {
+      width: var(--id-text-part-width);
+      height: var(--id-text-part-height);
+      max-width: 100%;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: var(--id-text-part-margin-y) auto;
+      padding: var(--id-text-part-padding-y) var(--id-text-part-padding-x);
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    /* View-only print-area guide — outline does not change the box model */
+    .show-print-area .main-content {
+      outline: 1px solid red;
+      outline-offset: -1px;
+    }
+
+    /* ══════════════ STANDARD FORMAT ══════════════ */
+    .format-standard .main-content {
+      border-radius: 10px;
+    }
+
+    .format-standard .school-info {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      width: 100%;
+      color: #2c3e50;
+      border-bottom: 1px solid var(--school-color);
+      text-align: center;
+    }
+
+    .format-standard .school-logo {
+      height: 47px;
+    }
+
+    .format-standard .school-logo img {
+      width: 45px;
+      height: 45px;
+      border-radius: var(--school-logo-border-radius);
+      object-fit: cover;
+    }
+
+    .format-standard .school-name {
+      font-size: var(--school-name-font-size, 12px);
+      font-weight: 700;
+    }
+
+    /* Description / school caption — keep original caption look */
+    .format-standard .school-name > .school-caption,
+    .format-standard .school-caption {
+      font-size: 6px;
+      font-weight: 600;
+      font-style: italic;
+      line-height: 1.25;
+      display: block;
+      margin: 1px 0 0;
+    }
+
+    .format-standard .school-affliate,
+    .format-standard .school-address {
+      font-size: 6px;
+      font-weight: 600;
+      font-style: italic;
+    }
+
+    .format-standard .school-address {
+      font-size: 5px;
+      font-weight: bold;
+      font-style: normal;
+    }
+
+    .format-standard .student-photo-area {
+      width: var(--student-photo-height);
+      height: var(--student-photo-height);
+      border-radius: var(--student-photo-border-radius);
+      border: 2px solid #fff;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      flex-shrink: 0;
+      overflow: hidden;
+      margin-top: 3px;
+    }
+
+    .format-standard .student-photo-area img {
+      width: 100%;
+      height: 100%;
+      object-fit: var(--student-photo-object-fit, cover);
+    }
+
+    .format-standard .student-name {
+      margin-top: 2px;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .format-standard .student-info {
+      text-align: left;
+      padding-top: 2px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .format-standard .info-row {
+      display: flex;
+      margin-bottom: 3px;
+      font-size: 8px;
+      color: #000;
+      font-weight: 600;
+    }
+
+    .format-standard .info-label {
+      font-weight: 600;
+      width: 42px;
+      flex-shrink: 0;
+    }
+
+    .format-standard .principal-signature-area {
+      color: #000;
+      padding-bottom: 0;
+      text-align: center;
+      margin-top: auto;
+      flex-shrink: 0;
+      width: 100%;
+    }
+
+    .format-standard .principal-sign {
+      margin: -5px;
+    }
+
+    .format-standard .principal-sign img {
+      height: var(--principal-sign-height);
+      max-width: 90px;
+      object-fit: contain;
+    }
+
+    .format-standard .principal-label {
+      font-size: 8px;
+      letter-spacing: 0.5px;
+      border-top: 1px solid #000;
+    }
+
+    .format-standard .school-color {
+      color: var(--school-color);
+    }
+
+    .format-standard .school-name-dynamic {
+      font-size: var(--school-name-font-size);
+    }
+
+    .format-standard .school-name-two-line {
+      color: var(--school-color);
+    }
+
+    .format-ridgeboard .school-title.school-name-two-line,
+    .format-ridgeboard .school-name-two-line {
+      color: var(--school-color);
+    }
+
+    .format-standard .text-color {
+      color: var(--text-color);
+    }
+
+    /* ══════════════ RIDGEBOARD FORMAT ══════════════ */
+    .format-ridgeboard .id-card {
+      border-radius: 10px;
+    }
+
+    .format-ridgeboard .main-content {
+      font-family: 'Source Sans 3', sans-serif;
+    }
+
+    .format-ridgeboard .school-info {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      width: 100%;
+      border-bottom: none;
+    }
+
+    .format-ridgeboard .school-logo {
+      flex-shrink: 0;
+      width: 48px;
+      height: 48px;
+    }
+
+    .format-ridgeboard .school-logo img {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--school-logo-border-radius);
+      object-fit: cover;
+    }
+
+    .format-ridgeboard .school-name-block {
+      flex: 1;
+      min-width: 0;
+      text-align: center;
+      padding-top: 1px;
+    }
+
+    .format-ridgeboard .school-title {
+      font-family: 'Libre Baskerville', serif;
+      font-weight: 700;
+      font-size: var(--school-name-font-size);
+      line-height: 1.15;
+      color: var(--school-color);
+      display: block;
+    }
+
+    .format-ridgeboard .school-title-sub {
+      display: block;
+    }
+
+    .format-ridgeboard .school-name-two-line .school-name-line2.school-title-sub {
+      font-size: var(--school-name-line2-font-size, 11px);
+    }
+
+    .format-ridgeboard .school-tagline {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      margin: 3px 0 2px;
+    }
+
+    .format-ridgeboard .school-tagline::before,
+    .format-ridgeboard .school-tagline::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--accent-color);
+      max-width: 28px;
+    }
+
+    /* Description renders as school-tagline in boxed format */
+    .format-ridgeboard .school-tagline span {
+      font-family: 'Libre Baskerville', serif;
+      font-style: italic;
+      font-size: 6px;
+      color: var(--accent-color);
+      line-height: 1.2;
+      text-align: center;
+      white-space: normal;
+    }
+
+    .format-ridgeboard .school-affliate {
+      font-size: 5.5px;
+      font-weight: 600;
+      color: var(--text-color);
+      line-height: 1.25;
+      text-align: center;
+      font-style: italic;
+      margin: 1px 0;
+    }
+
+    .format-ridgeboard .school-address {
+      font-size: 5.5px;
+      font-weight: 600;
+      color: var(--text-color);
+      line-height: 1.25;
+      text-align: center;
+      font-style: normal;
+    }
+
+    .format-ridgeboard .header-divider {
+      width: 100%;
+      height: 1px;
+      background: var(--school-color);
+      margin: 2px 0;
+      flex-shrink: 0;
+    }
+
+    .format-ridgeboard .student-photo-area {
+      width: var(--student-photo-height);
+      height: var(--student-photo-height);
+      border-radius: var(--student-photo-border-radius);
+      border: 1.5px solid var(--school-color);
+      overflow: hidden;
+      flex-shrink: 0;
+      background: #ddd;
+      position: relative;
+      z-index: 2;
+      box-shadow: none;
+      margin-top: 2px;
+    }
+
+    .format-ridgeboard .student-photo-area img {
+      width: 100%;
+      height: 100%;
+      object-fit: var(--student-photo-object-fit, cover);
+      display: block;
+    }
+
+    .format-ridgeboard .student-name-banner {
+      margin-top: 2px;
+      background: var(--school-color);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      text-align: center;
+      padding: 2px 22px;
+      width: 100%;
+      box-sizing: border-box;
+      line-height: 1.25;
+      position: relative;
+      z-index: 1;
+      clip-path: polygon(
+        0% 0%,
+        100% 0%,
+        calc(100% - 14px) 50%,
+        100% 100%,
+        0% 100%,
+        14px 50%
+      );
+    }
+
+    .format-ridgeboard .student-info {
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 3px;
+      border: 1.25px solid var(--school-color);
+      border-radius: 10px;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: #fff;
+      text-align: left;
+      padding-top: 0;
+    }
+
+    .format-ridgeboard .info-row {
+      display: grid;
+      grid-template-columns: 18px 54px 1fr;
+      min-height: 16px;
+      border-bottom: 1px solid #b8bfcc;
+      margin-bottom: 0;
+      font-size: inherit;
+    }
+
+    .format-ridgeboard .info-row:last-child {
+      border-bottom: none;
+    }
+
+    .format-ridgeboard .info-icon-cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--school-color);
+      padding: 2px 0;
+    }
+
+    .format-ridgeboard .info-icon-cell .icon {
+      width: 10px;
+      height: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .format-ridgeboard .info-icon-cell .icon svg {
+      width: 10px;
+      height: 10px;
+      fill: #fff;
+    }
+
+    .format-ridgeboard .info-label-cell {
+      display: flex;
+      align-items: center;
+      background: var(--school-color);
+      color: #fff;
+      padding: 2px 2px 2px 0;
+      font-size: 7px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .format-ridgeboard .info-value {
+      display: flex;
+      align-items: center;
+      background: #fff;
+      padding: 2px 5px;
+      font-size: 7px;
+      font-weight: 700;
+      color: var(--text-color);
+      line-height: 1.2;
+      word-break: break-word;
+    }
+
+    .format-ridgeboard .card-footer {
+      margin-top: auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 0;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .format-ridgeboard .principal-signature-area {
+      text-align: center;
+      width: 55%;
+      padding-bottom: 0;
+      margin-top: 0;
+    }
+
+    .format-ridgeboard .principal-sign {
+      min-height: 16px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .format-ridgeboard .principal-sign img {
+      height: var(--principal-sign-height);
+      max-width: 70px;
+      object-fit: contain;
+    }
+
+    .format-ridgeboard .principal-label {
+      font-size: 7px;
+      font-weight: 700;
+      color: var(--text-color);
+      border-top: 1px solid var(--text-color);
+      letter-spacing: 0.2px;
+    }
+
+    /* ══════════════ SIMPLE FORMAT ══════════════ */
+    .format-simple .id-card {
+      border-radius: 10px;
+    }
+
+    .format-simple .side-accent {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 42px;
+      height: 72%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .format-simple .side-accent svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .format-simple .main-content {
+      border-radius: 10px;
+    }
+
+    .format-simple .school-info {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      width: 100%;
+      color: #2c3e50;
+      border-bottom: 1px solid var(--school-color);
+      text-align: center;
+    }
+
+    .format-simple .school-logo {
+      height: 47px;
+    }
+
+    .format-simple .school-logo img {
+      width: 45px;
+      height: 45px;
+      border-radius: var(--school-logo-border-radius);
+      object-fit: cover;
+    }
+
+    .format-simple .school-name {
+      font-size: var(--school-name-font-size, 12px);
+      font-weight: 700;
+    }
+
+    /* Description / school caption — keep original caption look */
+    .format-simple .school-name > .school-caption,
+    .format-simple .school-caption {
+      font-size: 6px;
+      font-weight: 600;
+      font-style: italic;
+      line-height: 1.25;
+      display: block;
+      margin: 1px 0 0;
+    }
+
+    .format-simple .school-affliate,
+    .format-simple .school-address {
+      font-size: 6px;
+      font-weight: 600;
+      font-style: italic;
+    }
+
+    .format-simple .school-address {
+      font-size: 5px;
+      font-weight: bold;
+      font-style: normal;
+    }
+
+    .format-simple .school-color {
+      color: var(--school-color);
+    }
+
+    .format-simple .school-name-dynamic {
+      font-size: var(--school-name-font-size);
+    }
+
+    .format-simple .school-name-two-line {
+      color: var(--school-color);
+    }
+
+    .format-simple .text-color {
+      color: var(--text-color);
+    }
+
+    .format-simple .student-photo-area {
+      width: var(--student-photo-height);
+      height: var(--student-photo-height);
+      border-radius: var(--student-photo-border-radius);
+      border: 1.5px solid #87ceeb;
+      box-shadow: none;
+      flex-shrink: 0;
+      overflow: hidden;
+      margin-top: 14px;
+      background: #eee;
+    }
+
+    .format-simple .student-photo-area img {
+      width: 100%;
+      height: 100%;
+      object-fit: var(--student-photo-object-fit, cover);
+      display: block;
+    }
+
+    .format-simple .student-name {
+      margin-top: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
+      color: var(--school-color);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      width: 100%;
+      box-sizing: border-box;
+      line-height: 1.2;
+    }
+
+    .format-simple .simple-class-info {
+      margin-top: 3px;
+      text-align: center;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .format-simple .simple-class-line {
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--text-color);
+      letter-spacing: 0.15px;
+      line-height: 1.35;
+      text-transform: none;
+    }
+
+    .format-simple .simple-class-line .simple-field-label {
+      font-weight: 700;
+      color: var(--school-color);
+    }
+
+    .format-simple .principal-signature-area {
+      margin-top: auto;
+      align-self: flex-end;
+      text-align: center;
+      padding: 0;
+      width: auto;
+      min-width: 70px;
+      flex-shrink: 0;
+    }
+
+    .format-simple .principal-sign {
+      margin: 0;
+      min-height: 18px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .format-simple .principal-sign img {
+      height: var(--principal-sign-height);
+      max-width: 80px;
+      object-fit: contain;
+    }
+
+    .format-simple .principal-label {
+      font-size: 7px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      color: var(--text-color);
+      border-top: none;
+      margin-top: 2px;
+    }
+
+    @media print {
+      html,
+      body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+        width: 57.2mm !important;
+        min-height: 91.5mm;
+        height: auto !important;
+        overflow: visible !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .control-bar {
+        display: none !important;
+      }
+
+      .settings-json-modal {
+        display: none !important;
+      }
+
+      #id-card-grid {
+        display: block !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: none !important;
+        gap: 0 !important;
+      }
+
+      .id-card {
+        width: 57.2mm !important;
+        height: 91.5mm !important;
+        min-width: 57.2mm !important;
+        min-height: 91.5mm !important;
+        max-width: 57.2mm !important;
+        max-height: 91.5mm !important;
+        page-break-after: always;
+        break-after: page;
+        page-break-inside: avoid;
+        break-inside: avoid;
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        transform: none !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .card-identifier {
+        display: none !important;
+      }
+
+      .bg-image {
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        background-size: cover !important;
+        background-position: center !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .format-standard .main-content,
+      .format-ridgeboard .main-content,
+      .format-simple .main-content {
+        width: var(--id-text-part-width);
+        height: var(--id-text-part-height);
+        margin: var(--id-text-part-margin-y) auto;
+        padding: var(--id-text-part-padding-y) var(--id-text-part-padding-x);
+        box-sizing: border-box;
+        outline: none !important;
+      }
+    }
+
+    @page {
+      size: 57.2mm 91.5mm;
+      margin: 0;
+    }
+  </style>
+</head>
+
+<body ng-controller="IdCardCtrl" id="page-body" class="format-standard">
+
+  <div class="control-bar">
+    <div class="control-group">
+      <label>Content Format</label>
+      <select id="content-format-picker">
+        <option value="1">1 — Standard</option>
+        <option value="2">2 — Boxed Format</option>
+        <option value="3">3 — Simple</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>Background Image</label>
+      <input type="number" id="background-image-id" min="1" max="102" step="1" style="width:70px" />
+    </div>
+    <div class="control-group">
+      <label>BG Opacity</label>
+      <input type="number" id="background-image-opacity" min="0" max="1" step="0.1" style="width:70px" />
+    </div>
+    <div class="control-group">
+      <label>Primary Color</label>
+      <div id="school-color-picker" class="color-select" data-value="Blue" data-css-var="--school-color"></div>
+    </div>
+    <div class="control-group">
+      <label>Text Color</label>
+      <div id="text-color-picker" class="color-select" data-value="Black" data-css-var="--text-color"></div>
+    </div>
+    <div class="control-group">
+      <label>School Name Size</label>
+      <input type="number" id="school-name-fontsize" min="6" max="40" step="1" style="width:70px" />
+    </div>
+    <div class="control-group">
+      <label>Photo Height</label>
+      <input type="number" id="student-photo-height" min="40" max="160" step="1" style="width:70px" />
+    </div>
+    <div class="control-group">
+      <label>Photo Border Radius</label>
+      <input type="number" id="student-photo-border-radius" min="0" max="50" step="1" style="width:70px" />
+    </div>
+    <div class="control-group">
+      <label>School Logo Radius</label>
+      <input type="number" id="school-logo-border-radius" min="0" max="50" step="1" style="width:70px" />
+    </div>
+    <div class="control-group">
+      <label>Photo Fit</label>
+      <select id="student-photo-object-fit">
+        <option value="cover">cover</option>
+        <option value="fill">fill</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label>Principal Signature</label>
+      <input type="text" id="principal-signature-label" style="width:160px" />
+    </div>
+    <div class="control-group">
+      <label>Sign Height</label>
+      <input type="number" id="principal-sign-height" min="8" max="60" step="1" style="width:70px" />
+    </div>
+    <div class="control-group">
+      <label>
+        <input type="checkbox" id="hide-signature-toggle" />
+        Hide Signature
+      </label>
+    </div>
+    <div class="control-group">
+      <label>
+        <input type="checkbox" id="school-name-twoline-toggle" />
+        Two-line School Name
+      </label>
+    </div>
+    <div class="control-panel-extra" id="school-name-twoline-panel">
+      <div class="control-group">
+        <label>Line 1</label>
+        <input type="text" id="school-name-line1" style="width:160px" placeholder="Line 1" />
+      </div>
+      <div class="control-group">
+        <label>Line 1 Font Size</label>
+        <input type="number" id="school-name-line1-fontsize" min="6" max="40" step="1" style="width:70px" />
+      </div>
+      <div class="control-group">
+        <label>Line 1 Font Family</label>
+        <select id="school-name-line1-fontfamily">
+          <optgroup label="Tier 1 – Universal">
+            <option value="Arial, Helvetica, sans-serif">Arial</option>
+            <option value="Verdana, Geneva, sans-serif">Verdana</option>
+            <option value="Tahoma, Geneva, sans-serif">Tahoma</option>
+            <option value='"Trebuchet MS", Helvetica, sans-serif'>Trebuchet MS</option>
+            <option value="Georgia, serif">Georgia</option>
+            <option value='"Times New Roman", Times, serif'>Times New Roman</option>
+            <option value='"Courier New", Courier, monospace'>Courier New</option>
+          </optgroup>
+          <optgroup label="Tier 2 – Mostly Available">
+            <option value="Helvetica, Arial, sans-serif">Helvetica</option>
+            <option value='"Palatino Linotype", "Book Antiqua", Palatino, serif'>Palatino</option>
+            <option value="Garamond, serif">Garamond</option>
+            <option value='"Book Antiqua", Palatino, serif'>Book Antiqua</option>
+            <option value='"Lucida Sans Unicode", "Lucida Grande", sans-serif'>Lucida Sans</option>
+            <option value='"Century Gothic", Arial, sans-serif'>Century Gothic</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Line 2</label>
+        <input type="text" id="school-name-line2" style="width:160px" placeholder="Line 2" />
+      </div>
+      <div class="control-group">
+        <label>Line 2 Font Size</label>
+        <input type="number" id="school-name-line2-fontsize" min="6" max="40" step="1" style="width:70px" />
+      </div>
+      <div class="control-group">
+        <label>Line 2 Font Family</label>
+        <select id="school-name-line2-fontfamily">
+          <optgroup label="Tier 1 – Universal">
+            <option value="Arial, Helvetica, sans-serif">Arial</option>
+            <option value="Verdana, Geneva, sans-serif">Verdana</option>
+            <option value="Tahoma, Geneva, sans-serif">Tahoma</option>
+            <option value='"Trebuchet MS", Helvetica, sans-serif'>Trebuchet MS</option>
+            <option value="Georgia, serif">Georgia</option>
+            <option value='"Times New Roman", Times, serif'>Times New Roman</option>
+            <option value='"Courier New", Courier, monospace'>Courier New</option>
+          </optgroup>
+          <optgroup label="Tier 2 – Mostly Available">
+            <option value="Helvetica, Arial, sans-serif">Helvetica</option>
+            <option value='"Palatino Linotype", "Book Antiqua", Palatino, serif'>Palatino</option>
+            <option value="Garamond, serif">Garamond</option>
+            <option value='"Book Antiqua", Palatino, serif'>Book Antiqua</option>
+            <option value='"Lucida Sans Unicode", "Lucida Grande", sans-serif'>Lucida Sans</option>
+            <option value='"Century Gothic", Arial, sans-serif'>Century Gothic</option>
+          </optgroup>
+        </select>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label>
+        <input type="checkbox" id="show-academic-year-toggle" />
+        Show Academic Year
+      </label>
+    </div>
+    <div class="control-group">
+      <label>AC Year</label>
+      <input type="text" id="academic-year" value="2026-27" style="width:100px" placeholder="2026-27" />
+    </div>
+    <div class="control-group">
+      <label>Student Fields</label>
+      <div class="multi-select" id="student-fields-picker">
+        <button type="button" class="multi-select-trigger" id="student-fields-trigger">
+          <span id="student-fields-summary">All fields</span>
+          <span aria-hidden="true">▾</span>
+        </button>
+        <div class="multi-select-menu" id="student-fields-menu">
+          <label><input type="checkbox" value="Grade" checked /> Grade</label>
+          <label><input type="checkbox" value="AdmissionNumber" checked /> Admission Number</label>
+          <label><input type="checkbox" value="RollNumber" checked /> Roll Number</label>
+          <label><input type="checkbox" value="DateOfBirth" checked /> Date of Birth</label>
+          <label><input type="checkbox" value="ParentName" checked /> Parent Name</label>
+          <label><input type="checkbox" value="Mobile" checked /> Mobile / Phone</label>
+          <label><input type="checkbox" value="Address" checked /> Address</label>
+        </div>
+      </div>
+    </div>
+    <div class="control-group">
+      <label>
+        <input type="checkbox" id="edit-school-info-toggle" />
+        Edit School Info
+      </label>
+    </div>
+    <div class="control-panel-extra" id="school-info-edit-panel">
+      <div class="control-group">
+        <label>Description</label>
+        <div class="school-info-field">
+          <textarea id="school-info-description" placeholder="School description / caption"></textarea>
+          <div class="school-info-field-actions">
+            <button type="button" class="school-info-clear-btn" data-clear-school-field="school-info-description">Clear</button>
+          </div>
+        </div>
+      </div>
+      <div class="control-group">
+        <label>AffiliationInfo</label>
+        <div class="school-info-field">
+          <textarea id="school-info-affiliation" placeholder="Affiliation info"></textarea>
+          <div class="school-info-field-actions">
+            <button type="button" class="school-info-clear-btn" data-clear-school-field="school-info-affiliation">Clear</button>
+          </div>
+        </div>
+      </div>
+      <div class="control-group">
+        <label>Full Address</label>
+        <div class="school-info-field">
+          <textarea id="school-info-address" placeholder="School address"></textarea>
+          <div class="school-info-field-actions">
+            <button type="button" class="school-info-clear-btn" data-clear-school-field="school-info-address">Clear</button>
+          </div>
+        </div>
+      </div>
+      <div class="control-group">
+        <label>Mobile</label>
+        <div class="school-info-field">
+          <input type="text" id="school-info-mobile" style="width:160px" placeholder="School phone" />
+          <div class="school-info-field-actions">
+            <button type="button" class="school-info-clear-btn" data-clear-school-field="school-info-mobile">Clear</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label>
+        <input type="checkbox" id="show-print-area-toggle" />
+        Show print area
+      </label>
+    </div>
+    <div class="control-group">
+      <button type="button" class="settings-json-btn" id="show-settings-json-btn">Copy Settings JSON</button>
+    </div>
+  </div>
+
+  <div class="settings-json-modal" id="settings-json-modal" aria-hidden="true">
+    <div class="settings-json-dialog">
+      <header>
+        <span>settings.json object</span>
+        <button type="button" id="settings-json-close">Close</button>
+      </header>
+      <pre id="settings-json-preview"></pre>
+      <footer>
+        <button type="button" id="settings-json-close-2">Close</button>
+        <button type="button" class="primary" id="settings-json-copy">Copy to clipboard</button>
+      </footer>
+    </div>
+  </div>
+
+  <div id="id-card-grid" ng-bind-html="cardsHtml"></div>
+
+<script>
+const SETTINGS_URL = "https://schoolvertex.github.io/Pages/IdCards/settings.json";
+const DEFAULT_BG_IMAGE = 8;
+
+const commonColors = [
+  "Black","White","Gray","Silver","Red","Maroon","Yellow","Olive","Lime","Green",
+  "Aqua","Teal","Blue","Navy","Fuchsia","Purple","AliceBlue","AntiqueWhite",
+  "Aquamarine","Azure","Beige","Bisque","BlanchedAlmond","BlueViolet","Brown",
+  "BurlyWood","CadetBlue","Chartreuse","Chocolate","Coral","CornflowerBlue",
+  "Cornsilk","Crimson","Cyan","DarkBlue","DarkCyan","DarkGoldenRod","DarkGray",
+  "DarkGreen","DarkKhaki","DarkMagenta","DarkOliveGreen","DarkOrange","DarkOrchid",
+  "DarkRed","DarkSalmon","DarkSeaGreen","DarkSlateBlue","DarkSlateGray",
+  "DarkTurquoise","DarkViolet","DeepPink","DeepSkyBlue","DimGray","DodgerBlue",
+  "FireBrick","FloralWhite","ForestGreen","Gainsboro","GhostWhite","Gold",
+  "GoldenRod","GreenYellow","HoneyDew","HotPink","IndianRed","Indigo","Ivory",
+  "Khaki","Lavender","LavenderBlush","LawnGreen","LemonChiffon","LightBlue",
+  "LightCoral","LightCyan","LightGoldenRodYellow","LightGray","LightGreen",
+  "LightPink","LightSalmon","LightSeaGreen","LightSkyBlue","LightSlateGray",
+  "LightSteelBlue","LightYellow","LimeGreen","Linen","Magenta","MediumAquaMarine",
+  "MediumBlue","MediumOrchid","MediumPurple","MediumSeaGreen","MediumSlateBlue",
+  "MediumSpringGreen","MediumTurquoise","MediumVioletRed","MidnightBlue","MintCream"
+];
+
+function isLightColorName(name) {
+  return [
+    "White", "Ivory", "LightYellow", "Beige", "Azure", "HoneyDew", "GhostWhite",
+    "FloralWhite", "AliceBlue", "MintCream", "Snow", "Seashell", "Linen",
+    "LavenderBlush", "OldLace", "Cornsilk", "LemonChiffon", "LightCyan",
+    "LightGoldenRodYellow", "LightGray", "Gainsboro", "Whitesmoke"
+  ].some(c => c.toLowerCase() === String(name).toLowerCase());
+}
+
+function populateColorDropdown(selectId, savedValue, defaultColor) {
+  const root = document.getElementById(selectId);
+  if (!root) return;
+  root.classList.add("color-select");
+  root.innerHTML = "";
+
+  const trigger = document.createElement("button");
+  trigger.type = "button";
+  trigger.className = "color-select-trigger";
+  trigger.setAttribute("aria-haspopup", "listbox");
+  trigger.innerHTML =
+    '<span class="color-swatch"></span>' +
+    '<span class="color-select-label"></span>' +
+    '<span class="color-select-caret">▾</span>';
+
+  const menu = document.createElement("div");
+  menu.className = "color-select-menu";
+  menu.setAttribute("role", "listbox");
+
+  commonColors.forEach(name => {
+    const opt = document.createElement("button");
+    opt.type = "button";
+    opt.className = "color-select-option";
+    opt.setAttribute("role", "option");
+    opt.dataset.value = name;
+    opt.innerHTML =
+      '<span class="color-swatch" style="background-color:' + name + ';"></span>' +
+      "<span>" + name + "</span>";
+    opt.addEventListener("click", function (e) {
+      e.stopPropagation();
+      setColorSelectValue(selectId, name);
+      root.classList.remove("is-open");
+      root.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    menu.appendChild(opt);
+  });
+
+  root.appendChild(trigger);
+  root.appendChild(menu);
+
+  trigger.addEventListener("click", function (e) {
+    e.stopPropagation();
+    document.querySelectorAll(".color-select.is-open").forEach(el => {
+      if (el !== root) el.classList.remove("is-open");
+    });
+    root.classList.toggle("is-open");
+  });
+
+  if (!window.__colorSelectDocCloseBound) {
+    window.__colorSelectDocCloseBound = true;
+    document.addEventListener("click", function () {
+      document.querySelectorAll(".color-select.is-open").forEach(el => el.classList.remove("is-open"));
+    });
+  }
+
+  setColorSelectValue(selectId, savedValue || defaultColor);
+}
+
+function resolveColorName(value, fallback) {
+  if (!value) return fallback;
+  const found = commonColors.find(c => c.toLowerCase() === String(value).toLowerCase());
+  return found || String(value);
+}
+
+function setColorSelectValue(selectId, value) {
+  const root = document.getElementById(selectId);
+  if (!root) return;
+  const resolved = resolveColorName(value, root.dataset.value || "Blue");
+  let match = Array.from(root.querySelectorAll(".color-select-option")).find(
+    o => o.dataset.value.toLowerCase() === resolved.toLowerCase()
+  );
+
+  if (!match) {
+    match = document.createElement("button");
+    match.type = "button";
+    match.className = "color-select-option";
+    match.setAttribute("role", "option");
+    match.dataset.value = resolved;
+    match.innerHTML =
+      '<span class="color-swatch" style="background-color:' + resolved + ';"></span>' +
+      "<span>" + resolved + "</span>";
+    match.addEventListener("click", function (e) {
+      e.stopPropagation();
+      setColorSelectValue(selectId, resolved);
+      root.classList.remove("is-open");
+      root.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    const menu = root.querySelector(".color-select-menu");
+    if (menu) menu.insertBefore(match, menu.firstChild);
+  }
+
+  root.dataset.value = match.dataset.value;
+  root.querySelectorAll(".color-select-option").forEach(o => {
+    o.classList.toggle("is-selected", o === match);
+  });
+
+  const swatch = root.querySelector(".color-select-trigger .color-swatch");
+  const label = root.querySelector(".color-select-trigger .color-select-label");
+  if (swatch) {
+    swatch.style.backgroundColor = match.dataset.value;
+    swatch.style.borderColor = isLightColorName(match.dataset.value)
+      ? "rgba(0,0,0,0.35)"
+      : "rgba(0,0,0,0.2)";
+  }
+  if (label) label.textContent = match.dataset.value;
+}
+
+function getOrgIdFromQuery() {
+  return new URLSearchParams(location.search).get("orgid") || new URLSearchParams(location.search).get("orgId") || "1";
+}
+
+function getElValue(id, fallback) {
+  var el = document.getElementById(id);
+  if (!el) return fallback;
+  if (el.classList && el.classList.contains("color-select")) {
+    return el.dataset.value || fallback;
+  }
+  if (el.value === undefined || el.value === null || el.value === "") return fallback;
+  return el.value;
+}
+
+function getBackgroundImageId() {
+  var n = parseInt(getElValue("background-image-id", DEFAULT_BG_IMAGE), 10);
+  return isNaN(n) ? DEFAULT_BG_IMAGE : n;
+}
+
+function normalizeFormat(format) {
+  var key = String(format == null ? "1" : format).toLowerCase();
+  if (key === "2" || key === "ridgeboard" || key === "boxed") return "2";
+  if (key === "3" || key === "simple") return "3";
+  return "1";
+}
+
+function normalizePhotoObjectFit(value) {
+  var key = String(value == null ? "cover" : value).toLowerCase().trim();
+  return key === "fill" ? "fill" : "cover";
+}
+
+function applyPhotoObjectFit(value) {
+  var fit = normalizePhotoObjectFit(value);
+  var select = document.getElementById("student-photo-object-fit");
+  if (select) select.value = fit;
+  document.documentElement.style.setProperty("--student-photo-object-fit", fit);
+  return fit;
+}
+
+function normalizeBackgroundOpacity(value) {
+  var n = parseFloat(value);
+  if (isNaN(n)) n = 1;
+  if (n < 0) n = 0;
+  if (n > 1) n = 1;
+  return Math.round(n * 10) / 10;
+}
+
+function applyBackgroundOpacity(value) {
+  var opacity = normalizeBackgroundOpacity(value);
+  var input = document.getElementById("background-image-opacity");
+  if (input) input.value = String(opacity);
+  document.documentElement.style.setProperty("--bg-image-opacity", String(opacity));
+  return opacity;
+}
+
+function getBackgroundOpacity() {
+  return normalizeBackgroundOpacity(getElValue("background-image-opacity", "1"));
+}
+
+function formatClassName(format) {
+  var key = normalizeFormat(format);
+  if (key === "2") return "format-ridgeboard";
+  if (key === "3") return "format-simple";
+  return "format-standard";
+}
+
+function getContentFormat() {
+  return normalizeFormat(getElValue("content-format-picker", "1"));
+}
+
+function getPrincipalLabel() {
+  var input = document.getElementById("principal-signature-label");
+  if (input && String(input.value).trim() !== "") return String(input.value);
+  return "Principal Signature";
+}
+
+function isHideSignature() {
+  var toggle = document.getElementById("hide-signature-toggle");
+  return !!(toggle && toggle.checked);
+}
+
+var DEFAULT_STUDENT_FIELDS = [
+  "Grade",
+  "AdmissionNumber",
+  "RollNumber",
+  "DateOfBirth",
+  "ParentName",
+  "Mobile",
+  "Address"
+];
+
+var STUDENT_FIELD_META = {
+  Grade: { label: "Grade", sample: "Grade 6 Sec B", icon: "grade" },
+  AdmissionNumber: { label: "Adm' No", sample: "872", icon: "adm" },
+  RollNumber: { label: "Roll No", sample: "15", icon: "roll" },
+  DateOfBirth: { label: "D.O.B", sample: "26 Jun 2013", icon: "dob" },
+  ParentName: { label: "P' Name", sample: "Father Name", icon: "parent" },
+  Mobile: { label: "Phone No", sample: "9876543210", icon: "phone" },
+  Address: {
+    label: "Address",
+    sample: "Flat No 502, Block Sri Lakshmi Krishna Paradise, Wid Colony",
+    icon: "address",
+    extraClass: "address-row"
+  }
+};
+
+function isShowAcademicYear() {
+  var toggle = document.getElementById("show-academic-year-toggle");
+  return !!(toggle && toggle.checked);
+}
+
+function getAcademicYear() {
+  return String(getElValue("academic-year", "2026-27") || "").trim();
+}
+
+function getSelectedStudentFields() {
+  var menu = document.getElementById("student-fields-menu");
+  if (!menu) return DEFAULT_STUDENT_FIELDS.slice();
+  var selected = [];
+  menu.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
+    if (cb.checked) selected.push(cb.value);
+  });
+  return selected.length ? selected : [];
+}
+
+function setSelectedStudentFields(fields) {
+  var wanted = Array.isArray(fields) && fields.length
+    ? fields.map(String)
+    : DEFAULT_STUDENT_FIELDS.slice();
+  var menu = document.getElementById("student-fields-menu");
+  if (!menu) return;
+  menu.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
+    cb.checked = wanted.indexOf(cb.value) !== -1;
+  });
+  updateStudentFieldsSummary();
+}
+
+function updateStudentFieldsSummary() {
+  var summary = document.getElementById("student-fields-summary");
+  if (!summary) return;
+  var selected = getSelectedStudentFields();
+  if (!selected.length) {
+    summary.textContent = "None";
+  } else if (selected.length === DEFAULT_STUDENT_FIELDS.length) {
+    summary.textContent = "All fields";
+  } else {
+    summary.textContent = selected.length + " selected";
+  }
+}
+
+function isEditSchoolInfo() {
+  var toggle = document.getElementById("edit-school-info-toggle");
+  return !!(toggle && toggle.checked);
+}
+
+function getSchoolInfoFromControls() {
+  return {
+    Description: String(getElValue("school-info-description", "") || ""),
+    AffiliationInfo: String(getElValue("school-info-affiliation", "") || ""),
+    FullAddress: String(getElValue("school-info-address", "") || ""),
+    Mobile: String(getElValue("school-info-mobile", "") || "")
+  };
+}
+
+function setSchoolInfoControls(info) {
+  info = info || {};
+  var desc = document.getElementById("school-info-description");
+  var aff = document.getElementById("school-info-affiliation");
+  var addr = document.getElementById("school-info-address");
+  var mobile = document.getElementById("school-info-mobile");
+  if (desc && info.Description !== undefined && info.Description !== null) desc.value = info.Description;
+  if (aff && info.AffiliationInfo !== undefined && info.AffiliationInfo !== null) aff.value = info.AffiliationInfo;
+  if (addr && info.FullAddress !== undefined && info.FullAddress !== null) addr.value = info.FullAddress;
+  if (mobile && info.Mobile !== undefined && info.Mobile !== null) mobile.value = info.Mobile;
+}
+
+// Once true, empty school-info fields are kept empty (not refilled from org API).
+var schoolInfoUserManaged = false;
+
+function lockSchoolInfoUserManaged() {
+  schoolInfoUserManaged = true;
+}
+
+function clearSchoolInfoField(fieldId) {
+  var el = document.getElementById(fieldId);
+  if (!el) return;
+  el.value = "";
+  lockSchoolInfoUserManaged();
+  emitCardRefresh();
+}
+
+function populateSchoolInfoFromOrgIfEmpty(org) {
+  if (!org || schoolInfoUserManaged) return;
+  var current = getSchoolInfoFromControls();
+  var next = {
+    Description: current.Description || org.Description || "",
+    AffiliationInfo: current.AffiliationInfo || org.AffiliationInfo || org.Affiliation || "",
+    FullAddress: current.FullAddress || org.FullAddress || org.fullAddress || "",
+    Mobile: current.Mobile || org.Mobile || ""
+  };
+  setSchoolInfoControls(next);
+  // Seed once from org; later clears/edits must stick.
+  schoolInfoUserManaged = true;
+}
+
+function getDisplayOrg(org) {
+  var base = org || {};
+  var overrides = getSchoolInfoFromControls();
+  return {
+    Image: base.Image,
+    Name: base.Name,
+    Sign: base.Sign,
+    Description: overrides.Description,
+    AffiliationInfo: overrides.AffiliationInfo,
+    Affiliation: overrides.AffiliationInfo,
+    FullAddress: overrides.FullAddress,
+    fullAddress: overrides.FullAddress,
+    Mobile: overrides.Mobile
+  };
+}
+
+function emitCardRefresh() {
+  window.dispatchEvent(new CustomEvent("idcard-schoolname-change"));
+}
+
+function isSchoolNameTwoLine() {
+  var toggle = document.getElementById("school-name-twoline-toggle");
+  return !!(toggle && toggle.checked);
+}
+
+function getSchoolNameLines(fallbackName) {
+  var line1El = document.getElementById("school-name-line1");
+  var line2El = document.getElementById("school-name-line2");
+  var line1 = line1El ? line1El.value : "";
+  var line2 = line2El ? line2El.value : "";
+  if (!line1) {
+    var parts = splitSchoolNameFallback(fallbackName || "");
+    line1 = parts.line1;
+    if (!line2) line2 = parts.line2;
+  }
+  if (line2 == null) line2 = "";
+  return { line1: line1, line2: line2 };
+}
+
+function splitSchoolNameFallback(name) {
+  if (!name) return { line1: "", line2: "" };
+  var match = name.match(/^(.*?)\s+(International\s+School.*)$/i);
+  if (match) return { line1: match[1], line2: match[2] };
+  var parts = name.trim().split(/\s+/);
+  if (parts.length > 2) {
+    return { line1: parts.slice(0, 2).join(" "), line2: parts.slice(2).join(" ") };
+  }
+  return { line1: name, line2: "" };
+}
+
+function applySchoolNameLineStyles() {
+  var size1 = getElValue("school-name-line1-fontsize", "12");
+  var family1 = getElValue("school-name-line1-fontfamily", "Arial, Helvetica, sans-serif");
+  var size2 = getElValue("school-name-line2-fontsize", "11");
+  var family2 = getElValue("school-name-line2-fontfamily", "Arial, Helvetica, sans-serif");
+
+  document.documentElement.style.setProperty("--school-name-line1-font-size", size1 + "px");
+  document.documentElement.style.setProperty("--school-name-line1-font-family", family1);
+  document.documentElement.style.setProperty("--school-name-line2-font-size", size2 + "px");
+  document.documentElement.style.setProperty("--school-name-line2-font-family", family2);
+}
+
+function buildCurrentSettingsJson() {
+  var settings = {
+    Format: parseInt(getContentFormat(), 10) || 1,
+    PrimaryColor: getElValue("school-color-picker", "Blue"),
+    TextColor: getElValue("text-color-picker", "Black"),
+    SchoolNameSize: parseInt(getElValue("school-name-fontsize", "12"), 10),
+    PhotoHeight: parseInt(getElValue("student-photo-height", "80"), 10),
+    PhotoBorderRadius: parseInt(getElValue("student-photo-border-radius", "50"), 10),
+    SchoolLogoBorderRadius: parseInt(getElValue("school-logo-border-radius", "50"), 10),
+    PhotoObjectFit: normalizePhotoObjectFit(getElValue("student-photo-object-fit", "cover")),
+    BackgroundImage: getBackgroundImageId(),
+    BackgroundOpacity: getBackgroundOpacity(),
+    PrincipalSignature: getPrincipalLabel(),
+    PrincipalSignHeight: parseInt(getElValue("principal-sign-height", "20"), 10),
+    HideSignature: isHideSignature(),
+    SchoolNameTwoLine: isSchoolNameTwoLine(),
+    ShowAcademicYear: isShowAcademicYear(),
+    AcademicYear: getAcademicYear(),
+    StudentFields: getSelectedStudentFields()
+  };
+  if (settings.SchoolNameTwoLine) {
+    var lines = getSchoolNameLines((window.__idCardOrg && window.__idCardOrg.Name) || "");
+    settings.SchoolNameLine1 = lines.line1;
+    settings.SchoolNameLine2 = lines.line2;
+    settings.SchoolNameLine1FontSize = parseInt(getElValue("school-name-line1-fontsize", "12"), 10);
+    settings.SchoolNameLine1FontFamily = getElValue("school-name-line1-fontfamily", "Arial, Helvetica, sans-serif");
+    settings.SchoolNameLine2FontSize = parseInt(getElValue("school-name-line2-fontsize", "11"), 10);
+    settings.SchoolNameLine2FontFamily = getElValue("school-name-line2-fontfamily", "Arial, Helvetica, sans-serif");
+  }
+  if (isEditSchoolInfo()) {
+    var schoolInfo = getSchoolInfoFromControls();
+    settings.SchoolDescription = schoolInfo.Description;
+    settings.SchoolAffiliationInfo = schoolInfo.AffiliationInfo;
+    settings.SchoolFullAddress = schoolInfo.FullAddress;
+    settings.SchoolMobile = schoolInfo.Mobile;
+  }
+  return settings;
+}
+
+function openSettingsJsonModal() {
+  var modal = document.getElementById("settings-json-modal");
+  var preview = document.getElementById("settings-json-preview");
+  preview.textContent = JSON.stringify(buildCurrentSettingsJson(), null, 2);
+  modal.classList.add("is-open");
+  modal.setAttribute("aria-hidden", "false");
+}
+
+function closeSettingsJsonModal() {
+  var modal = document.getElementById("settings-json-modal");
+  modal.classList.remove("is-open");
+  modal.setAttribute("aria-hidden", "true");
+}
+
+async function copySettingsJson() {
+  var text = document.getElementById("settings-json-preview").textContent;
+  try {
+    await navigator.clipboard.writeText(text);
+    var btn = document.getElementById("settings-json-copy");
+    var prev = btn.textContent;
+    btn.textContent = "Copied!";
+    setTimeout(function () { btn.textContent = prev; }, 1500);
+  } catch (e) {
+    prompt("Copy this settings JSON:", text);
+  }
+}
+
+function renderSchoolNameHtml(orgName) {
+  if (!isSchoolNameTwoLine()) {
+    return `<span class="school-color school-name-dynamic">${escapeHtmlGlobal(orgName)}</span>`;
+  }
+  var lines = getSchoolNameLines(orgName);
+  var line2 = lines.line2
+    ? `<span class="school-name-line2">${escapeHtmlGlobal(lines.line2)}</span>`
+    : "";
+  return `<span class="school-color school-name-two-line"><span class="school-name-line1">${escapeHtmlGlobal(lines.line1)}</span>${line2}</span>`;
+}
+
+function escapeHtmlGlobal(str) {
+  return String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function applyPrincipalLabel(text) {
+  document.querySelectorAll(".principal-label").forEach(el => {
+    el.textContent = text;
+  });
+}
+
+function applyBodyFormat(format) {
+  const body = document.getElementById("page-body");
+  body.classList.remove("format-standard", "format-ridgeboard", "format-simple");
+  body.classList.add(formatClassName(format));
+}
+
+function setupPickers() {
+  populateColorDropdown("school-color-picker", "Blue", "Blue");
+  populateColorDropdown("text-color-picker", "Black", "Black");
+
+  document.documentElement.style.setProperty("--school-color", "Blue");
+  document.documentElement.style.setProperty("--text-color", "Black");
+
+  const formatPicker = document.getElementById("content-format-picker");
+  formatPicker.value = "1";
+  applyBodyFormat("1");
+
+  const bgImageInput = document.getElementById("background-image-id");
+  bgImageInput.value = DEFAULT_BG_IMAGE;
+
+  applyBackgroundOpacity(1);
+  document.getElementById("background-image-opacity").addEventListener("input", e => {
+    applyBackgroundOpacity(e.target.value);
+  });
+  document.getElementById("background-image-opacity").addEventListener("change", e => {
+    applyBackgroundOpacity(e.target.value);
+  });
+
+  formatPicker.addEventListener("change", e => {
+    const format = normalizeFormat(e.target.value);
+    formatPicker.value = format;
+    applyBodyFormat(format);
+    window.dispatchEvent(new CustomEvent("idcard-format-change", { detail: { format } }));
+  });
+
+  document.getElementById("school-color-picker").addEventListener("change", e => {
+    document.documentElement.style.setProperty("--school-color", e.currentTarget.dataset.value);
+  });
+
+  document.getElementById("text-color-picker").addEventListener("change", e => {
+    document.documentElement.style.setProperty("--text-color", e.currentTarget.dataset.value);
+  });
+
+  const fontInput = document.getElementById("school-name-fontsize");
+  fontInput.value = "12";
+  document.documentElement.style.setProperty("--school-name-font-size", "12px");
+  fontInput.addEventListener("input", e => {
+    document.documentElement.style.setProperty("--school-name-font-size", e.target.value + "px");
+  });
+
+  const photoHeightInput = document.getElementById("student-photo-height");
+  photoHeightInput.value = "80";
+  document.documentElement.style.setProperty("--student-photo-height", "80px");
+  photoHeightInput.addEventListener("input", e => {
+    document.documentElement.style.setProperty("--student-photo-height", e.target.value + "px");
+  });
+
+  const photoRadiusInput = document.getElementById("student-photo-border-radius");
+  photoRadiusInput.value = "50";
+  document.documentElement.style.setProperty("--student-photo-border-radius", "50%");
+  photoRadiusInput.addEventListener("input", e => {
+    document.documentElement.style.setProperty("--student-photo-border-radius", e.target.value + "%");
+  });
+
+  const schoolLogoRadiusInput = document.getElementById("school-logo-border-radius");
+  schoolLogoRadiusInput.value = "50";
+  document.documentElement.style.setProperty("--school-logo-border-radius", "50%");
+  schoolLogoRadiusInput.addEventListener("input", e => {
+    document.documentElement.style.setProperty("--school-logo-border-radius", e.target.value + "%");
+  });
+
+  applyPhotoObjectFit("cover");
+  document.getElementById("student-photo-object-fit").addEventListener("change", e => {
+    applyPhotoObjectFit(e.target.value);
+  });
+
+  const principalInput = document.getElementById("principal-signature-label");
+  principalInput.value = "Principal Signature";
+  applyPrincipalLabel("Principal Signature");
+  principalInput.addEventListener("input", e => {
+    applyPrincipalLabel(e.target.value);
+  });
+  principalInput.addEventListener("change", e => {
+    applyPrincipalLabel(e.target.value);
+  });
+
+  const principalSignHeightInput = document.getElementById("principal-sign-height");
+  principalSignHeightInput.value = "20";
+  document.documentElement.style.setProperty("--principal-sign-height", "20px");
+  principalSignHeightInput.addEventListener("input", e => {
+    document.documentElement.style.setProperty("--principal-sign-height", e.target.value + "px");
+  });
+
+  const hideSignatureToggle = document.getElementById("hide-signature-toggle");
+  hideSignatureToggle.checked = false;
+  hideSignatureToggle.addEventListener("change", () => {
+    window.dispatchEvent(new CustomEvent("idcard-schoolname-change"));
+  });
+
+  const twoLineToggle = document.getElementById("school-name-twoline-toggle");
+  const twoLinePanel = document.getElementById("school-name-twoline-panel");
+  const line1Input = document.getElementById("school-name-line1");
+  const line2Input = document.getElementById("school-name-line2");
+  const line1FontSizeInput = document.getElementById("school-name-line1-fontsize");
+  const line1FontFamilySelect = document.getElementById("school-name-line1-fontfamily");
+  const line2FontSizeInput = document.getElementById("school-name-line2-fontsize");
+  const line2FontFamilySelect = document.getElementById("school-name-line2-fontfamily");
+
+  twoLineToggle.checked = false;
+  twoLinePanel.classList.remove("is-open");
+  line1Input.value = "";
+  line2Input.value = "";
+  line1FontSizeInput.value = "12";
+  line1FontFamilySelect.value = "Arial, Helvetica, sans-serif";
+  line2FontSizeInput.value = "11";
+  line2FontFamilySelect.value = "Arial, Helvetica, sans-serif";
+  applySchoolNameLineStyles();
+
+  function emitSchoolNameChange() {
+    window.dispatchEvent(new CustomEvent("idcard-schoolname-change"));
+  }
+
+  function fillSplitIntoLineInputs() {
+    var orgName = (window.__idCardOrg && window.__idCardOrg.Name) || "";
+    var parts = splitSchoolNameFallback(orgName);
+    line1Input.value = parts.line1;
+    line2Input.value = parts.line2;
+  }
+
+  twoLineToggle.addEventListener("change", e => {
+    const enabled = e.target.checked;
+    twoLinePanel.classList.toggle("is-open", enabled);
+    if (enabled) {
+      fillSplitIntoLineInputs();
+      applySchoolNameLineStyles();
+    }
+    emitSchoolNameChange();
+  });
+
+  line1Input.addEventListener("input", () => emitSchoolNameChange());
+  line2Input.addEventListener("input", () => emitSchoolNameChange());
+
+  line1FontSizeInput.addEventListener("input", e => {
+    document.documentElement.style.setProperty("--school-name-line1-font-size", e.target.value + "px");
+  });
+  line1FontSizeInput.addEventListener("change", () => applySchoolNameLineStyles());
+  line1FontFamilySelect.addEventListener("change", e => {
+    document.documentElement.style.setProperty("--school-name-line1-font-family", e.target.value);
+    applySchoolNameLineStyles();
+  });
+
+  line2FontSizeInput.addEventListener("input", e => {
+    document.documentElement.style.setProperty("--school-name-line2-font-size", e.target.value + "px");
+  });
+  line2FontSizeInput.addEventListener("change", () => applySchoolNameLineStyles());
+  line2FontFamilySelect.addEventListener("change", e => {
+    document.documentElement.style.setProperty("--school-name-line2-font-family", e.target.value);
+    applySchoolNameLineStyles();
+  });
+
+  const showAcademicYearToggle = document.getElementById("show-academic-year-toggle");
+  const academicYearInput = document.getElementById("academic-year");
+  showAcademicYearToggle.checked = false;
+  academicYearInput.value = "2026-27";
+  showAcademicYearToggle.addEventListener("change", emitCardRefresh);
+  academicYearInput.addEventListener("input", emitCardRefresh);
+  academicYearInput.addEventListener("change", emitCardRefresh);
+
+  const showPrintAreaToggle = document.getElementById("show-print-area-toggle");
+  function applyShowPrintArea(enabled) {
+    var body = document.getElementById("page-body");
+    if (!body) return;
+    body.classList.toggle("show-print-area", !!enabled);
+  }
+  showPrintAreaToggle.checked = false;
+  applyShowPrintArea(false);
+  showPrintAreaToggle.addEventListener("change", function () {
+    applyShowPrintArea(showPrintAreaToggle.checked);
+  });
+
+  const studentFieldsPicker = document.getElementById("student-fields-picker");
+  const studentFieldsTrigger = document.getElementById("student-fields-trigger");
+  const studentFieldsMenu = document.getElementById("student-fields-menu");
+  setSelectedStudentFields(DEFAULT_STUDENT_FIELDS);
+  studentFieldsTrigger.addEventListener("click", function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    studentFieldsPicker.classList.toggle("is-open");
+  });
+  studentFieldsMenu.addEventListener("click", function (e) {
+    e.stopPropagation();
+  });
+  studentFieldsMenu.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
+    cb.addEventListener("change", function () {
+      updateStudentFieldsSummary();
+      emitCardRefresh();
+    });
+  });
+  document.addEventListener("click", function () {
+    studentFieldsPicker.classList.remove("is-open");
+  });
+
+  const editSchoolInfoToggle = document.getElementById("edit-school-info-toggle");
+  const schoolInfoPanel = document.getElementById("school-info-edit-panel");
+  editSchoolInfoToggle.checked = false;
+  schoolInfoPanel.classList.remove("is-open");
+  editSchoolInfoToggle.addEventListener("change", function (e) {
+    schoolInfoPanel.classList.toggle("is-open", e.target.checked);
+    if (e.target.checked && window.__idCardOrg) {
+      populateSchoolInfoFromOrgIfEmpty(window.__idCardOrg);
+    }
+  });
+  ["school-info-description", "school-info-affiliation", "school-info-address", "school-info-mobile"].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener("input", function () {
+      lockSchoolInfoUserManaged();
+      emitCardRefresh();
+    });
+    el.addEventListener("change", function () {
+      lockSchoolInfoUserManaged();
+      emitCardRefresh();
+    });
+  });
+  document.querySelectorAll("[data-clear-school-field]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      clearSchoolInfoField(btn.getAttribute("data-clear-school-field"));
+    });
+  });
+
+  document.getElementById("show-settings-json-btn").addEventListener("click", openSettingsJsonModal);
+  document.getElementById("settings-json-close").addEventListener("click", closeSettingsJsonModal);
+  document.getElementById("settings-json-close-2").addEventListener("click", closeSettingsJsonModal);
+  document.getElementById("settings-json-copy").addEventListener("click", copySettingsJson);
+  document.getElementById("settings-json-modal").addEventListener("click", function (e) {
+    if (e.target === this) closeSettingsJsonModal();
+  });
+
+  fetchAndApplySettings();
+}
+
+function applySettingsToControls(config) {
+  if (!config) return;
+
+  if (config.PrimaryColor) {
+    const color = resolveColorName(config.PrimaryColor, "Blue");
+    setColorSelectValue("school-color-picker", color);
+    document.documentElement.style.setProperty("--school-color", color);
+  }
+
+  if (config.TextColor) {
+    const color = resolveColorName(config.TextColor, "Black");
+    setColorSelectValue("text-color-picker", color);
+    document.documentElement.style.setProperty("--text-color", color);
+  }
+
+  if (config.SchoolNameSize !== undefined && config.SchoolNameSize !== null && config.SchoolNameSize !== "") {
+    const size = String(config.SchoolNameSize).replace(/px$/i, "");
+    const fontInput = document.getElementById("school-name-fontsize");
+    if (fontInput) fontInput.value = size;
+    document.documentElement.style.setProperty("--school-name-font-size", size + "px");
+  }
+
+  if (config.PhotoHeight !== undefined && config.PhotoHeight !== null) {
+    const h = String(config.PhotoHeight);
+    document.getElementById("student-photo-height").value = h;
+    document.documentElement.style.setProperty("--student-photo-height", h + "px");
+  }
+
+  if (config.PhotoBorderRadius !== undefined && config.PhotoBorderRadius !== null) {
+    const r = String(config.PhotoBorderRadius);
+    document.getElementById("student-photo-border-radius").value = r;
+    document.documentElement.style.setProperty("--student-photo-border-radius", r + "%");
+  }
+
+  if (config.SchoolLogoBorderRadius !== undefined && config.SchoolLogoBorderRadius !== null) {
+    const lr = String(config.SchoolLogoBorderRadius);
+    document.getElementById("school-logo-border-radius").value = lr;
+    document.documentElement.style.setProperty("--school-logo-border-radius", lr + "%");
+  }
+
+  if (config.PhotoObjectFit || config.PhotoFit) {
+    applyPhotoObjectFit(config.PhotoObjectFit || config.PhotoFit);
+  } else {
+    applyPhotoObjectFit("cover");
+  }
+
+  if (config.BackgroundImage !== undefined && config.BackgroundImage !== null) {
+    document.getElementById("background-image-id").value = String(config.BackgroundImage);
+  }
+
+  if (config.BackgroundOpacity !== undefined && config.BackgroundOpacity !== null && config.BackgroundOpacity !== "") {
+    applyBackgroundOpacity(config.BackgroundOpacity);
+  } else {
+    applyBackgroundOpacity(1);
+  }
+
+  if (config.PrincipalSignature || config.PrincipalLabel) {
+    const label = config.PrincipalSignature || config.PrincipalLabel;
+    document.getElementById("principal-signature-label").value = label;
+    applyPrincipalLabel(label);
+  } else {
+    document.getElementById("principal-signature-label").value = "Principal Signature";
+    applyPrincipalLabel("Principal Signature");
+  }
+
+  if (config.PrincipalSignHeight !== undefined && config.PrincipalSignHeight !== null) {
+    const sh = String(config.PrincipalSignHeight);
+    document.getElementById("principal-sign-height").value = sh;
+    document.documentElement.style.setProperty("--principal-sign-height", sh + "px");
+  }
+
+  {
+    const hideToggle = document.getElementById("hide-signature-toggle");
+    const hideOn = config.HideSignature === true || config.HideSignature === 1 || config.HideSignature === "true";
+    hideToggle.checked = hideOn;
+  }
+
+  const twoLineToggle = document.getElementById("school-name-twoline-toggle");
+  const twoLinePanel = document.getElementById("school-name-twoline-panel");
+  const twoLineOn = config.SchoolNameTwoLine === true || config.SchoolNameTwoLine === 1 || config.SchoolNameTwoLine === "true";
+
+  if (twoLineOn) {
+    twoLineToggle.checked = true;
+    twoLinePanel.classList.add("is-open");
+
+    if (config.SchoolNameLine1) {
+      document.getElementById("school-name-line1").value = config.SchoolNameLine1;
+    }
+    if (config.SchoolNameLine2 !== undefined && config.SchoolNameLine2 !== null) {
+      document.getElementById("school-name-line2").value = config.SchoolNameLine2;
+    }
+    if (config.SchoolNameLine1FontSize) {
+      document.getElementById("school-name-line1-fontsize").value = config.SchoolNameLine1FontSize;
+    } else if (config.SchoolNameSize !== undefined && config.SchoolNameSize !== null) {
+      document.getElementById("school-name-line1-fontsize").value = String(config.SchoolNameSize).replace(/px$/i, "");
+    }
+    if (config.SchoolNameLine2FontSize) {
+      document.getElementById("school-name-line2-fontsize").value = config.SchoolNameLine2FontSize;
+    }
+    if (config.SchoolNameLine1FontFamily) {
+      document.getElementById("school-name-line1-fontfamily").value = config.SchoolNameLine1FontFamily;
+    }
+    if (config.SchoolNameLine2FontFamily) {
+      document.getElementById("school-name-line2-fontfamily").value = config.SchoolNameLine2FontFamily;
+    }
+    applySchoolNameLineStyles();
+    window.dispatchEvent(new CustomEvent("idcard-schoolname-change"));
+  } else {
+    twoLineToggle.checked = false;
+    twoLinePanel.classList.remove("is-open");
+    document.getElementById("school-name-line1-fontsize").value = "12";
+    document.getElementById("school-name-line1-fontfamily").value = "Arial, Helvetica, sans-serif";
+    document.getElementById("school-name-line2-fontsize").value = "11";
+    document.getElementById("school-name-line2-fontfamily").value = "Arial, Helvetica, sans-serif";
+    applySchoolNameLineStyles();
+    window.dispatchEvent(new CustomEvent("idcard-schoolname-change"));
+  }
+
+  {
+    const showAy = document.getElementById("show-academic-year-toggle");
+    const ayInput = document.getElementById("academic-year");
+    if (config.ShowAcademicYear !== undefined && config.ShowAcademicYear !== null) {
+      showAy.checked = config.ShowAcademicYear === true || config.ShowAcademicYear === 1 || config.ShowAcademicYear === "true";
+    } else if (config.AcademicYear !== undefined && config.AcademicYear !== null) {
+      showAy.checked = String(config.AcademicYear).trim() !== "";
+    } else {
+      showAy.checked = false;
+    }
+    if (config.AcademicYear !== undefined && config.AcademicYear !== null) {
+      ayInput.value = String(config.AcademicYear);
+    } else if (!ayInput.value) {
+      ayInput.value = "2026-27";
+    }
+  }
+
+  if (config.StudentFields !== undefined && config.StudentFields !== null) {
+    setSelectedStudentFields(config.StudentFields);
+  } else {
+    setSelectedStudentFields(DEFAULT_STUDENT_FIELDS);
+  }
+
+  {
+    const hasSchoolOverride =
+      config.SchoolDescription !== undefined ||
+      config.SchoolAffiliationInfo !== undefined ||
+      config.SchoolFullAddress !== undefined ||
+      config.SchoolMobile !== undefined;
+    const editToggle = document.getElementById("edit-school-info-toggle");
+    const editPanel = document.getElementById("school-info-edit-panel");
+    if (hasSchoolOverride) {
+      editToggle.checked = true;
+      editPanel.classList.add("is-open");
+      setSchoolInfoControls({
+        Description: config.SchoolDescription != null ? config.SchoolDescription : getSchoolInfoFromControls().Description,
+        AffiliationInfo: config.SchoolAffiliationInfo != null ? config.SchoolAffiliationInfo : getSchoolInfoFromControls().AffiliationInfo,
+        FullAddress: config.SchoolFullAddress != null ? config.SchoolFullAddress : getSchoolInfoFromControls().FullAddress,
+        Mobile: config.SchoolMobile != null ? config.SchoolMobile : getSchoolInfoFromControls().Mobile
+      });
+      // Keep empty override values (do not refill from org).
+      lockSchoolInfoUserManaged();
+    }
+  }
+
+  // Always apply format from settings; missing Format → Standard (1)
+  {
+    const format = normalizeFormat(
+      config.Format !== undefined && config.Format !== null ? config.Format : "1"
+    );
+    document.getElementById("content-format-picker").value = format;
+    applyBodyFormat(format);
+    window.dispatchEvent(new CustomEvent("idcard-format-change", { detail: { format } }));
+  }
+}
+
+async function fetchAndApplySettings() {
+  try {
+    const orgId = getOrgIdFromQuery();
+    const res = await fetch(SETTINGS_URL);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    const config = data[orgId] || data[String(orgId)] || data["All"] || {};
+    applySettingsToControls(config);
+    console.log("Loaded settings for orgid=" + orgId, config);
+  } catch (err) {
+    console.error("Failed to load settings.json — using defaults:", err);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", setupPickers);
+</script>
+
+<script>
+angular.module('myApp', ['ngSanitize'])
+.controller('IdCardCtrl', function ($scope, $http, $sce) {
+
+  const baseUrl = "https://cdn.jsdelivr.net/gh/gitcdnsv/svcdn/IdCardBg/";
+  const samplePhoto = "https://www.w3schools.com/html/img_girl.jpg";
+
+  const backgrounds = Array.from({ length: 102 }, (_, i) => ({
+    index: i + 1,
+    url: baseUrl + (i + 1) + ".jpg",
+    opacity: 1,
+    size: "cover"
+  }));
+
+  const icons = {
+    grade: '<svg viewBox="0 0 24 24"><path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z"/></svg>',
+    adm: '<svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4V6h16v12zM6 10h4v4H6v-4zm6 0h6v2h-6v-2zm0 4h4v2h-4v-2z"/></svg>',
+    roll: '<svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11zM8 12h8v2H8v-2zm0 4h5v2H8v-2z"/></svg>',
+    dob: '<svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zM7 12h5v5H7v-5z"/></svg>',
+    parent: '<svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>',
+    phone: '<svg viewBox="0 0 24 24"><path d="M6.62 10.79a15.15 15.15 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.4 21 3 13.6 3 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.57a1 1 0 01-.25 1.02l-2.2 2.2z"/></svg>',
+    address: '<svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1114.5 9 2.5 2.5 0 0112 11.5z"/></svg>'
+  };
+
+  let orgData = null;
+
+  function splitSchoolName(name) {
+    return splitSchoolNameFallback(name);
+  }
+
+  function escapeHtml(str) {
+    return escapeHtmlGlobal(str);
+  }
+
+  function renderPrincipalSignatureHtml(org, labelClass) {
+    if (isHideSignature()) return "";
+    var sign = org && org.Sign ? String(org.Sign).trim() : "";
+    var signHtml = sign
+      ? `<div class="principal-sign"><img src="${escapeHtml(sign)}" alt="Signature"></div>`
+      : `<div class="principal-sign"></div>`;
+    var labelCls = labelClass ? `principal-label ${labelClass}` : "principal-label";
+    return `
+            <div class="principal-signature-area">
+              ${signHtml}
+              <div class="${labelCls}">${escapeHtml(getPrincipalLabel())}</div>
+            </div>`;
+  }
+
+  function getStudentInfoRowsData() {
+    var rows = [];
+    if (isShowAcademicYear() && getAcademicYear()) {
+      rows.push({
+        key: "AcademicYear",
+        label: "AC Year",
+        value: getAcademicYear(),
+        icon: "dob",
+        extraClass: ""
+      });
+    }
+    getSelectedStudentFields().forEach(function (key) {
+      var meta = STUDENT_FIELD_META[key];
+      if (!meta) return;
+      rows.push({
+        key: key,
+        label: meta.label,
+        value: meta.sample,
+        icon: meta.icon,
+        extraClass: meta.extraClass || ""
+      });
+    });
+    return rows;
+  }
+
+  function buildStandardStudentInfoHtml() {
+    return getStudentInfoRowsData().map(function (row) {
+      return `<div class="info-row"><div class="info-label school-color">${escapeHtml(row.label)}</div><div class="info-value text-color">${escapeHtml(row.value)}</div></div>`;
+    }).join("");
+  }
+
+  function buildRidgeStudentInfoHtml() {
+    return getStudentInfoRowsData().map(function (row) {
+      var iconSvg = icons[row.icon] || icons.grade;
+      return ridgeInfoRow(iconSvg, escapeHtml(row.label), escapeHtml(row.value), row.extraClass);
+    }).join("");
+  }
+
+  function buildSimpleExtraInfoHtml() {
+    var parts = [];
+    if (isShowAcademicYear() && getAcademicYear()) {
+      parts.push(
+        `<div class="simple-class-line"><span class="simple-field-label">AC Year</span> : ${escapeHtml(getAcademicYear())}</div>`
+      );
+    }
+    getSelectedStudentFields().forEach(function (key) {
+      var meta = STUDENT_FIELD_META[key];
+      if (!meta) return;
+      var sample = meta.sample;
+      if (key === "Grade") sample = "Grade 6";
+      parts.push(
+        `<div class="simple-class-line"><span class="simple-field-label">${escapeHtml(meta.label)}</span> : ${escapeHtml(sample)}</div>`
+      );
+    });
+    return parts.join("");
+  }
+
+  function schoolCaptionHtml(org, textClass) {
+    var cls = textClass ? `school-caption ${textClass}` : "school-caption";
+    if (!org.Description) return "";
+    return `<p class="${cls}">${escapeHtml(org.Description)}</p>`;
+  }
+
+  function schoolAffiliateHtml(org, textClass) {
+    var cls = textClass ? `school-affliate ${textClass}` : "school-affliate";
+    var text = org.AffiliationInfo || org.Affiliation || "";
+    if (!text) return "";
+    return `<p class="${cls}">${escapeHtml(text)}</p>`;
+  }
+
+  function schoolAddressHtml(org, textClass) {
+    var cls = textClass ? `school-address ${textClass}` : "school-address";
+    var text = org.FullAddress || org.fullAddress || "";
+    if (!text) return "";
+    return `<p class="${cls}">${escapeHtml(text)}</p>`;
+  }
+
+  function schoolMobileHtml(org, textClass) {
+    var cls = textClass ? `school-address ${textClass}` : "school-address";
+    if (!org.Mobile) return "";
+    return `<p class="${cls}">${escapeHtml(org.Mobile)}</p>`;
+  }
+
+  function buildStandardCard(org, bg) {
+    org = getDisplayOrg(org);
+    return `
+      <div class="id-card">
+        <div class="card-identifier">${bg.index}</div>
+        <div class="bg-image" style="background-image:url('${bg.url}');background-size:${bg.size};"></div>
+        <div class="main-content">
+          <div class="school-info">
+            <div class="school-logo">
+              <img src="${org.Image || ''}">
+            </div>
+            <div class="school-name">
+              ${renderSchoolNameHtml(org.Name)}
+              ${schoolCaptionHtml(org, "text-color")}
+              ${schoolAffiliateHtml(org, "text-color")}
+              ${schoolAddressHtml(org, "text-color")}
+              ${schoolMobileHtml(org, "text-color")}
+            </div>
+          </div>
+
+          <div class="student-photo-area">
+            <img src="${samplePhoto}">
+          </div>
+
+          <div class="student-name school-color">Student Name</div>
+
+          <div class="student-info">
+            ${buildStandardStudentInfoHtml()}
+          </div>
+
+          ${renderPrincipalSignatureHtml(org, "text-color")}
+        </div>
+      </div>`;
+  }
+
+  function ridgeInfoRow(iconSvg, label, value, extraClass) {
+    return `
+      <div class="info-row${extraClass ? ' ' + extraClass : ''}">
+        <div class="info-icon-cell"><span class="icon">${iconSvg}</span></div>
+        <div class="info-label-cell">${label}</div>
+        <div class="info-value">${value}</div>
+      </div>`;
+  }
+
+  function buildRidgeboardCard(org, bg) {
+    const rawOrg = org;
+    org = getDisplayOrg(org);
+    const nameParts = isSchoolNameTwoLine()
+      ? getSchoolNameLines(rawOrg.Name)
+      : splitSchoolName(rawOrg.Name);
+    const caption = org.Description || "";
+    const taglineHtml = caption
+      ? `<div class="school-tagline"><span>${escapeHtml(caption)}</span></div>`
+      : "";
+    const line2Html = nameParts.line2
+      ? `<span class="school-name-line2 school-title-sub">${escapeHtml(nameParts.line2)}</span>`
+      : "";
+    const titleClass = isSchoolNameTwoLine() ? "school-title school-name-two-line" : "school-title";
+    const mobileHtml = org.Mobile
+      ? `<p class="school-address">${escapeHtml(org.Mobile)}</p>`
+      : "";
+
+    return `
+      <div class="id-card">
+        <div class="card-identifier">${bg.index}</div>
+        <div class="bg-image" style="background-image:url('${bg.url}');background-size:${bg.size};"></div>
+        <div class="main-content">
+          <div class="school-info">
+            <div class="school-logo">
+              <img src="${org.Image || ''}">
+            </div>
+            <div class="school-name-block">
+              <span class="${titleClass}">
+                <span class="school-name-line1">${escapeHtml(nameParts.line1)}</span>
+                ${line2Html}
+              </span>
+              ${taglineHtml}
+              ${schoolAffiliateHtml(org)}
+              ${schoolAddressHtml(org)}
+              ${mobileHtml}
+            </div>
+          </div>
+
+          <div class="header-divider"></div>
+
+          <div class="student-photo-area">
+            <img src="${samplePhoto}">
+          </div>
+
+          <div class="student-name-banner">Student Name</div>
+
+          <div class="student-info">
+            ${buildRidgeStudentInfoHtml()}
+          </div>
+
+          <div class="card-footer">
+            ${renderPrincipalSignatureHtml(org)}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function buildSimpleCard(org, bg) {
+    org = getDisplayOrg(org);
+    return `
+      <div class="id-card">
+        <div class="card-identifier">${bg.index}</div>
+        <div class="bg-image" style="background-image:url('${bg.url}');background-size:${bg.size};"></div>
+        <div class="main-content">
+          <div class="school-info">
+            <div class="school-logo">
+              <img src="${org.Image || ''}">
+            </div>
+            <div class="school-name">
+              ${renderSchoolNameHtml(org.Name)}
+              ${schoolCaptionHtml(org, "text-color")}
+              ${schoolAffiliateHtml(org, "text-color")}
+              ${schoolAddressHtml(org, "text-color")}
+              ${schoolMobileHtml(org, "text-color")}
+            </div>
+          </div>
+
+          <div class="student-photo-area">
+            <img src="${samplePhoto}">
+          </div>
+
+          <div class="student-name school-color">Student Name</div>
+
+          <div class="simple-class-info">
+            ${buildSimpleExtraInfoHtml()}
+          </div>
+
+          ${renderPrincipalSignatureHtml(org, "text-color")}
+        </div>
+      </div>`;
+  }
+
+  function buildCards(org) {
+    orgData = org;
+    window.__idCardOrg = org;
+    populateSchoolInfoFromOrgIfEmpty(org);
+    const format = getContentFormat();
+    applyBodyFormat(format);
+
+    let html = "";
+    backgrounds.forEach(bg => {
+      if (format === "2") {
+        html += buildRidgeboardCard(org, bg);
+      } else if (format === "3") {
+        html += buildSimpleCard(org, bg);
+      } else {
+        html += buildStandardCard(org, bg);
+      }
+    });
+
+    $scope.cardsHtml = $sce.trustAsHtml(html);
+    if (!$scope.$$phase) $scope.$applyAsync();
+  }
+
+  const orgId = new URLSearchParams(location.search).get("orgid") || new URLSearchParams(location.search).get("orgId") || 1;
+  const apiUrl = `https://api.schoolvertex.com/api/Organisation/GetInfoForCertificate/${orgId}`;
+
+  $http.get(apiUrl).then(res => buildCards(res.data));
+
+  window.addEventListener("idcard-format-change", function () {
+    if (orgData) {
+      $scope.$apply(function () {
+        buildCards(orgData);
+      });
+    }
+  });
+
+  window.addEventListener("idcard-schoolname-change", function () {
+    if (orgData) {
+      $scope.$apply(function () {
+        buildCards(orgData);
+      });
+    }
+  });
+});
+</script>
+
+</body>
+</html>
