@@ -10,7 +10,7 @@
   "PrimaryColor": "MidnightBlue",
   "TextColor": "Black",
   "SchoolNameSize": 16,
-  "PhotoHeight": 80,
+  "PhotoHeight": 90,
   "PhotoBorderRadius": 50,
   "SchoolLogoBorderRadius": 50,
   "PhotoObjectFit": "cover",
