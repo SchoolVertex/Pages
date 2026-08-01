@@ -240,12 +240,11 @@
     "SchoolNameLine2FontSize": 14,
     "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
   },
-  "180": {
  "Format": 2,
   "PrimaryColor": "Blue",
   "TextColor": "Black",
   "SchoolNameSize": 12,
-  "PhotoHeight": 80,
+  "PhotoHeight": 82,
   "PhotoBorderRadius": 50,
   "SchoolLogoBorderRadius": 50,
   "PhotoObjectFit": "fill",
@@ -255,11 +254,10 @@
   "PrincipalSignHeight": 23,
   "HideSignature": false,
   "SchoolNameTwoLine": true,
-  "ShowAcademicYear": false,
+  "ShowAcademicYear": true,
   "AcademicYear": "2026-27",
   "StudentFields": [
     "Grade",
-    "DateOfBirth",
     "ParentName",
     "Mobile"
   ],
