@@ -1,4 +1,46 @@
 {
 "ExternalBioSchoolList": [ 53, 102, 120, 139, 153, 143, 179, 185, 187, 186, 170 ],
-"WhatsappOrgList": [ 1,30,73,139,142,143,153,158,159,170,179,180,181,183,184,185,186,187 ]
+"WhatsappOrgList": [ 1,30,73,139,142,143,153,158,159,170,179,180,181,183,184,185,186,187 ],
+"ExternalSchoolDevices": [
+    {
+      "SchoolId": 102,
+      "DeviceSerialNumber": "CEXJ230860941"
+    },
+    {
+      "SchoolId": 120,
+      "DeviceSerialNumber": "CUB7240300027"
+    },
+    {
+      "SchoolId": 53,
+      "DeviceSerialNumber": "NYU7251100394"
+    },
+    {
+      "SchoolId": 153,
+      "DeviceSerialNumber": "JNP2251201276"
+    },
+    {
+      "SchoolId": 143,
+      "DeviceSerialNumber": "JNP2250401015"
+    },
+    {
+      "SchoolId": 170,
+      "DeviceSerialNumber": "JNP2255100891"
+    },
+    {
+      "SchoolId": 179,
+      "DeviceSerialNumber": "NFZ8255100086"
+    },
+    {
+      "SchoolId": 187,
+      "DeviceSerialNumber": "NFZ8255100075"
+    },
+    {
+      "SchoolId": 185,
+      "DeviceSerialNumber": "NFZ8260201198"
+    },
+    {
+      "SchoolId": 139,
+      "DeviceSerialNumber": "NYU7262001192"
+    }
+  ]
 }
