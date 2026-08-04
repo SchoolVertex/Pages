@@ -183,10 +183,38 @@
     "SchoolNameLine2FontFamily": "Georgia, serif"
   },
   "158": {
-    "PrimaryColor": "midnightblue",
-    "TextColor": "black",
+    "Format": 1,
+    "PrimaryColor": "MidnightBlue",
+    "TextColor": "Black",
     "SchoolNameSize": 16,
-    "BackgroundImage": 1
+    "PhotoHeight": 90,
+    "PhotoBorderRadius": 20,
+    "SchoolLogoBorderRadius": 50,
+    "PhotoObjectFit": "cover",
+    "BackgroundImage": 1,
+    "BackgroundOpacity": 1,
+    "PrincipalSignature": "Principal Signature",
+    "PrincipalSignHeight": 25,
+    "HideSignature": false,
+    "SchoolNameTwoLine": true,
+    "ShowAcademicYear": false,
+    "AcademicYear": "2026-27",
+    "StudentFields": [
+      "Grade",
+      "ParentName",
+      "Mobile",
+      "Address"
+    ],
+    "SchoolNameLine1": "NEW BLOOM",
+    "SchoolNameLine2": "High School",
+    "SchoolNameLine1FontSize": 19,
+    "SchoolNameLine1FontFamily": "Arial, Helvetica, sans-serif",
+    "SchoolNameLine2FontSize": 16,
+    "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif",
+    "SchoolDescription": "Where Bright Futures Bloom",
+    "SchoolAffiliationInfo": "",
+    "SchoolFullAddress": "PlotNo-15,kondapur,Kothaguda, Serilingampally, Hi-Tech City, Hyderabad",
+    "SchoolMobile": ""
   },
   "159": {
     "Format": 3,
