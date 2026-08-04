@@ -56,7 +56,6 @@
     "AcademicYear": "2026-27",
     "StudentFields": [
       "Grade",
-      "DateOfBirth",
       "ParentName",
       "Mobile"
     ],
