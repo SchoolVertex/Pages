@@ -104,6 +104,15 @@
       color: #c02026;
     }
 
+    .no-records {
+      margin: 48px auto;
+      max-width: 420px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: 600;
+      color: #5f6368;
+    }
+
     [ng\:cloak], [ng-cloak], .ng-cloak {
       display: none !important;
     }
@@ -795,6 +804,10 @@
         display: none !important;
       }
 
+      .no-records {
+        display: none !important;
+      }
+
       .id-card {
         width: 57.2mm !important;
         height: 91.5mm !important;
@@ -886,6 +899,10 @@
   <!-- Bulk Cards -->
   <div class="id-card" ng-repeat="userInfo in userList">
     <div ng-include="templateUrl"></div>
+  </div>
+
+  <div class="no-records" ng-if="noRecordsFound" ng-cloak>
+    No records found
   </div>
 
   <!-- ── Standard Format Template ── -->
@@ -1300,6 +1317,7 @@
       $scope._allUserList = [];
       $scope._allUserInfo = null;
       $scope._trimScanToken = 0;
+      $scope.noRecordsFound = false;
       $scope.studentFields = [
         "Grade",
         "AdmissionNumber",
@@ -1800,10 +1818,10 @@
       }
 
       var query = getQueryParams();
-      var userId = query.userId;
-      var classId = parseInt(query.classId || 0);
-      var sectionId = parseInt(query.sectionId || 0);
-      var orgId = query.orgId;
+      var userId = query.userId || query.userid
+      var classId = parseInt(query.classId || query.classid || 0);
+      var sectionId = parseInt(query.sectionId || query.sectionid || 0);
+      var orgId = query.orgId || query.orgid;
 
       // Optional format override via query: ?format=1|2|3
       if (query.format) {
@@ -1862,6 +1880,54 @@
         $scope.applyCardFilters();
       }
 
+      /** Shared pipeline for GetBatchIdCardInfo / GetSectionIdCardInfo / GetIdListCardInfo. */
+      function applyBulkIdCardData(data) {
+        var list = Array.isArray(data) ? data : [];
+        $scope.userList = list;
+        $scope.userInfo = null;
+        $scope.noRecordsFound = list.length === 0;
+        offerHideCardsWithoutPhotos(list, true);
+      }
+
+      /** Same outcome as empty batch response — no cards rendered. */
+      function applyNoIdCardRecords() {
+        applyBulkIdCardData([]);
+      }
+
+      /**
+       * orgId-only flow: load missing student ids from GitHub JSON, then
+       * POST /Fee/GetIdListCardInfo { orgId, userList } and reuse bulk rendering.
+       */
+      function loadMissingCardsByOrg(currentOrgId) {
+        var missingCardsUrl = "https://schoolvertex.github.io/Pages/IdCards/missing-cards.json";
+        $http.get(missingCardsUrl).then(function (response) {
+          var map = response.data || {};
+          var key = String(currentOrgId);
+          var userIds = map[key];
+
+          if (!Array.isArray(userIds) || userIds.length === 0) {
+            console.warn("No missing-card student ids for orgId:", key);
+            applyNoIdCardRecords();
+            return;
+          }
+
+          var payload = {
+            orgId: parseInt(currentOrgId, 10) || currentOrgId,
+            userList: userIds
+          };
+
+          $http.post(baseApiUrl + "/Fee/GetIdListCardInfo", payload).then(function (cardResponse) {
+            applyBulkIdCardData(cardResponse.data);
+          }, function (error) {
+            console.error("GetIdListCardInfo failed:", error.status, error.statusText);
+            applyNoIdCardRecords();
+          });
+        }, function (error) {
+          console.error("missing-cards.json failed:", error.status, error.statusText);
+          applyNoIdCardRecords();
+        });
+      }
+
       if (userId) {
         var url = baseApiUrl + "/Fee/GetIdCardInfo/" + orgId + "/" + userId;
         $http.get(url).then(function (response) {
@@ -1877,10 +1943,15 @@
         }
         if (bulkUrl) {
           $http.get(bulkUrl).then(function (response) {
-            $scope.userList = response.data || [];
-            offerHideCardsWithoutPhotos($scope.userList, true);
+            applyBulkIdCardData(response.data);
+          }, function (error) {
+            console.error("Bulk ID card API failed:", error.status, error.statusText);
+            applyNoIdCardRecords();
           });
         }
+      } else if (orgId) {
+        // Only orgId present — missing ID cards list for this school
+        loadMissingCardsByOrg(orgId);
       }
     });
   </script>
