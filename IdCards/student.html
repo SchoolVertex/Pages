@@ -1882,7 +1882,51 @@
 
       /** Shared pipeline for GetBatchIdCardInfo / GetSectionIdCardInfo / GetIdListCardInfo. */
       function applyBulkIdCardData(data) {
-        var list = Array.isArray(data) ? data : [];
+        var list = Array.isArray(data) ? data.slice() : [];
+
+        function parseSortableNumber(value) {
+          if (value == null || value === "") return null;
+          var n = parseInt(String(value).replace(/[^\d-]/g, ""), 10);
+          return isNaN(n) ? null : n;
+        }
+
+        function compareOptionalAsc(aVal, bVal) {
+          var aNum = parseSortableNumber(aVal);
+          var bNum = parseSortableNumber(bVal);
+          var aHas = aNum != null;
+          var bHas = bNum != null;
+          if (aHas && bHas) return aNum - bNum;
+          if (aHas && !bHas) return -1;
+          if (!aHas && bHas) return 1;
+          // Both missing — fall back to string compare when both present as text
+          var aStr = aVal != null && aVal !== "" ? String(aVal) : null;
+          var bStr = bVal != null && bVal !== "" ? String(bVal) : null;
+          if (aStr && bStr) return aStr.localeCompare(bStr, undefined, { numeric: true, sensitivity: "base" });
+          if (aStr && !bStr) return -1;
+          if (!aStr && bStr) return 1;
+          return 0;
+        }
+
+        list.sort(function (a, b) {
+          var aClass = a && a.ClassNumber != null ? Number(a.ClassNumber) : 0;
+          var bClass = b && b.ClassNumber != null ? Number(b.ClassNumber) : 0;
+          if (isNaN(aClass)) aClass = 0;
+          if (isNaN(bClass)) bClass = 0;
+          // 1) ClassNumber high → low
+          if (aClass !== bClass) return bClass - aClass;
+          // 2) RollNumber ascending when available
+          var rollCmp = compareOptionalAsc(
+            a && a.RollNumber,
+            b && b.RollNumber
+          );
+          if (rollCmp !== 0) return rollCmp;
+          // 3) AdmissionNumber ascending when available
+          return compareOptionalAsc(
+            a && a.AdmissionNumber,
+            b && b.AdmissionNumber
+          );
+        });
+
         $scope.userList = list;
         $scope.userInfo = null;
         $scope.noRecordsFound = list.length === 0;
@@ -1896,7 +1940,7 @@
 
       /**
        * orgId-only flow: load missing student ids from GitHub JSON, then
-       * POST /Fee/GetIdListCardInfo { orgId, userList } and reuse bulk rendering.
+       * POST /IdCard/GetIdListCardInfo { orgId, userList } and reuse bulk rendering.
        */
       function loadMissingCardsByOrg(currentOrgId) {
         var missingCardsUrl = "https://schoolvertex.github.io/Pages/IdCards/missing-cards.json";
@@ -1916,7 +1960,7 @@
             userList: userIds
           };
 
-          $http.post(baseApiUrl + "/Fee/GetIdListCardInfo", payload).then(function (cardResponse) {
+          $http.post(baseApiUrl + "/IdCard/GetIdListCardInfo", payload).then(function (cardResponse) {
             applyBulkIdCardData(cardResponse.data);
           }, function (error) {
             console.error("GetIdListCardInfo failed:", error.status, error.statusText);
@@ -1929,7 +1973,7 @@
       }
 
       if (userId) {
-        var url = baseApiUrl + "/Fee/GetIdCardInfo/" + orgId + "/" + userId;
+        var url = baseApiUrl + "/IdCard/GetIdCardInfo/" + orgId + "/" + userId;
         $http.get(url).then(function (response) {
           $scope.userInfo = response.data;
           offerHideCardsWithoutPhotos($scope.userInfo, false);
@@ -1937,9 +1981,9 @@
       } else if (sectionId > 0 || classId > 0) {
         var bulkUrl = null;
         if (sectionId > 0) {
-          bulkUrl = baseApiUrl + "/Fee/GetSectionIdCardInfo/" + sectionId;
+          bulkUrl = baseApiUrl + "/IdCard/GetSectionIdCardInfo/" + sectionId;
         } else if (classId > 0) {
-          bulkUrl = baseApiUrl + "/Fee/GetBatchIdCardInfo/" + classId;
+          bulkUrl = baseApiUrl + "/IdCard/GetBatchIdCardInfo/" + classId;
         }
         if (bulkUrl) {
           $http.get(bulkUrl).then(function (response) {
