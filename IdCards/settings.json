@@ -25,7 +25,6 @@
     "StudentFields": [
       "Grade",
       "AdmissionNumber",
-      "DateOfBirth",
       "ParentName",
       "Mobile",
       "Address"
