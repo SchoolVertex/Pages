@@ -49,7 +49,7 @@
     "BackgroundImage": 16,
     "BackgroundOpacity": 1,
     "PrincipalSignature": "Principal Signature",
-    "PrincipalSignHeight": 20,
+    "PrincipalSignHeight": 25,
     "HideSignature": false,
     "SchoolNameTwoLine": true,
     "ShowAcademicYear": false,
