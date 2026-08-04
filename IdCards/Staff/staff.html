@@ -712,15 +712,15 @@
       });
 
       if (userId) {
-        $http.get(baseApiUrl + "/Fee/GetStaffIdCardInfo/" + orgId + "/" + userId).then(function (response) {
+        $http.get(baseApiUrl + "/IdCard/GetStaffIdCardInfo/" + orgId + "/" + userId).then(function (response) {
           $scope.userInfo = response.data;
         });
       } else if (sectionId > 0 || classId > 0) {
         var bulkUrl = null;
         if (sectionId > 0) {
-          bulkUrl = baseApiUrl + "/Fee/GetStaffSectionIdCardInfo/" + sectionId;
+          bulkUrl = baseApiUrl + "/IdCard/GetStaffSectionIdCardInfo/" + sectionId;
         } else if (classId > 0) {
-          bulkUrl = baseApiUrl + "/Fee/GetStaffBatchIdCardInfo/" + classId;
+          bulkUrl = baseApiUrl + "/IdCard/GetStaffBatchIdCardInfo/" + classId;
         }
         if (bulkUrl) {
           $http.get(bulkUrl).then(function (response) {
