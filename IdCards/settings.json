@@ -188,7 +188,7 @@
     "PrimaryColor": "MidnightBlue",
     "TextColor": "Black",
     "SchoolNameSize": 16,
-    "PhotoHeight": 90,
+    "PhotoHeight": 120,
     "PhotoBorderRadius": 20,
     "SchoolLogoBorderRadius": 50,
     "PhotoObjectFit": "cover",
@@ -203,8 +203,7 @@
     "StudentFields": [
       "Grade",
       "ParentName",
-      "Mobile",
-      "Address"
+      "Mobile"
     ],
     "SchoolNameLine1": "NEW BLOOM",
     "SchoolNameLine2": "High School",
