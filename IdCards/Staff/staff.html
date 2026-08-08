@@ -21,6 +21,7 @@
     :root {
       --school-color: #9C27B0;
       --text-color: black;
+      --designation-color: OrangeRed;
       --school-name-font-size: 13px;
       --staff-photo-height: 100px;
       --staff-photo-border-radius: 50%;
@@ -273,7 +274,7 @@
     .designation {
       font-size: 12px;
       font-weight: 600;
-      color: #FF5722;
+      color: var(--designation-color, OrangeRed);
       text-align: center;
       margin-top: 2px;
     }
@@ -872,6 +873,9 @@
         if (config.TextColor) {
           setCssVar("--text-color", resolveColorName(config.TextColor, "Black"));
         }
+        if (config.DesignationColor) {
+          setCssVar("--designation-color", resolveColorName(config.DesignationColor, "OrangeRed"));
+        }
 
         if (config.SchoolNameSize !== undefined && config.SchoolNameSize !== null && config.SchoolNameSize !== "") {
           var size = String(config.SchoolNameSize).replace(/px$/i, "");
@@ -947,6 +951,7 @@
       // Defaults
       setCssVar("--school-color", "Purple");
       setCssVar("--text-color", "Black");
+      setCssVar("--designation-color", "OrangeRed");
       setCssVar("--school-name-font-size", "13px");
       setCssVar("--staff-photo-height", "100px");
       setCssVar("--staff-photo-border-radius", "50%");
