@@ -24,6 +24,7 @@
       --school-name-font-size: 13px;
       --staff-photo-height: 100px;
       --staff-photo-border-radius: 50%;
+      --school-logo-border-radius: 50%;
       --staff-photo-object-fit: cover;
       --principal-sign-height: 20px;
       --bg-image-opacity: 1;
@@ -49,6 +50,57 @@
       margin: 0;
       padding: 0;
       display: block !important;
+    }
+
+    .control-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px 20px;
+      align-items: center;
+      background: #fff;
+      padding: 10px 14px;
+      border-bottom: 1px solid #ccc;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .control-bar .control-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .control-bar .control-group label {
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .control-bar input[type="checkbox"] {
+      margin: 0;
+      vertical-align: middle;
+    }
+
+    .control-bar .print-btn {
+      font-size: 14px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #f5f5f5;
+      cursor: pointer;
+    }
+
+    .control-bar .print-btn:hover {
+      background: #ebebeb;
+    }
+
+    .control-bar .control-hint {
+      font-size: 13px;
+      font-weight: 600;
+      color: #c02026;
     }
 
     .school-name-two-line {
@@ -116,6 +168,12 @@
       overflow: hidden;
     }
 
+    /* View-only print-area guide — outline does not change the box model */
+    .show-print-area .main-content {
+      outline: 1px solid red;
+      outline-offset: -1px;
+    }
+
     .school-info {
       display: flex;
       align-items: center;
@@ -134,7 +192,7 @@
       width: 45px;
       height: 45px;
       border: none;
-      border-radius: 0;
+      border-radius: var(--school-logo-border-radius, 50%);
       object-fit: cover;
     }
 
@@ -290,6 +348,10 @@
         print-color-adjust: exact !important;
       }
 
+      .control-bar {
+        display: none !important;
+      }
+
       .id-card {
         width: 57.2mm !important;
         height: 91.5mm !important;
@@ -342,7 +404,34 @@
   </style>
 </head>
 
-<body ng-controller="myCtrl">
+<body ng-controller="myCtrl" id="page-body" ng-class="{'show-print-area': showPrintArea}">
+
+  <div class="control-bar" ng-cloak>
+    <div class="control-group">
+      <label>
+        <input type="checkbox" ng-model="hideCardsWithoutPhotos" ng-change="applyCardFilters()" />
+        Hide cards without photos
+      </label>
+    </div>
+    <div class="control-group">
+      <label>
+        <input type="checkbox" ng-model="showOnlyTrimmedCards" ng-change="applyCardFilters()" />
+        Show only trimmed cards
+      </label>
+    </div>
+    <div class="control-group">
+      <label>
+        <input type="checkbox" ng-model="showPrintArea" />
+        Show print area
+      </label>
+    </div>
+    <div class="control-group" ng-if="trimmedCardsCount !== null">
+      <span class="control-hint">{{trimmedCardsCount}} trimmed</span>
+    </div>
+    <div class="control-group">
+      <button type="button" class="print-btn" ng-click="printCards()">Print</button>
+    </div>
+  </div>
 
   <!-- Single Card -->
   <div class="id-card" ng-if="userInfo && !userList.length">
@@ -407,12 +496,58 @@
   </script>
 
   <script>
+    (function (global) {
+      var PLACEHOLDER_SNIPPETS = [
+        "user avatar", "user-avatar", "user_avatar", "useravatar",
+        "default photo", "default-photo", "default_photo", "defaultphoto",
+        "default image", "default-image", "default_image", "defaultimage",
+        "no-image", "no_image", "noimage", "placeholder",
+        "avatar.png", "avatar.jpg", "blank-avatar", "blank_avatar"
+      ];
+
+      function normalizeImageValue(imageUrl) {
+        if (imageUrl == null) return "";
+        return String(imageUrl).trim().toLowerCase();
+      }
+
+      function isMissingOrPlaceholderPhoto(imageUrl) {
+        var value = normalizeImageValue(imageUrl);
+        if (!value) return true;
+        for (var i = 0; i < PLACEHOLDER_SNIPPETS.length; i++) {
+          if (value.indexOf(PLACEHOLDER_SNIPPETS[i]) !== -1) return true;
+        }
+        return false;
+      }
+
+      function userHasRealPhoto(user) {
+        if (!user) return false;
+        return !isMissingOrPlaceholderPhoto(user.Image);
+      }
+
+      function filterUsersWithPhotos(users) {
+        var list = Array.isArray(users) ? users : [];
+        var kept = [];
+        for (var i = 0; i < list.length; i++) {
+          if (userHasRealPhoto(list[i])) kept.push(list[i]);
+        }
+        return kept;
+      }
+
+      global.IdCardNoPhotoHelper = {
+        isMissingOrPlaceholderPhoto: isMissingOrPlaceholderPhoto,
+        userHasRealPhoto: userHasRealPhoto,
+        filterUsersWithPhotos: filterUsersWithPhotos
+      };
+    })(window);
+  </script>
+
+  <script>
     var app = angular.module("myApp", []);
     var baseApiUrl = "https://api.schoolvertex.com/api";
     var designBaseUrl = "https://cdn.jsdelivr.net/gh/gitcdnsv/svcdn/IdCardBg/";
     var settingsUrl = "https://schoolvertex.github.io/Pages/IdCards/Staff/staff-settings.json";
 
-    app.controller("myCtrl", function ($scope, $http) {
+    app.controller("myCtrl", function ($scope, $http, $timeout) {
       $scope.userList = [];
       $scope.org = {};
       $scope.bgStyle = {
@@ -429,6 +564,13 @@
       $scope.schoolNameLine2FontFamily = "Arial, Helvetica, sans-serif";
       $scope.staffFields = ["Designation", "DateOfBirth", "Mobile", "Address"];
       $scope.schoolInfoOverrides = {};
+      $scope.hideCardsWithoutPhotos = false;
+      $scope.showOnlyTrimmedCards = false;
+      $scope.showPrintArea = false;
+      $scope.trimmedCardsCount = null;
+      $scope._allUserList = [];
+      $scope._allUserInfo = null;
+      $scope._trimScanToken = 0;
       var DEFAULT_STAFF_FIELDS = ["Designation", "DateOfBirth", "Mobile", "Address"];
       var commonColors = [
         "Black","White","Gray","Silver","Red","Maroon","Yellow","Olive","Lime","Green",
@@ -508,6 +650,158 @@
         var map = { DateOfBirth: "D.O.B", Mobile: "Mobile", Address: "Address" };
         return map[key] || key;
       };
+
+      $scope.printCards = function () {
+        window.print();
+      };
+
+      function getPhotoFilteredList() {
+        var helper = window.IdCardNoPhotoHelper;
+        var list = Array.isArray($scope._allUserList) ? $scope._allUserList : [];
+        if ($scope.hideCardsWithoutPhotos && helper) {
+          return helper.filterUsersWithPhotos(list);
+        }
+        return list.slice();
+      }
+
+      function getPhotoFilteredSingle() {
+        var helper = window.IdCardNoPhotoHelper;
+        var user = $scope._allUserInfo;
+        if (!user) return null;
+        if ($scope.hideCardsWithoutPhotos && helper && !helper.userHasRealPhoto(user)) {
+          return null;
+        }
+        return user;
+      }
+
+      function cardContentOverflows(cardEl) {
+        if (!cardEl) return false;
+        var main = cardEl.querySelector(".main-content");
+        if (!main) return false;
+        var tol = 1.5;
+        if (main.scrollHeight > main.clientHeight + tol) return true;
+        if (main.scrollWidth > main.clientWidth + tol) return true;
+
+        var mainRect = main.getBoundingClientRect();
+        var nodes = main.querySelectorAll("*");
+        for (var i = 0; i < nodes.length; i++) {
+          var el = nodes[i];
+          var style = window.getComputedStyle(el);
+          if (style.display === "none" || style.visibility === "hidden") continue;
+          var r = el.getBoundingClientRect();
+          if (r.width < 0.5 && r.height < 0.5) continue;
+          if (
+            r.bottom > mainRect.bottom + tol ||
+            r.right > mainRect.right + tol ||
+            r.top < mainRect.top - tol ||
+            r.left < mainRect.left - tol
+          ) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      function collectOverflowingUsers(baseList) {
+        var cards = document.querySelectorAll(".id-card");
+        var trimmed = [];
+        var limit = Math.min(cards.length, baseList.length);
+        for (var i = 0; i < limit; i++) {
+          if (cardContentOverflows(cards[i])) {
+            trimmed.push(baseList[i]);
+          }
+        }
+        return trimmed;
+      }
+
+      function afterCardsPainted(callback) {
+        $timeout(function () {
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              $timeout(callback, 250);
+            });
+          });
+        }, 0);
+      }
+
+      function applyTrimmedFilterFromDom(baseList, token) {
+        if (token !== $scope._trimScanToken) return;
+        if (!$scope.showOnlyTrimmedCards) return;
+
+        var trimmed = collectOverflowingUsers(baseList);
+        $scope.$applyAsync(function () {
+          if (token !== $scope._trimScanToken) return;
+          $scope.trimmedCardsCount = trimmed.length;
+          $scope.userList = trimmed;
+          $scope.userInfo = null;
+        });
+      }
+
+      function applyTrimmedFilterSingleFromDom(user, token) {
+        if (token !== $scope._trimScanToken) return;
+        if (!$scope.showOnlyTrimmedCards) return;
+
+        var card = document.querySelector(".id-card");
+        var overflows = cardContentOverflows(card);
+        $scope.$applyAsync(function () {
+          if (token !== $scope._trimScanToken) return;
+          $scope.trimmedCardsCount = overflows ? 1 : 0;
+          $scope.userInfo = overflows ? user : null;
+          $scope.userList = [];
+        });
+      }
+
+      $scope.applyCardFilters = function () {
+        var token = ++$scope._trimScanToken;
+
+        if ($scope._allUserList && $scope._allUserList.length) {
+          var base = getPhotoFilteredList();
+          $scope.userInfo = null;
+
+          if (!$scope.showOnlyTrimmedCards) {
+            $scope.trimmedCardsCount = null;
+            $scope.userList = base;
+            return;
+          }
+
+          $scope.userList = base;
+          afterCardsPainted(function () {
+            applyTrimmedFilterFromDom(base, token);
+          });
+          return;
+        }
+
+        var single = getPhotoFilteredSingle();
+        $scope.userList = [];
+
+        if (!$scope.showOnlyTrimmedCards) {
+          $scope.trimmedCardsCount = null;
+          $scope.userInfo = single;
+          return;
+        }
+
+        if (!single) {
+          $scope.trimmedCardsCount = 0;
+          $scope.userInfo = null;
+          return;
+        }
+
+        $scope.userInfo = single;
+        afterCardsPainted(function () {
+          applyTrimmedFilterSingleFromDom(single, token);
+        });
+      };
+
+      function offerHideCardsWithoutPhotos(usersOrUser, isBulk) {
+        if (isBulk) {
+          $scope._allUserList = Array.isArray(usersOrUser) ? usersOrUser.slice() : [];
+          $scope._allUserInfo = null;
+        } else {
+          $scope._allUserInfo = usersOrUser || null;
+          $scope._allUserList = [];
+        }
+        $scope.applyCardFilters();
+      }
 
       function splitSchoolName(name) {
         var text = String(name || "").trim();
@@ -590,6 +884,9 @@
         if (config.PhotoBorderRadius !== undefined && config.PhotoBorderRadius !== null) {
           setCssVar("--staff-photo-border-radius", config.PhotoBorderRadius + "%");
         }
+        if (config.SchoolLogoBorderRadius !== undefined && config.SchoolLogoBorderRadius !== null) {
+          setCssVar("--school-logo-border-radius", config.SchoolLogoBorderRadius + "%");
+        }
         if (config.PhotoObjectFit || config.PhotoFit) {
           setCssVar("--staff-photo-object-fit", normalizePhotoObjectFit(config.PhotoObjectFit || config.PhotoFit));
         } else {
@@ -653,6 +950,7 @@
       setCssVar("--school-name-font-size", "13px");
       setCssVar("--staff-photo-height", "100px");
       setCssVar("--staff-photo-border-radius", "50%");
+      setCssVar("--school-logo-border-radius", "50%");
       setCssVar("--staff-photo-object-fit", "cover");
       setCssVar("--principal-sign-height", "20px");
       setCssVar("--bg-image-opacity", "1");
@@ -714,6 +1012,7 @@
       if (userId) {
         $http.get(baseApiUrl + "/IdCard/GetStaffIdCardInfo/" + orgId + "/" + userId).then(function (response) {
           $scope.userInfo = response.data;
+          offerHideCardsWithoutPhotos($scope.userInfo, false);
         });
       } else if (sectionId > 0 || classId > 0) {
         var bulkUrl = null;
@@ -725,6 +1024,7 @@
         if (bulkUrl) {
           $http.get(bulkUrl).then(function (response) {
             $scope.userList = response.data || [];
+            offerHideCardsWithoutPhotos($scope.userList, true);
           });
         }
       }
