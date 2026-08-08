@@ -25,6 +25,7 @@
     :root {
       --school-color: #9C27B0;
       --text-color: black;
+      --designation-color: OrangeRed;
       --school-name-font-size: 13px;
       --staff-photo-height: 100px;
       --staff-photo-border-radius: 50%;
@@ -577,7 +578,7 @@
     .designation {
       font-size: 12px;
       font-weight: 600;
-      color: #FF5722;
+      color: var(--designation-color, OrangeRed);
       text-align: center;
       margin-top: 2px;
     }
@@ -736,6 +737,10 @@
     <div class="control-group">
       <label>Text Color</label>
       <div id="text-color-picker" class="color-select" data-value="Black" data-css-var="--text-color"></div>
+    </div>
+    <div class="control-group">
+      <label>Designation Color</label>
+      <div id="designation-color-picker" class="color-select" data-value="OrangeRed" data-css-var="--designation-color"></div>
     </div>
     <div class="control-group">
       <label>School Name Size</label>
@@ -1175,6 +1180,7 @@ function buildCurrentSettingsJson() {
   var settings = {
     PrimaryColor: getElValue("school-color-picker", "Purple"),
     TextColor: getElValue("text-color-picker", "Black"),
+    DesignationColor: getElValue("designation-color-picker", "OrangeRed"),
     SchoolNameSize: parseInt(getElValue("school-name-fontsize", "13"), 10),
     PhotoHeight: parseInt(getElValue("staff-photo-height", "100"), 10),
     PhotoBorderRadius: parseInt(getElValue("staff-photo-border-radius", "50"), 10),
@@ -1267,6 +1273,11 @@ function applyConfig(config) {
     setColorSelectValue("text-color-picker", text);
     document.documentElement.style.setProperty("--text-color", text);
   }
+  if (config.DesignationColor) {
+    var designation = resolveColorName(config.DesignationColor, "OrangeRed");
+    setColorSelectValue("designation-color-picker", designation);
+    document.documentElement.style.setProperty("--designation-color", designation);
+  }
 
   if (config.SchoolNameSize != null) {
     var size = String(config.SchoolNameSize).replace(/px$/i, "");
@@ -1344,8 +1355,10 @@ function applyConfig(config) {
 function setupPickers() {
   populateColorDropdown("school-color-picker", "Purple", "Purple");
   populateColorDropdown("text-color-picker", "Black", "Black");
+  populateColorDropdown("designation-color-picker", "OrangeRed", "OrangeRed");
   document.documentElement.style.setProperty("--school-color", "Purple");
   document.documentElement.style.setProperty("--text-color", "Black");
+  document.documentElement.style.setProperty("--designation-color", "OrangeRed");
 
   document.getElementById("background-image-id").value = String(DEFAULT_BG_IMAGE);
   applyBackgroundOpacity(1);
