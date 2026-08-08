@@ -28,6 +28,7 @@
       --school-name-font-size: 13px;
       --staff-photo-height: 100px;
       --staff-photo-border-radius: 50%;
+      --school-logo-border-radius: 50%;
       --staff-photo-object-fit: cover;
       --principal-sign-height: 20px;
       --bg-image-opacity: 1;
@@ -495,7 +496,7 @@
       width: 45px;
       height: 45px;
       border: none;
-      border-radius: 0;
+      border-radius: var(--school-logo-border-radius, 50%);
       object-fit: cover;
     }
 
@@ -747,6 +748,10 @@
     <div class="control-group">
       <label>Photo Border Radius</label>
       <input type="number" id="staff-photo-border-radius" min="0" max="50" step="1" style="width:70px" />
+    </div>
+    <div class="control-group">
+      <label>School Logo Radius</label>
+      <input type="number" id="school-logo-border-radius" min="0" max="50" step="1" style="width:70px" />
     </div>
     <div class="control-group">
       <label>Photo Fit</label>
@@ -1173,6 +1178,7 @@ function buildCurrentSettingsJson() {
     SchoolNameSize: parseInt(getElValue("school-name-fontsize", "13"), 10),
     PhotoHeight: parseInt(getElValue("staff-photo-height", "100"), 10),
     PhotoBorderRadius: parseInt(getElValue("staff-photo-border-radius", "50"), 10),
+    SchoolLogoBorderRadius: parseInt(getElValue("school-logo-border-radius", "50"), 10),
     PhotoObjectFit: normalizePhotoObjectFit(getElValue("staff-photo-object-fit", "cover")),
     BackgroundImage: getBackgroundImageId(),
     BackgroundOpacity: getBackgroundOpacity(),
@@ -1275,6 +1281,10 @@ function applyConfig(config) {
     document.getElementById("staff-photo-border-radius").value = String(config.PhotoBorderRadius);
     document.documentElement.style.setProperty("--staff-photo-border-radius", config.PhotoBorderRadius + "%");
   }
+  if (config.SchoolLogoBorderRadius != null) {
+    document.getElementById("school-logo-border-radius").value = String(config.SchoolLogoBorderRadius);
+    document.documentElement.style.setProperty("--school-logo-border-radius", config.SchoolLogoBorderRadius + "%");
+  }
   if (config.PhotoObjectFit || config.PhotoFit) {
     document.getElementById("staff-photo-object-fit").value = normalizePhotoObjectFit(config.PhotoObjectFit || config.PhotoFit);
     document.documentElement.style.setProperty("--staff-photo-object-fit", normalizePhotoObjectFit(config.PhotoObjectFit || config.PhotoFit));
@@ -1361,6 +1371,12 @@ function setupPickers() {
   document.documentElement.style.setProperty("--staff-photo-border-radius", "50%");
   document.getElementById("staff-photo-border-radius").addEventListener("input", function (e) {
     document.documentElement.style.setProperty("--staff-photo-border-radius", e.target.value + "%");
+  });
+
+  document.getElementById("school-logo-border-radius").value = "50";
+  document.documentElement.style.setProperty("--school-logo-border-radius", "50%");
+  document.getElementById("school-logo-border-radius").addEventListener("input", function (e) {
+    document.documentElement.style.setProperty("--school-logo-border-radius", e.target.value + "%");
   });
 
   document.getElementById("staff-photo-object-fit").value = "cover";
