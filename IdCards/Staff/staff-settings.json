@@ -23,5 +23,23 @@
     "SchoolNameLine1FontFamily": "Arial, Helvetica, sans-serif",
     "SchoolNameLine2FontSize": 12,
     "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
-  }
+  },
+  "183": {
+  "PrimaryColor": "Purple",
+  "TextColor": "Black",
+  "SchoolNameSize": 13,
+  "PhotoHeight": 120,
+  "PhotoBorderRadius": 20,
+  "PhotoObjectFit": "fill",
+  "BackgroundImage": 9,
+  "BackgroundOpacity": 1,
+  "PrincipalSignature": "Principal Signature",
+  "PrincipalSignHeight": 30,
+  "HideSignature": false,
+  "SchoolNameTwoLine": false,
+  "StaffFields": [
+    "Designation",
+    "Mobile"
+  ]
+}
 }
