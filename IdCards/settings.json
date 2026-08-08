@@ -101,6 +101,35 @@
     "SchoolNameLine2FontSize": 10,
     "SchoolNameLine2FontFamily": "Georgia, serif"
   },
+  "149: {
+    "Format": 1,
+    "PrimaryColor": "Black",
+    "TextColor": "Navy",
+    "SchoolNameSize": 14,
+    "PhotoHeight": 110,
+    "PhotoBorderRadius": 18,
+    "SchoolLogoBorderRadius": 50,
+    "PhotoObjectFit": "fill",
+    "BackgroundImage": 8,
+    "BackgroundOpacity": 1,
+    "PrincipalSignature": "Principal Signature",
+    "PrincipalSignHeight": 31,
+    "HideSignature": false,
+    "SchoolNameTwoLine": true,
+    "ShowAcademicYear": false,
+    "AcademicYear": "2026-27",
+    "StudentFields": [
+      "Grade",
+      "ParentName",
+      "Mobile"
+    ],
+    "SchoolNameLine1": "S.V.HIGH ",
+    "SchoolNameLine2": "SCHOOL",
+    "SchoolNameLine1FontSize": 21,
+    "SchoolNameLine1FontFamily": "Arial, Helvetica, sans-serif",
+    "SchoolNameLine2FontSize": 15,
+    "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
+  },
   "151": {
   "Format": 1,
   "PrimaryColor": "Red",
