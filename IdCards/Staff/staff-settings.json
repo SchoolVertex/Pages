@@ -5,7 +5,7 @@
     "SchoolNameSize": 13,
     "PhotoHeight": 120,
     "PhotoBorderRadius": 20,
-    "PhotoObjectFit": "cover",
+    "PhotoObjectFit": "fill",
     "BackgroundImage": 16,
     "BackgroundOpacity": 1,
     "PrincipalSignature": "Principal Signature",
