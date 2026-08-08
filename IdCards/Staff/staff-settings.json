@@ -27,6 +27,7 @@
   "158": {
     "PrimaryColor": "Purple",
     "TextColor": "Black",
+    "DesignationColor": "Red",
     "SchoolNameSize": 13,
     "PhotoHeight": 120,
     "PhotoBorderRadius": 20,
