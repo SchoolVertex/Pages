@@ -50,6 +50,32 @@
     "SchoolNameLine2FontSize": 14,
     "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
   },
+  "170": {
+  "PrimaryColor": "Purple",
+  "TextColor": "Black",
+  "DesignationColor": "OrangeRed",
+  "SchoolNameSize": 15,
+  "PhotoHeight": 111,
+  "PhotoBorderRadius": 33,
+  "SchoolLogoBorderRadius": 50,
+  "PhotoObjectFit": "fill",
+  "BackgroundImage": 102,
+  "BackgroundOpacity": 1,
+  "PrincipalSignature": "Principal Signature",
+  "PrincipalSignHeight": 20,
+  "HideSignature": false,
+  "SchoolNameTwoLine": true,
+  "StaffFields": [
+    "Designation",
+    "Mobile"
+  ],
+  "SchoolNameLine1": "Sri Chakra",
+  "SchoolNameLine2": "High School",
+  "SchoolNameLine1FontSize": 20,
+  "SchoolNameLine1FontFamily": "Arial, Helvetica, sans-serif",
+  "SchoolNameLine2FontSize": 15,
+  "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
+},
   "183": {
     "PrimaryColor": "Purple",
     "TextColor": "Black",
