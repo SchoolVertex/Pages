@@ -50,6 +50,32 @@
     "SchoolNameLine2FontSize": 14,
     "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
   },
+  "142":{
+  "PrimaryColor": "Olive",
+  "TextColor": "Black",
+  "DesignationColor": "OrangeRed",
+  "SchoolNameSize": 13,
+  "PhotoHeight": 100,
+  "PhotoBorderRadius": 50,
+  "SchoolLogoBorderRadius": 50,
+  "PhotoObjectFit": "cover",
+  "BackgroundImage": 61,
+  "BackgroundOpacity": 1,
+  "PrincipalSignature": "Principal Signature",
+  "PrincipalSignHeight": 20,
+  "HideSignature": false,
+  "SchoolNameTwoLine": true,
+  "StaffFields": [
+    "Designation",
+    "Mobile"
+  ],
+  "SchoolNameLine1": "Dev Guru",
+  "SchoolNameLine2": "The Concept School",
+  "SchoolNameLine1FontSize": 18,
+  "SchoolNameLine1FontFamily": "Arial, Helvetica, sans-serif",
+  "SchoolNameLine2FontSize": 15,
+  "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
+},
   "170": {
   "PrimaryColor": "Purple",
   "TextColor": "Black",
