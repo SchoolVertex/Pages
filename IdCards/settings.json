@@ -40,6 +40,35 @@
     "SchoolFullAddress": "Kokapet ,Hyd . Ph-7032759414,7989939591",
     "SchoolMobile": ""
   },
+  "188": {
+  "Format": 1,
+  "PrimaryColor": "Navy",
+  "TextColor": "Black",
+  "SchoolNameSize": 13,
+  "PhotoHeight": 104,
+  "PhotoBorderRadius": 21,
+  "SchoolLogoBorderRadius": 50,
+  "PhotoObjectFit": "fill",
+  "BackgroundImage": 85,
+  "BackgroundOpacity": 1,
+  "PrincipalSignature": "Principal Signature",
+  "PrincipalSignHeight": 19,
+  "HideSignature": false,
+  "SchoolNameTwoLine": true,
+  "ShowAcademicYear": true,
+  "AcademicYear": "2026-27",
+  "StudentFields": [
+    "Grade",
+    "ParentName",
+    "Mobile"
+  ],
+  "SchoolNameLine1": "LITTLE STARS",
+  "SchoolNameLine2": "SCHOOL",
+  "SchoolNameLine1FontSize": 17,
+  "SchoolNameLine1FontFamily": "Arial, Helvetica, sans-serif",
+  "SchoolNameLine2FontSize": 15,
+  "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
+},
   "142": {
     "Format": 1,
     "PrimaryColor": "Teal",
