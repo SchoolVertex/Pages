@@ -351,6 +351,36 @@
   "SchoolNameLine2FontSize": 11,
   "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
   },
+  "194": {
+  "Format": 1,
+  "PrimaryColor": "Navy",
+  "TextColor": "Black",
+  "SchoolNameSize": 12,
+  "PhotoHeight": 108,
+  "PhotoBorderRadius": 27,
+  "SchoolLogoBorderRadius": 50,
+  "PhotoObjectFit": "fill",
+  "BackgroundImage": 88,
+  "BackgroundOpacity": 1,
+  "PrincipalSignature": "Principal Signature",
+  "PrincipalSignHeight": 20,
+  "HideSignature": false,
+  "SchoolNameTwoLine": true,
+  "ShowAcademicYear": false,
+  "AcademicYear": "2026-27",
+  "StudentFields": [
+    "Grade",
+    "ParentName",
+    "Mobile",
+    "Address"
+  ],
+  "SchoolNameLine1": "Vishwamithra ",
+  "SchoolNameLine2": "The School",
+  "SchoolNameLine1FontSize": 19,
+  "SchoolNameLine1FontFamily": "Arial, Helvetica, sans-serif",
+  "SchoolNameLine2FontSize": 16,
+  "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
+},
   "183": {
     "Format": 2,
     "PrimaryColor": "Maroon",
