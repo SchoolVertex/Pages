@@ -127,7 +127,33 @@
   "SchoolNameLine1FontFamily": "Arial, Helvetica, sans-serif",
   "SchoolNameLine2FontSize": 16,
   "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
-}
+},
+  "149":{
+     "PrimaryColor": "Purple",
+  "TextColor": "Black",
+  "DesignationColor": "OrangeRed",
+  "SchoolNameSize": 13,
+  "PhotoHeight": 111,
+  "PhotoBorderRadius": 30,
+  "SchoolLogoBorderRadius": 50,
+  "PhotoObjectFit": "fill",
+  "BackgroundImage": 8,
+  "BackgroundOpacity": 1,
+  "PrincipalSignature": "Principal Signature",
+  "PrincipalSignHeight": 20,
+  "HideSignature": false,
+  "SchoolNameTwoLine": true,
+  "StaffFields": [
+    "Designation",
+    "Mobile"
+  ],
+  "SchoolNameLine1": "S V ",
+  "SchoolNameLine2": "HIGH SCHOOL",
+  "SchoolNameLine1FontSize": 23,
+  "SchoolNameLine1FontFamily": "Arial, Helvetica, sans-serif",
+  "SchoolNameLine2FontSize": 17,
+  "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
+},
   "188": {
   "PrimaryColor": "Purple",
   "TextColor": "Black",
