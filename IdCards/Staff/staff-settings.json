@@ -103,7 +103,7 @@
   "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
 },
   "153": {
-     "PrimaryColor": "Purple",
+  "PrimaryColor": "Purple",
   "TextColor": "Black",
   "DesignationColor": "OrangeRed",
   "SchoolNameSize": 13,
@@ -129,7 +129,7 @@
   "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
 },
   "149":{
-     "PrimaryColor": "Purple",
+  "PrimaryColor": "Purple",
   "TextColor": "Black",
   "DesignationColor": "OrangeRed",
   "SchoolNameSize": 13,
@@ -178,6 +178,32 @@
   "SchoolNameLine1FontSize": 17,
   "SchoolNameLine1FontFamily": "Arial, Helvetica, sans-serif",
   "SchoolNameLine2FontSize": 16,
+  "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
+},
+  "143": {
+     "PrimaryColor": "Purple",
+  "TextColor": "Black",
+  "DesignationColor": "OrangeRed",
+  "SchoolNameSize": 13,
+  "PhotoHeight": 104,
+  "PhotoBorderRadius": 30,
+  "SchoolLogoBorderRadius": 50,
+  "PhotoObjectFit": "fill",
+  "BackgroundImage": 2,
+  "BackgroundOpacity": 1,
+  "PrincipalSignature": "Principal Signature",
+  "PrincipalSignHeight": 20,
+  "HideSignature": false,
+  "SchoolNameTwoLine": true,
+  "StaffFields": [
+    "Designation",
+    "Mobile"
+  ],
+  "SchoolNameLine1": "Ridge Board",
+  "SchoolNameLine2": "International School",
+  "SchoolNameLine1FontSize": 20,
+  "SchoolNameLine1FontFamily": "Arial, Helvetica, sans-serif",
+  "SchoolNameLine2FontSize": 17,
   "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
 },
   "183": {
