@@ -206,6 +206,32 @@
   "SchoolNameLine2FontSize": 17,
   "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
 },
+  "176": {
+     "PrimaryColor": "Maroon",
+  "TextColor": "Black",
+  "DesignationColor": "OrangeRed",
+  "SchoolNameSize": 13,
+  "PhotoHeight": 110,
+  "PhotoBorderRadius": 50,
+  "SchoolLogoBorderRadius": 50,
+  "PhotoObjectFit": "fill",
+  "BackgroundImage": 19,
+  "BackgroundOpacity": 1,
+  "PrincipalSignature": "Principal Signature",
+  "PrincipalSignHeight": 20,
+  "HideSignature": false,
+  "SchoolNameTwoLine": true,
+  "StaffFields": [
+    "Designation",
+    "Mobile"
+  ],
+  "SchoolNameLine1": "Aditya ",
+  "SchoolNameLine2": "Insight School",
+  "SchoolNameLine1FontSize": 23,
+  "SchoolNameLine1FontFamily": "Arial, Helvetica, sans-serif",
+  "SchoolNameLine2FontSize": 17,
+  "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
+},
   "183": {
     "PrimaryColor": "Purple",
     "TextColor": "Black",
