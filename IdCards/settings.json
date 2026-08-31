@@ -467,6 +467,35 @@
   "SchoolNameLine2FontSize": 17,
   "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
 },
+  "193": {
+    "Format": 1,
+  "PrimaryColor": "Navy",
+  "TextColor": "Black",
+  "SchoolNameSize": 12,
+  "PhotoHeight": 110,
+  "PhotoBorderRadius": 30,
+  "SchoolLogoBorderRadius": 50,
+  "PhotoObjectFit": "fill",
+  "BackgroundImage": 52,
+  "BackgroundOpacity": 1,
+  "PrincipalSignature": "Principal Signature",
+  "PrincipalSignHeight": 22,
+  "HideSignature": false,
+  "SchoolNameTwoLine": true,
+  "ShowAcademicYear": false,
+  "AcademicYear": "2026-27",
+  "StudentFields": [
+    "Grade",
+    "ParentName",
+    "Mobile"
+  ],
+  "SchoolNameLine1": "SWATHI ",
+  "SchoolNameLine2": "HIGH SCHOOL",
+  "SchoolNameLine1FontSize": 23,
+  "SchoolNameLine1FontFamily": "Arial, Helvetica, sans-serif",
+  "SchoolNameLine2FontSize": 17,
+  "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
+},
   "All": {
     "PrimaryColor": "black",
     "TextColor": "black",
