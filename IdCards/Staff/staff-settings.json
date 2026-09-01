@@ -282,5 +282,57 @@
   "SchoolNameLine1FontFamily": "Arial, Helvetica, sans-serif",
   "SchoolNameLine2FontSize": 17,
   "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
+},
+  "184": {
+     "PrimaryColor": "Navy",
+  "TextColor": "Black",
+  "DesignationColor": "OrangeRed",
+  "SchoolNameSize": 13,
+  "PhotoHeight": 115,
+  "PhotoBorderRadius": 50,
+  "SchoolLogoBorderRadius": 50,
+  "PhotoObjectFit": "fill",
+  "BackgroundImage": 50,
+  "BackgroundOpacity": 1,
+  "PrincipalSignature": "Principal Signature",
+  "PrincipalSignHeight": 20,
+  "HideSignature": false,
+  "SchoolNameTwoLine": true,
+  "StaffFields": [
+    "Designation",
+    "Mobile"
+  ],
+  "SchoolNameLine1": "NOVA ",
+  "SchoolNameLine2": "GRAMMAR SCHOOL",
+  "SchoolNameLine1FontSize": 24,
+  "SchoolNameLine1FontFamily": "Arial, Helvetica, sans-serif",
+  "SchoolNameLine2FontSize": 12,
+  "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
+},
+  "183": {
+    "PrimaryColor": "Purple",
+  "TextColor": "Black",
+  "DesignationColor": "OrangeRed",
+  "SchoolNameSize": 13,
+  "PhotoHeight": 116,
+  "PhotoBorderRadius": 20,
+  "SchoolLogoBorderRadius": 50,
+  "PhotoObjectFit": "fill",
+  "BackgroundImage": 10,
+  "BackgroundOpacity": 1,
+  "PrincipalSignature": "Principal Signature",
+  "PrincipalSignHeight": 25,
+  "HideSignature": false,
+  "SchoolNameTwoLine": true,
+  "StaffFields": [
+    "Designation",
+    "Mobile"
+  ],
+  "SchoolNameLine1": "NEW TAKSHASILA",
+  "SchoolNameLine2": "HIGH SCHOOL",
+  "SchoolNameLine1FontSize": 20,
+  "SchoolNameLine1FontFamily": "Arial, Helvetica, sans-serif",
+  "SchoolNameLine2FontSize": 12,
+  "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
 }
 }
