@@ -234,28 +234,30 @@
 },
   "183": {
     "PrimaryColor": "Purple",
-    "TextColor": "Black",
-    "SchoolNameSize": 13,
-    "PhotoHeight": 120,
-    "PhotoBorderRadius": 20,
-    "SchoolLogoBorderRadius": 50,
-    "PhotoObjectFit": "fill",
-    "BackgroundImage": 9,
-    "BackgroundOpacity": 1,
-    "PrincipalSignature": "Principal Signature",
-    "PrincipalSignHeight": 30,
-    "HideSignature": false,
-    "SchoolNameTwoLine": true,
-    "StaffFields": [
-      "Designation",
-      "Mobile"
-    ],
-    "SchoolNameLine1": "NEW TAKSHASILA",
-    "SchoolNameLine2": "HIGH SCHOOL",
-    "SchoolNameLine1FontSize": 20,
-    "SchoolNameLine1FontFamily": "Arial, Helvetica, sans-serif",
-    "SchoolNameLine2FontSize": 11,
-    "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
+  "TextColor": "Black",
+  "DesignationColor": "OrangeRed",
+  "SchoolNameSize": 12,
+  "PhotoHeight": 110,
+  "PhotoBorderRadius": 20,
+  "SchoolLogoBorderRadius": 50,
+  "PhotoObjectFit": "fill",
+  "BackgroundImage": 10,
+  "BackgroundOpacity": 1,
+  "PrincipalSignature": "Principal Signature",
+  "PrincipalSignHeight": 21,
+  "HideSignature": false,
+  "SchoolNameTwoLine": true,
+  "StaffFields": [
+    "Designation",
+    "Mobile"
+  ],
+  "SchoolNameLine1": "NEW TAKSHASILA",
+  "SchoolNameLine2": "HIGH SCHOOL",
+  "SchoolNameLine1FontSize": 18,
+  "SchoolNameLine1FontFamily": "Arial, Helvetica, sans-serif",
+  "SchoolNameLine2FontSize": 13,
+  "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
+}
   },
   "193": {
      "PrimaryColor": "Navy",
