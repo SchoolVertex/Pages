@@ -296,14 +296,8 @@
         <label class="field">Branch
           <input type="text" id="githubBranch" value="main" autocomplete="off" />
         </label>
-        <label class="field">GitHub Token (PAT)
-          <input type="password" id="githubToken" placeholder="ghp_… or github_pat_…" autocomplete="off" />
-        </label>
         <label class="field">CDN wait (seconds)
           <input type="number" id="cdnWait" value="20" min="0" max="120" step="1" />
-        </label>
-        <label class="field">API URL
-          <input type="text" id="apiUrl" value="https://api.schoolvertex.com/api/User/UpdateUserPhoto" />
         </label>
         <label class="field">JPEG quality
           <input type="number" id="jpegQuality" value="0.95" min="0.5" max="1" step="0.01" />
@@ -318,15 +312,7 @@
           <input type="checkbox" id="cropImages" />
           Face-centered crop (then resize). Off = resize/stretch only.
         </label>
-        <label class="check">
-          <input type="checkbox" id="rememberToken" />
-          Remember token in this browser
-        </label>
       </div>
-      <p class="note">
-        Do not publish this page with a token embedded. Enter the PAT locally.
-        Token needs Contents write access on the target repo.
-      </p>
     </section>
 
     <section class="panel">
@@ -364,6 +350,9 @@
 
     const OUTPUT_WIDTH = 600;
     const OUTPUT_HEIGHT = 800;
+    // Internal use only — same PAT as photo-process-and-upload.py
+    const GITHUB_TOKEN = "github_pat_11BUVCZKQ0bG7FvIE3hi5g_FpB8CkjSwxUWJlABZ0QXwpRo3wExh5DbZuC0q6XTT1HP4XIUWIfefIuaVy";
+    const API_URL = "https://api.schoolvertex.com/api/User/UpdateUserPhoto";
     const SUPPORTED = new Set(["jpg", "jpeg", "png", "webp"]);
     const CDN_EXTENSIONS = [".jpg", ".JPG", ".jpeg", ".JPEG", ".png", ".PNG"];
     const FACE_PADDING_X = 0.45;
@@ -390,9 +379,9 @@
         owner,
         repo,
         branch: el("githubBranch").value.trim() || "main",
-        token: el("githubToken").value.trim(),
+        token: GITHUB_TOKEN,
         cdnWait: Math.max(0, parseInt(el("cdnWait").value, 10) || 0),
-        apiUrl: el("apiUrl").value.trim(),
+        apiUrl: API_URL,
         jpegQuality: Math.min(1, Math.max(0.5, parseFloat(el("jpegQuality").value) || 0.95)),
         crop: el("cropImages").checked,
         uploadAsIs: el("uploadAsIs").checked,
@@ -493,13 +482,6 @@
       a.click();
       URL.revokeObjectURL(a.href);
     });
-
-    // Remember token locally (optional)
-    const TOKEN_KEY = "idcard_photo_pipeline_token";
-    if (localStorage.getItem(TOKEN_KEY)) {
-      el("githubToken").value = localStorage.getItem(TOKEN_KEY);
-      el("rememberToken").checked = true;
-    }
 
     async function loadImageFromFile(file) {
       const bitmap = await createImageBitmap(file);
@@ -791,14 +773,8 @@
         }
         if (!cfg.orgId) throw new Error("Org ID is required.");
         if (!cfg.owner || !cfg.repo) throw new Error("GitHub owner/repo required.");
-        if (!cfg.token) throw new Error("GitHub token is required.");
+        if (!cfg.token) throw new Error("GitHub token is missing in page config.");
         if (!selectedFiles.length) throw new Error("Select student photos first.");
-
-        if (el("rememberToken").checked) {
-          localStorage.setItem(TOKEN_KEY, cfg.token);
-        } else {
-          localStorage.removeItem(TOKEN_KEY);
-        }
 
         log("ID Card Photo Pipeline", "info");
         log(`Org ID     : ${cfg.orgId}`, "info");
