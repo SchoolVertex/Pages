@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ID Card Photo Pipeline</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0f1419;
+      --panel: #1a222c;
+      --panel-2: #243040;
+      --ink: #e8eef4;
+      --muted: #8b9aab;
+      --accent: #2f9e8a;
+      --accent-2: #3db8a0;
+      --danger: #e05a5a;
+      --ok: #4caf7a;
+      --warn: #d4a017;
+      --line: rgba(255,255,255,0.08);
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      font-family: "IBM Plex Sans", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse at 10% 0%, #1a3a36 0%, transparent 45%),
+        radial-gradient(ellipse at 90% 100%, #1e2a3d 0%, transparent 40%),
+        var(--bg);
+      padding: 28px 16px 48px;
+    }
+
+    .wrap {
+      max-width: 920px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 1.65rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 22px;
+      line-height: 1.45;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    .panel h2 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    @media (max-width: 700px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    label.field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.82rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="number"],
+    select {
+      width: 100%;
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      color: var(--ink);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font: inherit;
+      font-size: 0.95rem;
+    }
+
+    input:focus, select:focus {
+      outline: 2px solid rgba(47, 158, 138, 0.45);
+      border-color: var(--accent);
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-top: 14px;
+    }
+
+    .check {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--ink);
+      font-size: 0.92rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .check input { width: 16px; height: 16px; accent-color: var(--accent); }
+
+    button, .file-btn {
+      appearance: none;
+      border: none;
+      border-radius: 8px;
+      padding: 11px 16px;
+      font: inherit;
+      font-weight: 600;
+      font-size: 0.92rem;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: linear-gradient(180deg, var(--accent-2), var(--accent));
+      color: #06241f;
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: var(--panel-2);
+      color: var(--ink);
+      border: 1px solid var(--line);
+    }
+
+    .file-btn {
+      display: inline-block;
+      background: var(--panel-2);
+      color: var(--ink);
+      border: 1px dashed rgba(255,255,255,0.2);
+    }
+
+    .file-btn input { display: none; }
+
+    .file-meta {
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .log {
+      background: #0b1015;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px 14px;
+      max-height: 360px;
+      overflow: auto;
+      font-family: "IBM Plex Mono", ui-monospace, monospace;
+      font-size: 0.78rem;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .log .ok { color: var(--ok); }
+    .log .err { color: var(--danger); }
+    .log .warn { color: var(--warn); }
+    .log .info { color: var(--muted); }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .preview-grid figure {
+      margin: 0;
+      background: var(--panel-2);
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+    }
+
+    .preview-grid img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 3 / 4;
+      object-fit: cover;
+    }
+
+    .preview-grid figcaption {
+      font-size: 0.72rem;
+      padding: 6px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .note {
+      margin-top: 10px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .progress {
+      height: 8px;
+      background: var(--panel-2);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-top: 12px;
+      display: none;
+    }
+
+    .progress > span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      transition: width 0.2s ease;
+    }
+
+    .origin-banner {
+      display: none;
+      background: rgba(212, 160, 23, 0.15);
+      border: 1px solid rgba(212, 160, 23, 0.45);
+      color: #f0d78c;
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .origin-banner.visible { display: block; }
+
+    .origin-banner code {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.82rem;
+      background: rgba(0,0,0,0.25);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>ID Card Photo Pipeline</h1>
+    <p class="subtitle">
+      Browser version of <code>photo-process-and-upload.py</code> —
+      resize to 600×800, upload to GitHub, update SchoolVertex photos, export student IDs.
+    </p>
+
+    <div class="origin-banner" id="originBanner">
+      <strong>Opened as a local file</strong> — the browser uses a unique/null origin, so GitHub and API calls fail with a security/CORS error.
+      Serve this folder over HTTP, then open from localhost:
+      <br /><br />
+      <code>python3 -m http.server 8765</code><br />
+      then open <code>http://localhost:8765/photo-process-and-upload.html</code>
+    </div>
+
+    <section class="panel">
+      <h2>Configuration</h2>
+      <div class="grid">
+        <label class="field">Org ID
+          <input type="text" id="orgId" value="135" autocomplete="off" />
+        </label>
+        <label class="field">GitHub Owner
+          <input type="text" id="githubOwner" value="gitcdnsv" autocomplete="off" />
+        </label>
+        <label class="field">GitHub Repo
+          <input type="text" id="githubRepo" value="Repo3" autocomplete="off" />
+        </label>
+        <label class="field">Branch
+          <input type="text" id="githubBranch" value="main" autocomplete="off" />
+        </label>
+        <label class="field">GitHub Token (PAT)
+          <input type="password" id="githubToken" placeholder="ghp_… or github_pat_…" autocomplete="off" />
+        </label>
+        <label class="field">CDN wait (seconds)
+          <input type="number" id="cdnWait" value="20" min="0" max="120" step="1" />
+        </label>
+        <label class="field">API URL
+          <input type="text" id="apiUrl" value="https://api.schoolvertex.com/api/User/UpdateUserPhoto" />
+        </label>
+        <label class="field">JPEG quality
+          <input type="number" id="jpegQuality" value="0.95" min="0.5" max="1" step="0.01" />
+        </label>
+      </div>
+      <div class="row">
+        <label class="check">
+          <input type="checkbox" id="uploadAsIs" />
+          Upload as-is (skip resize &amp; compress — original file bytes)
+        </label>
+        <label class="check">
+          <input type="checkbox" id="cropImages" />
+          Face-centered crop (then resize). Off = resize/stretch only.
+        </label>
+        <label class="check">
+          <input type="checkbox" id="rememberToken" />
+          Remember token in this browser
+        </label>
+      </div>
+      <p class="note">
+        Do not publish this page with a token embedded. Enter the PAT locally.
+        Token needs Contents write access on the target repo.
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2>Photos</h2>
+      <div class="row">
+        <label class="file-btn">
+          Select folder
+          <input type="file" id="folderInput" webkitdirectory multiple accept="image/*" />
+        </label>
+        <label class="file-btn">
+          Select files
+          <input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.webp,image/*" />
+        </label>
+        <span class="file-meta" id="fileMeta">No photos selected</span>
+      </div>
+      <div class="preview-grid" id="previewGrid"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Run</h2>
+      <div class="row">
+        <button type="button" class="btn-primary" id="btnRun">Run pipeline</button>
+        <button type="button" class="btn-secondary" id="btnDownloadIds" disabled>Download student-ids.txt</button>
+        <button type="button" class="btn-secondary" id="btnClearLog">Clear log</button>
+      </div>
+      <div class="progress" id="progress"><span></span></div>
+      <div class="log" id="log" style="margin-top:12px"></div>
+    </section>
+  </div>
+
+  <script>
+    /* ═══════════════════════════════════════════════════════════════
+       Same pipeline as photo-process-and-upload.py — single HTML page
+       ═══════════════════════════════════════════════════════════════ */
+
+    const OUTPUT_WIDTH = 600;
+    const OUTPUT_HEIGHT = 800;
+    const SUPPORTED = new Set(["jpg", "jpeg", "png", "webp"]);
+    const CDN_EXTENSIONS = [".jpg", ".JPG", ".jpeg", ".JPEG", ".png", ".PNG"];
+    const FACE_PADDING_X = 0.45;
+    const FACE_PADDING_TOP = 0.55;
+    const FACE_PADDING_BOTTOM = 0.95;
+    const FACE_VERTICAL_BIAS = 0.18;
+
+    const el = (id) => document.getElementById(id);
+    const logEl = el("log");
+    const progressEl = el("progress");
+    const progressBar = progressEl.querySelector("span");
+
+    let selectedFiles = [];
+    let lastStudentIdsText = "";
+    let faceDetector = null;
+    let faceDetectorReady = false;
+
+    function config() {
+      const orgId = el("orgId").value.trim();
+      const owner = el("githubOwner").value.trim();
+      const repo = el("githubRepo").value.trim();
+      return {
+        orgId,
+        owner,
+        repo,
+        branch: el("githubBranch").value.trim() || "main",
+        token: el("githubToken").value.trim(),
+        cdnWait: Math.max(0, parseInt(el("cdnWait").value, 10) || 0),
+        apiUrl: el("apiUrl").value.trim(),
+        jpegQuality: Math.min(1, Math.max(0.5, parseFloat(el("jpegQuality").value) || 0.95)),
+        crop: el("cropImages").checked,
+        uploadAsIs: el("uploadAsIs").checked,
+        cdnBase: `https://cdn.jsdelivr.net/gh/${owner}/${repo}/${orgId}`,
+        githubOrgPath: orgId
+      };
+    }
+
+    function log(msg, kind = "info") {
+      const line = document.createElement("div");
+      line.className = kind;
+      line.textContent = msg;
+      logEl.appendChild(line);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function setProgress(done, total) {
+      progressEl.style.display = total > 0 ? "block" : "none";
+      const pct = total ? Math.round((done / total) * 100) : 0;
+      progressBar.style.width = pct + "%";
+    }
+
+    function fileExt(name) {
+      const i = name.lastIndexOf(".");
+      return i >= 0 ? name.slice(i + 1).toLowerCase() : "";
+    }
+
+    function fileStem(name) {
+      const base = name.split(/[/\\]/).pop() || name;
+      const i = base.lastIndexOf(".");
+      return i >= 0 ? base.slice(0, i) : base;
+    }
+
+    function isNumericStem(name) {
+      return /^\d+$/.test(fileStem(name).trim());
+    }
+
+    function collectStudentIds(files) {
+      const ids = [];
+      const seen = new Set();
+      for (const f of files) {
+        const stem = fileStem(f.name).trim();
+        if (!/^\d+$/.test(stem)) continue;
+        const id = parseInt(stem, 10);
+        if (seen.has(id)) continue;
+        seen.add(id);
+        ids.push(id);
+      }
+      return ids.sort((a, b) => a - b);
+    }
+
+    function filterImageFiles(fileList) {
+      return Array.from(fileList || []).filter((f) => {
+        if (!SUPPORTED.has(fileExt(f.name))) return false;
+        // Skip nested "processed" folder when using directory picker
+        const path = (f.webkitRelativePath || f.name).replace(/\\/g, "/");
+        const parts = path.split("/");
+        if (parts.slice(0, -1).some((p) => p.toLowerCase() === "processed")) return false;
+        return true;
+      }).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+    }
+
+    function onFilesChosen(fileList) {
+      selectedFiles = filterImageFiles(fileList);
+      el("fileMeta").textContent = selectedFiles.length
+        ? `${selectedFiles.length} image(s) selected`
+        : "No photos selected";
+      const grid = el("previewGrid");
+      grid.innerHTML = "";
+      selectedFiles.slice(0, 24).forEach((f) => {
+        const fig = document.createElement("figure");
+        const img = document.createElement("img");
+        img.src = URL.createObjectURL(f);
+        img.onload = () => URL.revokeObjectURL(img.src);
+        const cap = document.createElement("figcaption");
+        cap.textContent = fileStem(f.name);
+        fig.appendChild(img);
+        fig.appendChild(cap);
+        grid.appendChild(fig);
+      });
+    }
+
+    el("folderInput").addEventListener("change", (e) => onFilesChosen(e.target.files));
+    el("fileInput").addEventListener("change", (e) => onFilesChosen(e.target.files));
+    el("btnClearLog").addEventListener("click", () => { logEl.innerHTML = ""; });
+    el("uploadAsIs").addEventListener("change", () => {
+      const asIs = el("uploadAsIs").checked;
+      el("cropImages").disabled = asIs;
+      el("jpegQuality").disabled = asIs;
+      if (asIs) el("cropImages").checked = false;
+    });
+    el("btnDownloadIds").addEventListener("click", () => {
+      if (!lastStudentIdsText) return;
+      const blob = new Blob([lastStudentIdsText + "\n"], { type: "text/plain" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "student-ids.txt";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    // Remember token locally (optional)
+    const TOKEN_KEY = "idcard_photo_pipeline_token";
+    if (localStorage.getItem(TOKEN_KEY)) {
+      el("githubToken").value = localStorage.getItem(TOKEN_KEY);
+      el("rememberToken").checked = true;
+    }
+
+    async function loadImageFromFile(file) {
+      const bitmap = await createImageBitmap(file);
+      const canvas = document.createElement("canvas");
+      canvas.width = bitmap.width;
+      canvas.height = bitmap.height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(bitmap, 0, 0);
+      bitmap.close();
+      return canvas;
+    }
+
+    async function ensureFaceDetector() {
+      if (faceDetectorReady) return true;
+      if (!("FaceDetector" in window)) {
+        log("FaceDetector API not available — using center crop.", "warn");
+        return false;
+      }
+      try {
+        faceDetector = new FaceDetector({ fastMode: true, maxDetectedFaces: 5 });
+        faceDetectorReady = true;
+        return true;
+      } catch (e) {
+        log("Face detector init failed — using center crop.", "warn");
+        return false;
+      }
+    }
+
+    async function detectLargestFace(canvas) {
+      if (!faceDetector) return null;
+      try {
+        const faces = await faceDetector.detect(canvas);
+        if (!faces || !faces.length) return null;
+        let best = null;
+        let bestArea = 0;
+        for (const f of faces) {
+          const b = f.boundingBox;
+          const area = b.width * b.height;
+          if (area > bestArea) {
+            bestArea = area;
+            best = { x: b.x, y: b.y, w: b.width, h: b.height };
+          }
+        }
+        return best;
+      } catch {
+        return null;
+      }
+    }
+
+    function cropToPortrait(sourceCanvas, face) {
+      const targetRatio = OUTPUT_WIDTH / OUTPUT_HEIGHT;
+      const width = sourceCanvas.width;
+      const height = sourceCanvas.height;
+      let cropW, cropH, left, top;
+
+      if (face) {
+        const fx = face.x, fy = face.y, fw = face.w, fh = face.h;
+        const faceCx = fx + fw / 2;
+        const faceCy = fy + fh / 2;
+        let preferredW = fw * (1 + 2 * FACE_PADDING_X);
+        let preferredH = fh * (1 + FACE_PADDING_TOP + FACE_PADDING_BOTTOM);
+
+        if (preferredW / preferredH > targetRatio) {
+          cropH = preferredH;
+          cropW = cropH * targetRatio;
+        } else {
+          cropW = preferredW;
+          cropH = cropW / targetRatio;
+        }
+
+        cropW = Math.min(Math.round(cropW), width);
+        cropH = Math.min(Math.round(cropH), height);
+        if (cropW / cropH > targetRatio) cropW = Math.round(cropH * targetRatio);
+        else cropH = Math.round(cropW / targetRatio);
+        cropW = Math.min(cropW, width);
+        cropH = Math.min(cropH, height);
+
+        left = Math.round(faceCx - cropW / 2);
+        const minTop = fy - FACE_PADDING_TOP * fh;
+        const biasTop = faceCy - cropH * (0.5 - FACE_VERTICAL_BIAS);
+        top = Math.round(Math.min(minTop, biasTop));
+      } else {
+        if (width / height > targetRatio) {
+          cropH = height;
+          cropW = Math.round(cropH * targetRatio);
+        } else {
+          cropW = width;
+          cropH = Math.round(cropW / targetRatio);
+        }
+        cropW = Math.min(cropW, width);
+        cropH = Math.min(cropH, height);
+        left = Math.floor((width - cropW) / 2);
+        top = Math.floor((height - cropH) / 2);
+      }
+
+      left = Math.max(0, Math.min(left, width - cropW));
+      top = Math.max(0, Math.min(top, height - cropH));
+
+      const out = document.createElement("canvas");
+      out.width = cropW;
+      out.height = cropH;
+      out.getContext("2d").drawImage(sourceCanvas, left, top, cropW, cropH, 0, 0, cropW, cropH);
+      return out;
+    }
+
+    function resizeCanvas(sourceCanvas) {
+      const out = document.createElement("canvas");
+      out.width = OUTPUT_WIDTH;
+      out.height = OUTPUT_HEIGHT;
+      const ctx = out.getContext("2d");
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(sourceCanvas, 0, 0, OUTPUT_WIDTH, OUTPUT_HEIGHT);
+      return out;
+    }
+
+    function canvasToJpegBlob(canvas, quality) {
+      return new Promise((resolve, reject) => {
+        canvas.toBlob(
+          (blob) => (blob ? resolve(blob) : reject(new Error("JPEG encode failed"))),
+          "image/jpeg",
+          quality
+        );
+      });
+    }
+
+    function blobToBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const dataUrl = String(reader.result || "");
+          const i = dataUrl.indexOf(",");
+          resolve(i >= 0 ? dataUrl.slice(i + 1) : dataUrl);
+        };
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    async function processOneImage(file, cfg) {
+      const userId = fileStem(file.name).trim();
+
+      // Upload original bytes — no crop / resize / JPEG recompress
+      if (cfg.uploadAsIs) {
+        const ext = fileExt(file.name) || "jpg";
+        return { userId, blob: file, fileName: `${userId}.${ext}` };
+      }
+
+      let canvas = await loadImageFromFile(file);
+      if (cfg.crop) {
+        await ensureFaceDetector();
+        const face = await detectLargestFace(canvas);
+        canvas = cropToPortrait(canvas, face);
+      }
+      canvas = resizeCanvas(canvas);
+      const blob = await canvasToJpegBlob(canvas, cfg.jpegQuality);
+      return { userId, blob, fileName: `${userId}.jpg` };
+    }
+
+    function githubHeaders(token) {
+      return {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28"
+      };
+    }
+
+    function githubFileUrl(cfg, repoPath) {
+      const encoded = repoPath.split("/").map(encodeURIComponent).join("/");
+      return `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${encoded}`;
+    }
+
+    async function getExistingSha(cfg, repoPath) {
+      const url = `${githubFileUrl(cfg, repoPath)}?ref=${encodeURIComponent(cfg.branch)}`;
+      const res = await fetch(url, { headers: githubHeaders(cfg.token) });
+      if (res.status === 404) return null;
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`GitHub GET failed ${repoPath}: ${res.status} ${text}`);
+      }
+      const data = await res.json();
+      return data.sha || null;
+    }
+
+    async function uploadToGithub(cfg, fileName, blob) {
+      const repoPath = `${cfg.githubOrgPath}/${fileName}`;
+      const content = await blobToBase64(blob);
+      const sha = await getExistingSha(cfg, repoPath);
+      const payload = {
+        message: `Update student photo ${fileName} (org ${cfg.orgId})`,
+        content,
+        branch: cfg.branch
+      };
+      if (sha) payload.sha = sha;
+
+      const res = await fetch(githubFileUrl(cfg, repoPath), {
+        method: "PUT",
+        headers: {
+          ...githubHeaders(cfg.token),
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+      if (res.status !== 200 && res.status !== 201) {
+        const text = await res.text();
+        throw new Error(`GitHub upload failed ${repoPath}: ${res.status} ${text}`);
+      }
+      return repoPath;
+    }
+
+    /** Probe CDN without CORS (fetch from file:// or cross-origin often fails). */
+    function imageExists(url) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        const done = (ok) => {
+          img.onload = img.onerror = null;
+          resolve(ok);
+        };
+        img.onload = () => done(true);
+        img.onerror = () => done(false);
+        img.src = url + (url.includes("?") ? "&" : "?") + "_=" + Date.now();
+      });
+    }
+
+    async function getValidCdnUrl(cfg, userId, preferredExt) {
+      const exts = [];
+      if (preferredExt) {
+        const e = preferredExt.startsWith(".") ? preferredExt : `.${preferredExt}`;
+        exts.push(e, e.toLowerCase(), e.toUpperCase());
+      }
+      for (const ext of CDN_EXTENSIONS) {
+        if (!exts.includes(ext)) exts.push(ext);
+      }
+      for (const ext of exts) {
+        const url = `${cfg.cdnBase}/${userId}${ext}`;
+        if (await imageExists(url)) return url;
+      }
+      return null;
+    }
+
+    function isFileOrigin() {
+      return location.protocol === "file:";
+    }
+
+    function explainFetchError(err) {
+      const msg = String(err && err.message ? err.message : err);
+      if (isFileOrigin()) {
+        return `${msg} — page was opened as file:// (unique origin). Serve via http://localhost instead (see yellow banner).`;
+      }
+      if (/Failed to fetch|NetworkError|CORS|blocked/i.test(msg)) {
+        return `${msg} — likely CORS. Use the Python script, or host this page on a allowed origin / proxy.`;
+      }
+      return msg;
+    }
+
+    function sleep(ms) {
+      return new Promise((r) => setTimeout(r, ms));
+    }
+
+    async function updateUserPhoto(cfg, userId, cdnUrl) {
+      const res = await fetch(cfg.apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          UserId: parseInt(userId, 10),
+          Token: cdnUrl,
+          DeviceId: cdnUrl
+        })
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`API ${res.status}: ${text}`);
+      }
+    }
+
+    async function runPipeline() {
+      const cfg = config();
+      const btn = el("btnRun");
+      btn.disabled = true;
+      el("btnDownloadIds").disabled = true;
+      lastStudentIdsText = "";
+
+      try {
+        if (isFileOrigin()) {
+          throw new Error(
+            "Cannot run API uploads from file:// (browser unique security origin). " +
+            "Start a local server: python3 -m http.server 8765 — then open http://localhost:8765/photo-process-and-upload.html"
+          );
+        }
+        if (!cfg.orgId) throw new Error("Org ID is required.");
+        if (!cfg.owner || !cfg.repo) throw new Error("GitHub owner/repo required.");
+        if (!cfg.token) throw new Error("GitHub token is required.");
+        if (!selectedFiles.length) throw new Error("Select student photos first.");
+
+        if (el("rememberToken").checked) {
+          localStorage.setItem(TOKEN_KEY, cfg.token);
+        } else {
+          localStorage.removeItem(TOKEN_KEY);
+        }
+
+        log("ID Card Photo Pipeline", "info");
+        log(`Org ID     : ${cfg.orgId}`, "info");
+        if (cfg.uploadAsIs) {
+          log("Mode       : upload as-is (no resize / compress)", "info");
+        } else {
+          log(`Output size: ${OUTPUT_WIDTH}x${OUTPUT_HEIGHT}`, "info");
+          log(`Crop       : ${cfg.crop ? "yes" : "no (resize only)"}`, "info");
+        }
+        log(`GitHub     : ${cfg.owner}/${cfg.repo}@${cfg.branch}`, "info");
+        log(`CDN base   : ${cfg.cdnBase}`, "info");
+        log("", "info");
+
+        // student-ids.txt
+        const ids = collectStudentIds(selectedFiles);
+        lastStudentIdsText = "[" + ids.join(",") + "]";
+        el("btnDownloadIds").disabled = false;
+        log(`Student IDs (${ids.length}): ${lastStudentIdsText}`, "ok");
+        log("Download student-ids.txt when ready (browser cannot write into local org folder).", "info");
+
+        // STEP 1 — process
+        log(`\n=== STEP 1/3: Process photos ===`, "info");
+        if (cfg.uploadAsIs) {
+          log("Skipping resize/compress — using original files.", "info");
+        } else {
+          log(`Output size: ${OUTPUT_WIDTH}x${OUTPUT_HEIGHT}`, "info");
+        }
+        const numericFiles = selectedFiles.filter((f) => isNumericStem(f.name));
+        const skipped = selectedFiles.length - numericFiles.length;
+        if (skipped) log(`Skipping ${skipped} non-numeric filename(s)`, "warn");
+
+        const processed = [];
+        let failedProcess = 0;
+        setProgress(0, numericFiles.length || 1);
+
+        for (let i = 0; i < numericFiles.length; i++) {
+          const file = numericFiles[i];
+          log(`Processing : ${file.name}`, "info");
+          try {
+            const item = await processOneImage(file, cfg);
+            processed.push(item);
+            log(`  ✅ ${item.fileName}`, "ok");
+          } catch (err) {
+            failedProcess++;
+            log(`  ❌ ${file.name}: ${err.message || err}`, "err");
+          }
+          setProgress(i + 1, numericFiles.length);
+        }
+
+        log(`Processed OK : ${processed.length} | Failed : ${failedProcess}`, "info");
+        if (!processed.length) throw new Error("No images were processed.");
+
+        // STEP 2 — GitHub upload
+        log(`\n=== STEP 2/3: Upload to GitHub (remote) ===`, "info");
+        log(`Folder : ${cfg.githubOrgPath}/`, "info");
+        let okUp = 0;
+        let failUp = 0;
+        setProgress(0, processed.length);
+
+        for (let i = 0; i < processed.length; i++) {
+          const item = processed[i];
+          log(`Uploading : ${cfg.githubOrgPath}/${item.fileName}`, "info");
+          try {
+            await uploadToGithub(cfg, item.fileName, item.blob);
+            log(`  ✅ Uploaded ${item.fileName}`, "ok");
+            okUp++;
+          } catch (err) {
+            failUp++;
+            log(`  ❌ ${item.fileName}: ${explainFetchError(err)}`, "err");
+          }
+          setProgress(i + 1, processed.length);
+        }
+        log(`Uploaded OK : ${okUp} | Failed : ${failUp}`, "info");
+        if (okUp === 0) throw new Error("No files were uploaded to GitHub.");
+
+        // STEP 3 — CDN + API
+        log(`\n=== STEP 3/3: Update user photos via API ===`, "info");
+        if (cfg.cdnWait > 0) {
+          log(`Waiting ${cfg.cdnWait}s for CDN propagation...`, "info");
+          await sleep(cfg.cdnWait * 1000);
+        }
+
+        let updated = 0, skippedApi = 0, failedApi = 0;
+        setProgress(0, processed.length);
+
+        for (let i = 0; i < processed.length; i++) {
+          const item = processed[i];
+          try {
+            const preferredExt = item.fileName.includes(".")
+              ? item.fileName.slice(item.fileName.lastIndexOf("."))
+              : ".jpg";
+            const cdnUrl = await getValidCdnUrl(cfg, item.userId, preferredExt);
+            if (!cdnUrl) {
+              log(`⚠️  CDN image not found for UserId ${item.userId}. Skipping API call.`, "warn");
+              skippedApi++;
+            } else {
+              await updateUserPhoto(cfg, item.userId, cdnUrl);
+              log(`✅ Updated UserId ${item.userId} -> ${cdnUrl}`, "ok");
+              updated++;
+            }
+          } catch (err) {
+            failedApi++;
+            log(`❌ Error updating UserId ${item.userId}: ${explainFetchError(err)}`, "err");
+          }
+          setProgress(i + 1, processed.length);
+        }
+
+        log(`\nAPI summary — Updated: ${updated} | Skipped: ${skippedApi} | Failed: ${failedApi}`, "info");
+        log("\nDone.", "ok");
+      } catch (err) {
+        log(`\nFatal error: ${explainFetchError(err)}`, "err");
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    if (isFileOrigin()) {
+      el("originBanner").classList.add("visible");
+      log("Opened via file:// — use a local HTTP server before running uploads.", "warn");
+    }
+
+    el("btnRun").addEventListener("click", runPipeline);
+  </script>
+</body>
+</html>
