@@ -1,9 +1,38 @@
 {
-"ExternalBioSchoolList": [ 53, 102, 120, 139, 153, 143, 179, 185, 187, 186, 170 ],
-"WhatsappOrgList": [ 30,73,139,142,143,153,158,159,170,179,180,181,183,184,185,186,187,53 ],
-"GroupInOrgList": [ 1 ],
-"GroupInData": [ "https://stag-saas-messagebot.tech-v2.groupin.app/api/v1/message/template", "9fac14690fadaa1292760581f0b97fce" ],
-"ExternalSchoolDevices": [
+  "ExternalBioSchoolList": [ 53, 102, 120, 139, 153, 143, 179, 185, 187, 186, 170 ],
+  "WhatsappOrgList": [ 30,73,139,142,143,153,158,159,170,179,180,181,183,184,185,186,187,53 ],
+  "GroupInOrgList": [ 1 ],
+  "GroupInData": [
+    "https://stag-saas-messagebot.tech-v2.groupin.app/api/v1/message/template",
+    "9fac14690fadaa1292760581f0b97fce"
+  ],
+  "GroupInMessages": {
+    "1": {
+      "AbsentMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nThis is to inform you that {{studentName}} was marked absent from school today.\n\nRegards,\nSchool Vertex",
+      "LateMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nThis is to inform you that {{studentName}} arrived late to school today.\n\nPlease ensure that your child arrives at school on time.\n\nRegards,\nSchool Vertex",
+      "MarkReportMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nHere is the {{examName}} examination marks report for {{studentName}}:\n\nS1 - {{s1}}\nS2 - {{s2}}\nS3 - {{s3}}\nS4 - {{s4}}\nS5 - {{s5}}\nS6 - {{s6}}\nS7 - {{s7}}\n\nPlease contact the school if you have any questions regarding the report.\n\nRegards,\nSchool Vertex",
+      "OtherNoticeMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nThis is to inform you that {{reason}}.\n\nPlease take note of the above information.\n\nRegards,\nSchool Vertex",
+      "HolidayMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nPlease note that {{prefix}} will be a holiday due to {{suffix}}.\n\nWe wish you and your family a happy and safe holiday.\n\nRegards,\nSchool Vertex",
+      "FeePaymentMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nWe have received a fee payment of {{amount}} for {{studentName}}.\n\nThank you for making the payment.\n\nRegards,\nSchool Vertex",
+      "StaffOTPMessage": "Dear User,\n\nYour School Vertex login verification OTP is {{otp}}.\n\nPlease do not share this OTP with anyone.\n\nRegards,\nSchool Vertex",
+      "AdmissionConfirmationMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nCongratulations on the admission of {{studentName}} to our school!\n\nWe are delighted to welcome your child to our school community. We look forward to supporting their learning, growth, and success throughout this wonderful journey.\n\nWishing {{studentName}} a bright and successful future.\n\nRegards,\nSchool Vertex",
+      "FeeDueMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nA fee of {{amount}} is currently due for {{studentName}}.\n\nIf you have already made the payment, please ignore this message.\n\nThank you.\n\nRegards,\nSchool Vertex",
+      "TempPasswordMessage": "Dear User,\n\nYour temporary School Vertex password is:\n\n{{otp}}\n\nFor security, please log in and change your password as soon as possible.\n\nRegards,\nSchool Vertex"
+    },
+    "default": {
+      "AbsentMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nThis is to inform you that {{studentName}} was marked absent from school today.\n\nIf this absence was not expected, please contact the school.\n\nRegards,\nSchool Vertex",
+      "LateMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nThis is to inform you that {{studentName}} arrived late to school today.\n\nPlease ensure that your child arrives at school on time.\n\nRegards,\nSchool Vertex",
+      "MarkReportMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nHere is the {{examName}} examination marks report for {{studentName}}:\n\nS1 - {{s1}}\nS2 - {{s2}}\nS3 - {{s3}}\nS4 - {{s4}}\nS5 - {{s5}}\nS6 - {{s6}}\nS7 - {{s7}}\n\nPlease contact the school if you have any questions regarding the report.\n\nRegards,\nSchool Vertex",
+      "OtherNoticeMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nThis is to inform you that {{reason}}.\n\nPlease take note of the above information.\n\nRegards,\nSchool Vertex",
+      "HolidayMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nPlease note that {{prefix}} will be a holiday due to {{suffix}}.\n\nWe wish you and your family a happy and safe holiday.\n\nRegards,\nSchool Vertex",
+      "FeePaymentMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nWe have received a fee payment of {{amount}} for {{studentName}}.\n\nThank you for making the payment.\n\nRegards,\nSchool Vertex",
+      "StaffOTPMessage": "Dear User,\n\nYour School Vertex login verification OTP is {{otp}}.\n\nPlease do not share this OTP with anyone.\n\nRegards,\nSchool Vertex",
+      "AdmissionConfirmationMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nCongratulations on the admission of {{studentName}} to our school!\n\nWe are delighted to welcome your child to our school community. We look forward to supporting their learning, growth, and success throughout this wonderful journey.\n\nWishing {{studentName}} a bright and successful future.\n\nRegards,\nSchool Vertex",
+      "FeeDueMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nA fee of {{amount}} is currently due for {{studentName}}.\n\nIf you have already made the payment, please ignore this message.\n\nThank you.\n\nRegards,\nSchool Vertex",
+      "TempPasswordMessage": "Dear User,\n\nYour temporary School Vertex password is:\n\n{{otp}}\n\nFor security, please log in and change your password as soon as possible.\n\nRegards,\nSchool Vertex"
+    }
+  },
+  "ExternalSchoolDevices": [
     {
       "SchoolId": 102,
       "DeviceSerialNumber": "CEXJ230860941"
