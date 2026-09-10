@@ -503,7 +503,7 @@
   "SchoolNameSize": 12,
   "PhotoHeight": 80,
   "PhotoBorderRadius": 50,
-  "SchoolLogoBorderRadius": 50,
+  "SchoolLogoBorderRadius": 0,
   "PhotoObjectFit": "cover",
   "BackgroundImage": 5,
   "BackgroundOpacity": 1,
