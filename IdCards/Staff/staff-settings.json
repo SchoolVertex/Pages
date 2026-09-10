@@ -336,6 +336,28 @@
   "SchoolNameLine2FontSize": 17,
   "SchoolNameLine2FontFamily": "Arial, Helvetica, sans-serif"
 },
+  "192": {
+  "PrimaryColor": "Purple",
+  "TextColor": "Black",
+  "DesignationColor": "Black",
+  "SchoolNameSize": 13,
+  "PhotoHeight": 100,
+  "PhotoBorderRadius": 50,
+  "SchoolLogoBorderRadius": 50,
+  "PhotoObjectFit": "cover",
+  "BackgroundImage": 50,
+  "BackgroundOpacity": 1,
+  "PrincipalSignature": "Principal Signature",
+  "PrincipalSignHeight": 20,
+  "HideSignature": false,
+  "SchoolNameTwoLine": false,
+  "StaffFields": [
+    "Designation",
+    "DateOfBirth",
+    "Mobile",
+    "Address"
+  ],
+},
   "183": {
     "PrimaryColor": "Purple",
   "TextColor": "Black",
