@@ -1,5 +1,7 @@
 {
   "Admission": [],
+  "WhatsappOrgList": [ 30,73,139,142,143,153,158,159,170,179,180,181,183,184,185,186,187,53 ],
+  "GroupInOrgList": [ 1 ],
   "ThermalReceipt": [
     30,
     139,
