@@ -10,7 +10,7 @@
     "1": {
       "AbsentMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nThis is to inform you that {{studentName}} was marked absent from school today.\n\nRegards,\nSchool Vertex",
       "LateMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nThis is to inform you that {{studentName}} arrived late to school today.\n\nPlease ensure that your child arrives at school on time.\n\nRegards,\nSchool Vertex",
-      "MarkReportMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nHere is the {{examName}} examination marks report for {{studentName}}:\n\nS1 - {{s1}}\nS2 - {{s2}}\nS3 - {{s3}}\nS4 - {{s4}}\nS5 - {{s5}}\nS6 - {{s6}}\nS7 - {{s7}}\n\nPlease contact the school if you have any questions regarding the report.\n\nRegards,\nSchool Vertex",
+      "MarkReportMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nThe exam report is now available.\n\nStudent Name: {{studentName}}\nExam: {{examName}}\n\nPlease click the button below to view the report.\n\nRegards,\nSchool Vertex",
       "OtherNoticeMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nThis is to inform you that {{reason}}.\n\nPlease take note of the above information.\n\nRegards,\nSchool Vertex",
       "HolidayMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nPlease note that {{prefix}} will be a holiday due to {{suffix}}.\n\nWe wish you and your family a happy and safe holiday.\n\nRegards,\nSchool Vertex",
       "FeePaymentMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nWe have received a fee payment of {{amount}} for {{studentName}}.\n\nThank you for making the payment.\n\nRegards,\nSchool Vertex",
@@ -22,7 +22,7 @@
     "default": {
       "AbsentMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nThis is to inform you that {{studentName}} was marked absent from school today.\n\nIf this absence was not expected, please contact the school.\n\nRegards,\nSchool Vertex",
       "LateMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nThis is to inform you that {{studentName}} arrived late to school today.\n\nPlease ensure that your child arrives at school on time.\n\nRegards,\nSchool Vertex",
-      "MarkReportMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nHere is the {{examName}} examination marks report for {{studentName}}:\n\nS1 - {{s1}}\nS2 - {{s2}}\nS3 - {{s3}}\nS4 - {{s4}}\nS5 - {{s5}}\nS6 - {{s6}}\nS7 - {{s7}}\n\nPlease contact the school if you have any questions regarding the report.\n\nRegards,\nSchool Vertex",
+      "MarkReportMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nThe exam report is now available.\n\nStudent Name: {{studentName}}\nExam: {{examName}}\n\nPlease click the button below to view the report.\n\nRegards,\nSchool Vertex",
       "OtherNoticeMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nThis is to inform you that {{reason}}.\n\nPlease take note of the above information.\n\nRegards,\nSchool Vertex",
       "HolidayMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nPlease note that {{prefix}} will be a holiday due to {{suffix}}.\n\nWe wish you and your family a happy and safe holiday.\n\nRegards,\nSchool Vertex",
       "FeePaymentMessage": "Dear Parent,\n\nGreetings from {{schoolName}}.\n\nWe have received a fee payment of {{amount}} for {{studentName}}.\n\nThank you for making the payment.\n\nRegards,\nSchool Vertex",
