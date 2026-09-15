@@ -508,7 +508,7 @@
   "BackgroundImage": 5,
   "BackgroundOpacity": 1,
   "PrincipalSignature": "Principal Signature",
-  "PrincipalSignHeight": 20,
+  "PrincipalSignHeight": 30,
   "HideSignature": false,
   "SchoolNameTwoLine": true,
   "ShowAcademicYear": false,
