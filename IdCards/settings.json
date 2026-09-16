@@ -501,7 +501,7 @@
     "PrimaryColor": "Black",
     "TextColor": "Red",
     "SchoolNameSize": 12,
-    "PhotoHeight": 80,
+    "PhotoHeight": 100,
     "PhotoBorderRadius": 50,
     "SchoolLogoBorderRadius": 50,
     "PhotoObjectFit": "cover",
