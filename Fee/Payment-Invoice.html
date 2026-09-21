@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Payment Invoice</title>
+  <title>School Invoice</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -59,6 +59,28 @@
       white-space: nowrap;
     }
 
+    .invoice-sheet {
+      position: relative;
+    }
+
+    .invoice-watermark {
+      position: absolute;
+      top: 35%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 55%;
+      max-width: 280px;
+      opacity: 0.06;
+      pointer-events: none;
+      z-index: 0;
+      user-select: none;
+    }
+
+    .invoice-sheet > *:not(.invoice-watermark) {
+      position: relative;
+      z-index: 1;
+    }
+
     .no-print {
       /* shown on screen only */
     }
@@ -78,6 +100,12 @@
         border: none !important;
         border-radius: 0 !important;
         max-width: none !important;
+      }
+
+      .invoice-watermark {
+        opacity: 0.08;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
       }
 
       .editable-field,
@@ -120,6 +148,10 @@
   </div>
 
   <div class="invoice-sheet max-w-4xl mx-auto bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-200">
+
+    <img class="invoice-watermark"
+         src="https://res.cloudinary.com/bashbook3/image/upload/v1686680797/School%20Logos/favicon1.png"
+         alt="" />
 
     <!-- Header -->
     <div class="flex items-center justify-between px-6 sm:px-8 py-6 border-b border-gray-200 bg-indigo-50">
