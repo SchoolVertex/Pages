@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="hallTicketApp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Student Hall Ticket</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+
+  <style>
+    :root {
+      --ink: #15202b;
+      --ink-soft: #3d4f5f;
+      --muted: #6b7c8a;
+      --line: #d8e0e8;
+      --surface: #ffffff;
+      --page: #e8eef3;
+      --page-accent: #d4e4f0;
+      --brand: #0b4f6c;
+      --brand-deep: #083a50;
+      --fail: #b42318;
+      --radius: 14px;
+      --shadow: 0 10px 30px rgba(11, 79, 108, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "DM Sans", sans-serif;
+      background:
+        radial-gradient(ellipse 120% 80% at 0% -10%, rgba(11, 79, 108, 0.12), transparent 55%),
+        radial-gradient(ellipse 90% 60% at 100% 0%, rgba(27, 122, 74, 0.08), transparent 50%),
+        linear-gradient(180deg, var(--page-accent) 0%, var(--page) 40%, #f2f6f9 100%);
+    }
+
+    .page-shell {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 16px 14px 40px;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--brand);
+      color: #fff;
+      font-family: inherit;
+    }
+
+    .btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .status-banner,
+    .error-banner {
+      margin-bottom: 12px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .status-banner {
+      background: #e8f3f8;
+      color: var(--brand);
+    }
+
+    .error-banner {
+      background: #fdeceb;
+      color: var(--fail);
+    }
+
+    .ticket {
+      position: relative;
+      background: var(--surface);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      border: 1px solid rgba(11, 79, 108, 0.08);
+      margin-bottom: 18px;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    .watermark {
+      position: absolute;
+      top: 52%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0.05;
+      width: 52%;
+      max-width: 220px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .ticket > *:not(.watermark) {
+      position: relative;
+      z-index: 1;
+    }
+
+    .ticket-top {
+      padding: 18px 16px 16px;
+      background: linear-gradient(145deg, #0b4f6c 0%, #0d5f7f 48%, #147a6a 100%);
+      color: #f7fbfd;
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .school-logo {
+      width: 58px;
+      height: 58px;
+      border-radius: 12px;
+      object-fit: contain;
+      background: #fff;
+      border: 2px solid rgba(255, 255, 255, 0.55);
+      flex: 0 0 auto;
+    }
+
+    .school-copy {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .school-copy h1 {
+      margin: 0;
+      font-family: Fraunces, Georgia, serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    .school-copy .caption,
+    .school-copy .address {
+      margin: 4px 0 0;
+      font-size: 0.7rem;
+      line-height: 1.35;
+      opacity: 0.85;
+    }
+
+    .doc-label-wrap {
+      display: flex;
+      justify-content: center;
+      margin-top: 14px;
+    }
+
+    .doc-label {
+      display: inline-block;
+      padding: 5px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 6px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.1);
+      text-align: center;
+    }
+
+    .ticket-body {
+      padding: 16px;
+    }
+
+    .exam-title {
+      margin: 0 0 14px;
+      text-align: center;
+      font-family: Fraunces, Georgia, serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--brand-deep);
+      line-height: 1.3;
+    }
+
+    .student-panel {
+      display: grid;
+      grid-template-columns: 88px 1fr;
+      gap: 14px;
+      padding: 14px;
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, #f4f8fb 0%, #eef4f8 100%);
+      border: 1px solid var(--line);
+      align-items: start;
+    }
+
+    .student-photo {
+      width: 88px;
+      height: 110px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .photo-fallback {
+      width: 88px;
+      height: 110px;
+      border-radius: 10px;
+      border: 1px dashed var(--line);
+      background: #f8fbfd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-align: center;
+      padding: 8px;
+    }
+
+    .student-name {
+      margin: 0 0 10px;
+      font-family: Fraunces, Georgia, serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--brand-deep);
+      line-height: 1.25;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 10px;
+    }
+
+    .meta-item.full {
+      grid-column: 1 / -1;
+    }
+
+    .meta-item .label {
+      display: block;
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1px;
+    }
+
+    .meta-item .value {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.3;
+      word-break: break-word;
+    }
+
+    .section {
+      margin-top: 18px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--brand);
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-family: Fraunces, Georgia, serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--brand-deep);
+    }
+
+    .section-head .count {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .schedule-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+
+    .schedule-table th {
+      background: #f0f6fa;
+      text-align: left;
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--line);
+      font-size: 0.65rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .schedule-table th.right,
+    .schedule-table td.right {
+      text-align: right;
+    }
+
+    .schedule-table td {
+      padding: 10px 8px;
+      border-bottom: 1px solid #eef2f6;
+      vertical-align: top;
+    }
+
+    .schedule-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .subject-name {
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 20px 12px;
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 500;
+    }
+
+    .auth-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 22px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .auth-box {
+      min-width: 140px;
+      text-align: center;
+    }
+
+    .auth-box img {
+      max-width: 120px;
+      max-height: 48px;
+      object-fit: contain;
+      margin-bottom: 6px;
+    }
+
+    .auth-box .label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--ink-soft);
+      border-top: 1.5px solid #b8c7d4;
+      padding-top: 6px;
+    }
+
+    .footer-note {
+      margin: 14px 0 0;
+      text-align: center;
+      font-size: 0.65rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .instructions {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: #f8fbfd;
+      border: 1px solid var(--line);
+    }
+
+    .instructions h3 {
+      margin: 0 0 8px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--brand-deep);
+    }
+
+    .instructions ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--ink-soft);
+      font-size: 0.75rem;
+      line-height: 1.5;
+    }
+
+    @media (min-width: 520px) {
+      .page-shell {
+        padding: 24px 16px 48px;
+      }
+
+      .ticket-body {
+        padding: 20px;
+      }
+
+      .school-copy h1 {
+        font-size: 1.3rem;
+      }
+    }
+
+  </style>
+</head>
+
+<body ng-controller="HallTicketController">
+
+  <div class="page-shell">
+
+    <div class="status-banner" ng-if="isLoading">
+      Loading hall ticket...
+    </div>
+
+    <div class="error-banner" ng-if="errorMessage">
+      {{errorMessage}}
+    </div>
+
+    <article class="ticket" ng-if="student">
+
+      <img ng-if="school.Image" ng-src="{{school.Image}}" class="watermark" alt="">
+
+      <header class="ticket-top">
+        <div class="brand-row">
+          <img ng-if="school.Image" ng-src="{{school.Image}}" class="school-logo" alt="School Logo">
+          <div class="school-copy">
+            <h1>{{school.Name || 'School Name'}}</h1>
+            <p class="caption" ng-if="school.Caption">{{school.Caption}}</p>
+            <p class="address" ng-if="school.Address">{{school.Address}}</p>
+          </div>
+        </div>
+        <div class="doc-label-wrap">
+          <div class="doc-label">Hall Ticket</div>
+        </div>
+      </header>
+
+      <div class="ticket-body">
+        <h2 class="exam-title">{{examName || 'Examination'}}</h2>
+
+        <section class="student-panel">
+          <div>
+            <img ng-if="student.Image" ng-src="{{student.Image}}" class="student-photo" alt="Student Photo">
+            <div ng-if="!student.Image" class="photo-fallback">No Photo</div>
+          </div>
+
+          <div>
+            <h3 class="student-name">{{student.Name || 'Student'}}</h3>
+            <div class="meta-grid">
+              <div class="meta-item">
+                <span class="label">Admission No</span>
+                <span class="value">{{student.AdmissionNumber || '-'}}</span>
+              </div>
+              <div class="meta-item">
+                <span class="label">Roll No</span>
+                <span class="value">{{student.RollNumber || '-'}}</span>
+              </div>
+              <div class="meta-item">
+                <span class="label">Class</span>
+                <span class="value">{{student.Class || '-'}}</span>
+              </div>
+              <div class="meta-item">
+                <span class="label">Section</span>
+                <span class="value">{{student.Section || '-'}}</span>
+              </div>
+              <div class="meta-item full" ng-if="student.HallTicketNumber">
+                <span class="label">Hall Ticket No</span>
+                <span class="value">{{student.HallTicketNumber}}</span>
+              </div>
+              <div class="meta-item full">
+                <span class="label">Father Name</span>
+                <span class="value">{{student.FatherName || '-'}}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-head">
+            <h2>Exam Schedule</h2>
+            <span class="count" ng-if="subjects.length">{{subjects.length}} subjects</span>
+          </div>
+
+          <table class="schedule-table" ng-if="subjects.length">
+            <thead>
+              <tr>
+                <th>Subject</th>
+                <th>Date</th>
+                <th class="right">Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="item in subjects">
+                <td class="subject-name">{{item.Subject}}</td>
+                <td>{{formatDate(item.Time)}}</td>
+                <td class="right">{{formatTime(item.Time)}}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="empty-state" ng-if="!subjects.length">
+            No subject schedule found.
+          </div>
+        </section>
+
+        <div class="instructions">
+          <h3>Instructions</h3>
+          <ul>
+            <li>Bring this hall ticket to every examination.</li>
+            <li>Report to the exam hall at least 15 minutes early.</li>
+            <li>Mobile phones and electronic devices are not allowed.</li>
+          </ul>
+        </div>
+
+        <div class="auth-row" ng-if="school.PrinicipalSignature">
+          <div class="auth-box">
+            <img ng-src="{{school.PrinicipalSignature}}" alt="Principal Signature">
+            <div class="label">Principal Signature</div>
+          </div>
+        </div>
+
+        <p class="footer-note">This is a system-generated hall ticket.</p>
+      </div>
+    </article>
+
+  </div>
+
+  <script>
+    angular.module('hallTicketApp', [])
+    .controller('HallTicketController', function($scope, $http, $window) {
+      var API_URL = 'https://api.schoolvertex.com/api/TestTimeTable/GetStudentHallTicketData';
+
+      function getQueryParams() {
+        var params = {};
+        var search = $window.location.search || '';
+
+        if (search.charAt(0) === '?') {
+          search = search.substring(1);
+        }
+
+        search.split('&').forEach(function(item) {
+          if (!item) {
+            return;
+          }
+
+          var parts = item.split('=');
+          if (parts[0]) {
+            params[parts[0]] = decodeURIComponent((parts[1] || '').replace(/\+/g, ' '));
+          }
+        });
+
+        return params;
+      }
+
+      function parseNumber(value, fallback) {
+        if (value === undefined || value === null || value === '') {
+          return fallback;
+        }
+
+        var numberValue = Number(value);
+        return isNaN(numberValue) ? fallback : numberValue;
+      }
+
+      function toStudent(userList) {
+        if (!userList || !userList.length) {
+          return null;
+        }
+
+        return userList[0];
+      }
+
+      var query = getQueryParams();
+
+      $scope.filters = {
+        OrgId: parseNumber(query.OrgId || query.orgId, null),
+        TestId: parseNumber(query.TestId || query.testId, null),
+        BatchId: parseNumber(query.BatchId || query.batchId, null),
+        SectionId: parseNumber(query.SectionId || query.sectionId, 0),
+        UserId: parseNumber(query.UserId || query.userId, null)
+      };
+
+      $scope.examName = '';
+      $scope.school = {};
+      $scope.subjects = [];
+      $scope.student = null;
+      $scope.isLoading = false;
+      $scope.errorMessage = '';
+
+      $scope.formatDate = function(value) {
+        if (!value) {
+          return '-';
+        }
+
+        var date = new Date(value);
+        if (isNaN(date.getTime())) {
+          return '-';
+        }
+
+        return date.toLocaleDateString('en-IN', {
+          weekday: 'short',
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric'
+        });
+      };
+
+      $scope.formatTime = function(value) {
+        if (!value) {
+          return '-';
+        }
+
+        var date = new Date(value);
+        if (isNaN(date.getTime())) {
+          return '-';
+        }
+
+        return date.toLocaleTimeString('en-IN', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        });
+      };
+
+      $scope.loadHallTicket = function() {
+        if ($scope.filters.OrgId === null || $scope.filters.TestId === null || $scope.filters.BatchId === null || $scope.filters.UserId === null) {
+          $scope.errorMessage = 'OrgId, TestId, BatchId, and UserId are required in the URL. Example: ?OrgId=53&TestId=2666&BatchId=667&SectionId=0&UserId=1234';
+          return;
+        }
+
+        $scope.isLoading = true;
+        $scope.errorMessage = '';
+
+        $http.post(API_URL, {
+          OrgId: $scope.filters.OrgId,
+          TestId: $scope.filters.TestId,
+          BatchId: $scope.filters.BatchId,
+          SectionId: $scope.filters.SectionId,
+          UserId: $scope.filters.UserId
+        }).then(function(response) {
+          var data = response.data || {};
+
+          $scope.examName = data.ExamName || '';
+          $scope.school = data.SchoolInfo || {};
+          $scope.subjects = data.SubjectTimingList || [];
+          $scope.student = toStudent(data.UserList);
+
+          if (!$scope.student) {
+            $scope.errorMessage = 'No student data found for this hall ticket.';
+          }
+        }).catch(function(error) {
+          $scope.examName = '';
+          $scope.school = {};
+          $scope.subjects = [];
+          $scope.student = null;
+
+          if (!error) {
+            $scope.errorMessage = 'Unable to load hall ticket.';
+          } else if (error.status === -1) {
+            $scope.errorMessage = 'Unable to connect to API.';
+          } else {
+            $scope.errorMessage = 'API error ' + error.status + ': ' + (error.statusText || 'Unable to load hall ticket.');
+          }
+        }).finally(function() {
+          $scope.isLoading = false;
+        });
+      };
+
+      $scope.loadHallTicket();
+    });
+  </script>
+
+</body>
+</html>
