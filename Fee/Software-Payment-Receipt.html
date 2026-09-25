@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Software Payment Receipt</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .editable-field {
+      width: 100%;
+      border: 1px dashed transparent;
+      background: transparent;
+      outline: none;
+      border-radius: 0.375rem;
+      padding: 0.25rem 0.4rem;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .editable-field:hover,
+    .editable-field:focus {
+      border-color: #c7d2fe;
+      background: #eef2ff;
+    }
+
+    .receipt-sheet {
+      position: relative;
+    }
+
+    .receipt-watermark {
+      position: absolute;
+      top: 35%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 55%;
+      max-width: 280px;
+      opacity: 0.06;
+      pointer-events: none;
+      z-index: 0;
+      user-select: none;
+    }
+
+    .receipt-sheet > *:not(.receipt-watermark) {
+      position: relative;
+      z-index: 1;
+    }
+
+    .amount-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+    }
+
+    .amount-row + .amount-row {
+      border-top: 1px dashed #e5e7eb;
+    }
+
+    .amount-row.highlight {
+      margin-top: 4px;
+      padding-top: 14px;
+      border-top: 1px solid #c7d2fe;
+    }
+
+    .service-input {
+      width: 100%;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.5rem;
+      padding: 0.65rem 0.75rem;
+      font-size: 0.875rem;
+      color: #374151;
+      background: #fff;
+      outline: none;
+    }
+
+    .service-input:focus {
+      border-color: #818cf8;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    }
+
+    @media print {
+      body {
+        background: #fff !important;
+        padding: 0 !important;
+      }
+
+      .no-print {
+        display: none !important;
+      }
+
+      .receipt-sheet {
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        max-width: none !important;
+      }
+
+      .receipt-watermark {
+        opacity: 0.08;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .editable-field,
+      .editable-field:hover,
+      .editable-field:focus {
+        border-color: transparent !important;
+        background: transparent !important;
+        padding-left: 0;
+        padding-right: 0;
+      }
+
+      .service-input {
+        border: none !important;
+        box-shadow: none !important;
+        padding-left: 0;
+        padding-right: 0;
+        background: transparent !important;
+      }
+
+      #schoolContact:placeholder-shown {
+        display: none !important;
+      }
+
+      .reference-field:has(#referenceNo:placeholder-shown) {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-100 py-8 px-4">
+
+  <div class="max-w-3xl mx-auto mb-4 no-print flex flex-wrap items-center justify-between gap-3">
+    <p class="text-sm text-gray-600">Fill receipt details, then print.</p>
+    <button type="button" id="printBtn"
+      class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 shadow-sm">
+      Print Receipt
+    </button>
+  </div>
+
+  <div class="receipt-sheet max-w-3xl mx-auto bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-200">
+
+    <img class="receipt-watermark"
+         src="https://res.cloudinary.com/bashbook3/image/upload/v1686680797/School%20Logos/favicon1.png"
+         alt="" />
+
+    <!-- Header -->
+    <div class="flex items-center justify-between px-6 sm:px-8 py-6 border-b border-gray-200 bg-indigo-50">
+      <div>
+        <h1 class="text-2xl font-bold text-indigo-700">SCHOOL VERTEX</h1>
+        <p class="text-sm text-gray-600">Payment Receipt</p>
+      </div>
+      <div class="w-20 h-20 rounded-full bg-white overflow-hidden flex items-center justify-center shrink-0">
+        <img src="https://res.cloudinary.com/bashbook3/image/upload/v1686680797/School%20Logos/favicon1.png"
+             alt="Company Logo" class="w-full h-full object-contain" />
+      </div>
+    </div>
+
+    <!-- Meta Info -->
+    <div class="px-6 sm:px-8 py-4 text-sm text-gray-600 flex flex-col sm:flex-row sm:justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <span class="font-medium text-gray-700 shrink-0">Date:</span>
+        <input type="date" id="receiptDate" class="editable-field max-w-[11rem]" />
+      </div>
+      <div class="flex items-center gap-2 sm:justify-end">
+        <span class="font-medium text-gray-700 shrink-0">Receipt No:</span>
+        <input type="text" id="receiptNo" class="editable-field max-w-[10rem] sm:text-right" value="012802" />
+      </div>
+    </div>
+
+    <!-- Parties -->
+    <div class="px-6 sm:px-8 py-6 grid grid-cols-1 md:grid-cols-2 gap-8 border-b border-gray-100">
+      <div>
+        <h3 class="text-sm font-semibold text-gray-500 uppercase mb-2">Received From</h3>
+        <input type="text" id="schoolName" class="editable-field text-lg font-medium text-gray-800 mb-1"
+               placeholder="School Name" value="Swathi High School" />
+        <input type="text" id="schoolAddress1" class="editable-field text-sm text-gray-600 mb-1"
+               placeholder="Address line 1" value="Sai Nagar, Madhapur" />
+        <input type="text" id="schoolAddress2" class="editable-field text-sm text-gray-600 mb-1"
+               placeholder="City, PIN" value="Hyderabad, 500081" />
+        <input type="text" id="schoolContact" class="editable-field text-sm text-gray-600"
+               placeholder="Phone / Email (optional)" value="" />
+      </div>
+
+      <div class="text-left md:text-right">
+        <h3 class="text-sm font-semibold text-gray-500 uppercase mb-1">Received By</h3>
+        <p class="text-lg font-medium text-gray-800">VYSER TECHNOLOGIES PVT LTD</p>
+        <p class="text-sm text-gray-600">Near DLF Cyber City, Gachibowli</p>
+        <p class="text-sm text-gray-600">Hyderabad, Telangana, 500032</p>
+        <p class="text-sm text-gray-600 mt-1">Email: contact@schoolvertex.com</p>
+        <p class="text-sm text-gray-600">GSTIN - 37AAJCV1909P1ZO</p>
+      </div>
+    </div>
+
+    <!-- Payment Meta -->
+    <div class="px-6 sm:px-8 py-4 grid grid-cols-1 sm:grid-cols-2 gap-4 border-b border-gray-100 text-sm">
+      <div class="flex items-center gap-2">
+        <span class="font-medium text-gray-700 shrink-0">Payment Mode:</span>
+        <input type="text" id="paymentMode" class="editable-field" placeholder="Cash / UPI / Bank / Cheque" value="UPI" />
+      </div>
+      <div class="reference-field flex items-center gap-2 sm:justify-end">
+        <span class="font-medium text-gray-700 shrink-0">Reference No:</span>
+        <input type="text" id="referenceNo" class="editable-field max-w-[14rem] sm:text-right" placeholder="Txn / Cheque No" value="" />
+      </div>
+    </div>
+
+    <!-- Service + Amount Being Paid -->
+    <div class="px-6 sm:px-8 py-6 border-b border-gray-100">
+      <h3 class="text-sm font-semibold text-gray-500 uppercase mb-3">Particular</h3>
+      <input type="text" id="serviceParticular" class="service-input mb-4"
+             placeholder="Service description"
+             value="School Vertex ERP Annual Subscription" />
+
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-4">
+        <span class="text-base font-semibold text-gray-700">Amount Being Paid</span>
+        <div class="flex items-center gap-0">
+          <span class="text-2xl font-bold text-indigo-700 leading-none">₹</span>
+          <input type="number" id="paidAmount" min="0" step="0.01"
+                 class="editable-field text-2xl font-bold text-indigo-700 w-[10rem] !pl-0.5 !pr-1"
+                 value="20000" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Total & Balance -->
+    <div class="px-6 sm:px-8 py-6">
+      <div class="flex justify-end">
+        <div class="bg-gray-50 rounded-xl p-4 w-full max-w-sm border border-gray-200">
+          <div class="amount-row">
+            <span class="text-sm font-semibold text-gray-700">Total Amount :</span>
+            <div class="flex items-center gap-0">
+              <span class="text-base font-bold text-gray-800 leading-none">₹</span>
+              <input type="number" id="totalAmount" min="0" step="0.01"
+                     class="editable-field text-base font-bold text-gray-800 w-[8rem] !pl-0.5 !pr-1"
+                     value="50000" />
+            </div>
+          </div>
+
+          <div class="amount-row highlight">
+            <span class="text-lg font-semibold text-gray-700">Balance Amount :</span>
+            <div class="flex items-center gap-0">
+              <span class="text-xl font-bold text-rose-600 leading-none">₹</span>
+              <input type="number" id="balanceAmount" min="0" step="0.01"
+                     class="editable-field text-xl font-bold text-rose-600 w-[8rem] !pl-0.5 !pr-1"
+                     value="30000" />
+            </div>
+          </div>
+
+          <p class="no-print text-[11px] text-gray-400 mt-2 text-right">
+            Balance = Total − Amount Being Paid. Double-click Balance to recalc.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Acknowledgement -->
+    <div class="px-6 sm:px-8 pb-4">
+      <p class="text-sm text-gray-600 leading-relaxed">
+        We sincerely appreciate your continued trust in us.
+      </p>
+      <p class="text-sm text-gray-600 leading-relaxed">
+        We hereby acknowledge the receipt of the above payment towards School Vertex ERP service.
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center text-xs text-gray-500 border-t px-8 py-4 bg-gray-50">
+      <p>This is a computer-generated receipt and does not require a physical signature.</p>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var paidAmountInput = document.getElementById('paidAmount');
+      var totalAmountInput = document.getElementById('totalAmount');
+      var balanceAmountInput = document.getElementById('balanceAmount');
+      var balanceManual = false;
+
+      function todayISO() {
+        var d = new Date();
+        var m = String(d.getMonth() + 1).padStart(2, '0');
+        var day = String(d.getDate()).padStart(2, '0');
+        return d.getFullYear() + '-' + m + '-' + day;
+      }
+
+      document.getElementById('receiptDate').value = todayISO();
+
+      function parseNum(value) {
+        var n = Number(value);
+        return isNaN(n) ? 0 : n;
+      }
+
+      function setAmountValue(input, value) {
+        var num = Math.max(value, 0);
+        input.value = Number.isInteger(num) ? String(num) : num.toFixed(2);
+      }
+
+      function updateBalance() {
+        if (balanceManual) {
+          return;
+        }
+        setAmountValue(balanceAmountInput, parseNum(totalAmountInput.value) - parseNum(paidAmountInput.value));
+      }
+
+      paidAmountInput.addEventListener('input', updateBalance);
+      totalAmountInput.addEventListener('input', updateBalance);
+
+      balanceAmountInput.addEventListener('input', function () {
+        balanceManual = true;
+      });
+
+      balanceAmountInput.addEventListener('dblclick', function () {
+        balanceManual = false;
+        updateBalance();
+      });
+
+      document.getElementById('printBtn').addEventListener('click', function () {
+        window.print();
+      });
+
+      updateBalance();
+    })();
+  </script>
+
+</body>
+</html>
