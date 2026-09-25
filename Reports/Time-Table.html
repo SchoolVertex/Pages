@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="timetableApp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Class Time Table</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+
+  <style>
+    :root {
+      --ink: #15202b;
+      --ink-soft: #3d4f5f;
+      --muted: #6b7c8a;
+      --line: #d8e0e8;
+      --surface: #ffffff;
+      --page: #e8eef3;
+      --page-accent: #d4e4f0;
+      --brand: #0b4f6c;
+      --brand-deep: #083a50;
+      --fail: #b42318;
+      --radius: 14px;
+      --shadow: 0 10px 30px rgba(11, 79, 108, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "DM Sans", sans-serif;
+      background:
+        radial-gradient(ellipse 120% 80% at 0% -10%, rgba(11, 79, 108, 0.12), transparent 55%),
+        radial-gradient(ellipse 90% 60% at 100% 0%, rgba(27, 122, 74, 0.08), transparent 50%),
+        linear-gradient(180deg, var(--page-accent) 0%, var(--page) 40%, #f2f6f9 100%);
+    }
+
+    .page-shell {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 16px 14px 40px;
+    }
+
+    .report {
+      background: var(--surface);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      border: 1px solid rgba(11, 79, 108, 0.08);
+    }
+
+    .status-banner,
+    .error-banner {
+      margin: 14px 14px 0;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .status-banner {
+      background: #e8f3f8;
+      color: var(--brand);
+    }
+
+    .error-banner {
+      background: #fdeceb;
+      color: var(--fail);
+    }
+
+    .report-top {
+      position: relative;
+      padding: 22px 18px 20px;
+      background: linear-gradient(145deg, #0b4f6c 0%, #0d5f7f 48%, #147a6a 100%);
+      color: #f7fbfd;
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-align: left;
+    }
+
+    .school-logo {
+      width: 58px;
+      height: 58px;
+      border-radius: 12px;
+      object-fit: contain;
+      background: #fff;
+      border: 2px solid rgba(255, 255, 255, 0.55);
+      flex: 0 0 auto;
+    }
+
+    .school-copy {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .school-copy h1 {
+      margin: 0;
+      font-family: Fraunces, Georgia, serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    .school-copy .caption,
+    .school-copy .address {
+      margin: 4px 0 0;
+      font-size: 0.7rem;
+      line-height: 1.35;
+      opacity: 0.85;
+    }
+
+    .doc-label-wrap {
+      display: flex;
+      justify-content: center;
+      margin-top: 14px;
+    }
+
+    .doc-label {
+      display: inline-block;
+      padding: 5px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 6px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.1);
+      text-align: center;
+    }
+
+    .report-body {
+      padding: 16px;
+    }
+
+    .class-panel {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 12px;
+      margin-bottom: 16px;
+      padding: 14px;
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, #f4f8fb 0%, #eef4f8 100%);
+      border: 1px solid var(--line);
+    }
+
+    .meta-item .label {
+      display: block;
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+
+    .meta-item .value {
+      display: block;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.3;
+      word-break: break-word;
+    }
+
+    .day-tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      margin-bottom: 14px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .day-tab {
+      flex: 0 0 auto;
+      border: 1px solid var(--line);
+      background: #f8fbfd;
+      color: var(--ink-soft);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+
+    .day-tab.active {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #fff;
+    }
+
+    .day-tab .period-count {
+      display: block;
+      margin-top: 2px;
+      font-size: 0.62rem;
+      font-weight: 600;
+      opacity: 0.75;
+    }
+
+    .day-section {
+      margin-bottom: 18px;
+    }
+
+    .day-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .day-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--brand);
+    }
+
+    .day-head h2 {
+      margin: 0;
+      font-family: Fraunces, Georgia, serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--brand-deep);
+    }
+
+    .day-head .count {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .period-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .period-card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      background: #fff;
+      display: grid;
+      grid-template-columns: 88px 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .period-time {
+      padding: 8px 6px;
+      border-radius: 10px;
+      background: #e8f3f8;
+      text-align: center;
+    }
+
+    .period-time .start {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--brand-deep);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .period-time .sep {
+      display: block;
+      font-size: 0.58rem;
+      color: var(--muted);
+      margin: 2px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .period-time .end {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--ink-soft);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .period-info .subject {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.3;
+    }
+
+    .period-info .staff {
+      margin: 6px 0 0;
+      font-size: 0.78rem;
+      color: var(--ink-soft);
+      line-height: 1.35;
+    }
+
+    .period-info .staff strong {
+      font-size: 0.62rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 28px 12px;
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 500;
+    }
+
+    .footer-note {
+      margin: 18px 16px 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+      text-align: center;
+      font-size: 0.65rem;
+      color: var(--muted);
+    }
+
+    @media (min-width: 481px) {
+      .page-shell {
+        padding: 24px 16px 48px;
+      }
+
+      .report-body {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body ng-controller="TimetableController">
+
+  <div class="page-shell">
+    <article class="report">
+
+      <div class="status-banner" ng-if="isLoading">
+        Loading time table...
+      </div>
+
+      <div class="error-banner" ng-if="errorMessage">
+        {{errorMessage}}
+      </div>
+
+      <header class="report-top">
+        <div class="brand-row">
+          <img ng-if="entity.SchoolImage" ng-src="{{entity.SchoolImage}}" class="school-logo" alt="School Logo">
+          <div class="school-copy">
+            <h1>{{entity.SchoolName || 'Class Time Table'}}</h1>
+            <p class="caption" ng-if="entity.SchoolCaption">{{entity.SchoolCaption}}</p>
+            <p class="address" ng-if="entity.SchoolAddress">{{entity.SchoolAddress}}</p>
+          </div>
+        </div>
+        <div class="doc-label-wrap">
+          <div class="doc-label">Time Table</div>
+        </div>
+      </header>
+
+      <div class="report-body" ng-if="!isLoading && !errorMessage">
+
+        <div class="class-panel" ng-if="entity.ClassName || entity.SectionName">
+          <div class="meta-item">
+            <span class="label">Class</span>
+            <span class="value">{{entity.ClassName || '-'}}</span>
+          </div>
+          <div class="meta-item">
+            <span class="label">Section</span>
+            <span class="value">{{entity.SectionName || '-'}}</span>
+          </div>
+        </div>
+
+        <div class="day-tabs" ng-if="days.length">
+          <button type="button"
+                  class="day-tab"
+                  ng-class="{ active: selectedDay === null }"
+                  ng-click="showAllDays()">
+            All Days
+            <span class="period-count">{{totalPeriods}} periods</span>
+          </button>
+          <button type="button"
+                  class="day-tab"
+                  ng-repeat="day in days"
+                  ng-class="{ active: selectedDay === day.dayOfWeek }"
+                  ng-click="showDay(day.dayOfWeek)">
+            {{day.shortName}}
+            <span class="period-count">{{day.periods.length}} periods</span>
+          </button>
+        </div>
+
+        <div class="day-section"
+             ng-repeat="day in filteredDays()">
+          <div class="day-head">
+            <h2>{{day.fullName}}</h2>
+            <span class="count">{{day.periods.length}} periods</span>
+          </div>
+
+          <div class="period-list">
+            <div class="period-card" ng-repeat="period in day.periods">
+              <div class="period-time">
+                <span class="start">{{period.startLabel}}</span>
+                <span class="sep">to</span>
+                <span class="end">{{period.endLabel}}</span>
+              </div>
+              <div class="period-info">
+                <h3 class="subject">{{period.Subject || '-'}}</h3>
+                <p class="staff">
+                  <strong>Staff</strong><br>
+                  {{period.Staff || '-'}}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="empty-state" ng-if="!days.length">
+          No time table data found.
+        </div>
+
+        <div class="empty-state" ng-if="days.length && !filteredDays().length">
+          No periods for the selected day.
+        </div>
+      </div>
+
+      <p class="footer-note" ng-if="!isLoading && !errorMessage && days.length">
+        This is a system-generated class time table.
+      </p>
+    </article>
+  </div>
+
+  <script>
+    angular.module('timetableApp', [])
+    .controller('TimetableController', function($scope, $http, $window) {
+      var TIMETABLE_API = 'https://api.schoolvertex.com/api/TimeTable/GetTimeTableView/';
+      var ENTITY_API = 'https://api.schoolvertex.com/api/Organisation/GetEntityFullInfo/';
+
+      var DAY_NAMES = {
+        1: { fullName: 'Monday', shortName: 'Mon' },
+        2: { fullName: 'Tuesday', shortName: 'Tue' },
+        3: { fullName: 'Wednesday', shortName: 'Wed' },
+        4: { fullName: 'Thursday', shortName: 'Thu' },
+        5: { fullName: 'Friday', shortName: 'Fri' },
+        6: { fullName: 'Saturday', shortName: 'Sat' },
+        7: { fullName: 'Sunday', shortName: 'Sun' },
+        0: { fullName: 'Sunday', shortName: 'Sun' }
+      };
+
+      function getQueryParams() {
+        var params = {};
+        var search = $window.location.search || '';
+
+        if (search.charAt(0) === '?') {
+          search = search.substring(1);
+        }
+
+        search.split('&').forEach(function(item) {
+          if (!item) {
+            return;
+          }
+
+          var parts = item.split('=');
+          if (parts[0]) {
+            params[parts[0]] = decodeURIComponent((parts[1] || '').replace(/\+/g, ' '));
+          }
+        });
+
+        return params;
+      }
+
+      function parseNumber(value) {
+        if (value === undefined || value === null || value === '') {
+          return null;
+        }
+
+        var numberValue = Number(value);
+        return isNaN(numberValue) ? null : numberValue;
+      }
+
+      function formatTimePart(timePart) {
+        if (!timePart) {
+          return '-';
+        }
+
+        var bits = String(timePart).split(':');
+        var hours = Number(bits[0]);
+        var minutes = bits[1] || '00';
+
+        if (isNaN(hours)) {
+          return timePart;
+        }
+
+        var suffix = hours >= 12 ? 'PM' : 'AM';
+        var hour12 = hours % 12;
+        if (hour12 === 0) {
+          hour12 = 12;
+        }
+
+        return hour12 + ':' + minutes + ' ' + suffix;
+      }
+
+      function parsePeriod(classPeriod) {
+        var parts = String(classPeriod || '').split('-');
+        var startRaw = (parts[0] || '').trim();
+        var endRaw = (parts[1] || '').trim();
+
+        return {
+          startRaw: startRaw,
+          endRaw: endRaw,
+          startLabel: formatTimePart(startRaw),
+          endLabel: formatTimePart(endRaw),
+          sortKey: startRaw
+        };
+      }
+
+      function groupByDay(items) {
+        var map = {};
+
+        (items || []).forEach(function(item) {
+          var dayOfWeek = Number(item.DayOfWeek);
+          if (isNaN(dayOfWeek)) {
+            return;
+          }
+
+          if (!map[dayOfWeek]) {
+            map[dayOfWeek] = [];
+          }
+
+          var timing = parsePeriod(item.ClassPeriod);
+
+          map[dayOfWeek].push({
+            Subject: item.Subject,
+            Staff: item.Staff,
+            ClassPeriod: item.ClassPeriod,
+            startLabel: timing.startLabel,
+            endLabel: timing.endLabel,
+            sortKey: timing.sortKey
+          });
+        });
+
+        return Object.keys(map)
+          .map(Number)
+          .sort(function(a, b) {
+            var left = a === 0 ? 7 : a;
+            var right = b === 0 ? 7 : b;
+            return left - right;
+          })
+          .map(function(dayOfWeek) {
+            var names = DAY_NAMES[dayOfWeek] || {
+              fullName: 'Day ' + dayOfWeek,
+              shortName: 'D' + dayOfWeek
+            };
+
+            var periods = map[dayOfWeek].sort(function(a, b) {
+              return String(a.sortKey).localeCompare(String(b.sortKey));
+            });
+
+            return {
+              dayOfWeek: dayOfWeek,
+              fullName: names.fullName,
+              shortName: names.shortName,
+              periods: periods
+            };
+          });
+      }
+
+      var query = getQueryParams();
+      var entityTypeId = parseNumber(query.EntityTypeId || query.entityTypeId);
+      var entityId = parseNumber(query.EntityId || query.entityId);
+
+      $scope.days = [];
+      $scope.totalPeriods = 0;
+      $scope.selectedDay = null;
+      $scope.entity = {};
+      $scope.isLoading = false;
+      $scope.errorMessage = '';
+
+      $scope.showAllDays = function() {
+        $scope.selectedDay = null;
+      };
+
+      $scope.showDay = function(dayOfWeek) {
+        $scope.selectedDay = dayOfWeek;
+      };
+
+      $scope.filteredDays = function() {
+        if ($scope.selectedDay === null || $scope.selectedDay === undefined) {
+          return $scope.days;
+        }
+
+        return $scope.days.filter(function(day) {
+          return day.dayOfWeek === $scope.selectedDay;
+        });
+      };
+
+      $scope.loadTimetable = function() {
+        if (entityTypeId === null || entityId === null) {
+          $scope.errorMessage = 'EntityTypeId and EntityId are required in the URL. Example: ?EntityTypeId=119&EntityId=274';
+          return;
+        }
+
+        $scope.isLoading = true;
+        $scope.errorMessage = '';
+
+        var timetableUrl = TIMETABLE_API + encodeURIComponent(entityTypeId) + '/' + encodeURIComponent(entityId);
+        var entityUrl = ENTITY_API + encodeURIComponent(entityTypeId) + '/' + encodeURIComponent(entityId);
+
+        Promise.all([
+          $http.get(timetableUrl),
+          $http.get(entityUrl)
+        ]).then(function(responses) {
+          var items = responses[0].data || [];
+          $scope.days = groupByDay(items);
+          $scope.totalPeriods = items.length;
+          $scope.selectedDay = null;
+          $scope.entity = responses[1].data || {};
+        }).catch(function(error) {
+          $scope.days = [];
+          $scope.totalPeriods = 0;
+          $scope.entity = {};
+
+          if (!error) {
+            $scope.errorMessage = 'Unable to load time table.';
+          } else if (error.status === -1) {
+            $scope.errorMessage = 'Unable to connect to API.';
+          } else {
+            $scope.errorMessage = 'API error ' + error.status + ': ' + (error.statusText || 'Unable to load time table.');
+          }
+        }).finally(function() {
+          $scope.isLoading = false;
+          $scope.$applyAsync();
+        });
+      };
+
+      $scope.loadTimetable();
+    });
+  </script>
+
+</body>
+</html>
