@@ -606,8 +606,6 @@
               </div>
               <div>
                 <p class="who__name">{{item.studentName}}</p>
-                <p class="who__meta" ng-if="item.UserId">User #{{item.UserId}}</p>
-                <p class="who__meta" ng-if="!item.UserId">Submission #{{item.SubmissionId}}</p>
               </div>
             </div>
             <span class="status status--pending" ng-if="item.StatusId === STATUS.Submitted">Pending</span>
@@ -761,8 +759,8 @@
 
         return submissions.map(function(sub, index) {
           var resp = responseMap[sub.SubmissionId] || {};
-          var userInfo = sub.CreatedUserInfo || sub.UserInfo || null;
-          var userId = sub.UserId || (userInfo && userInfo.UserId) || 0;
+          var userInfo = sub.UserInfo || sub.CreatedUserInfo || null;
+          var userId = (userInfo && userInfo.UserId) || sub.UserId || 0;
           var studentName = (userInfo && userInfo.FullName) ||
             (userId ? ('Student #' + userId) : ('Student ' + (index + 1)));
 
@@ -772,6 +770,7 @@
             Description: sub.Description || '',
             ImageList: sub.ImageList || [],
             UserId: userId,
+            UserInfo: userInfo,
             studentName: studentName,
             studentImage: (userInfo && userInfo.Image) || '',
             StatusId: resp.StatusId != null ? resp.StatusId : $scope.STATUS.Submitted,
