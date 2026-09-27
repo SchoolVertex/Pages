@@ -170,7 +170,7 @@
       display: flex;
       gap: 8px;
       overflow-x: auto;
-      padding: 0 12px 12px;
+      padding: 12px 12px 12px;
       -webkit-overflow-scrolling: touch;
     }
 
@@ -418,18 +418,24 @@
         <p class="hero__kicker">Student attendance</p>
         <h1 class="hero__title">Attendance Report</h1>
         <div class="hero__meta">
-          <span class="pill">Student #{{userId}}</span>
+          <!-- <span class="pill">Student #{{userId}}</span> -->
           <span class="pill">{{months.length}} month{{months.length === 1 ? '' : 's'}}</span>
         </div>
       </header>
 
-      <div class="month-tabs" ng-if="months.length > 1">
+      <div class="month-tabs">
+        <button type="button"
+                class="month-tab"
+                ng-class="{'month-tab--on': viewMode === 'overall'}"
+                ng-click="selectOverall()">
+          Overall
+        </button>
         <button type="button"
                 class="month-tab"
                 ng-repeat="m in months"
-                ng-class="{'month-tab--on': selectedIndex === $index}"
+                ng-class="{'month-tab--on': viewMode === 'month' && selectedIndex === $index}"
                 ng-click="selectMonth($index)">
-          {{m.label}}
+          {{m.shortLabel || m.label}}
         </button>
       </div>
 
@@ -511,7 +517,9 @@
             {{day.shortLabel}}
           </span>
         </div>
-        <p class="muted" ng-if="!selected.days.length">No attendance marked this month.</p>
+        <p class="muted" ng-if="!selected.days.length">
+          {{ viewMode === 'overall' ? 'No attendance marked yet.' : 'No attendance marked this month.' }}
+        </p>
       </div>
     </section>
 
@@ -524,7 +532,9 @@
             <span class="absent-item__day">{{d.weekday}}</span>
           </li>
         </ul>
-        <p class="empty" ng-if="!selected.absentDates.length">No absences this month.</p>
+        <p class="empty" ng-if="!selected.absentDates.length">
+          {{ viewMode === 'overall' ? 'No absences recorded.' : 'No absences this month.' }}
+        </p>
       </div>
     </section>
 
@@ -547,6 +557,8 @@
       $scope.userId = null;
       $scope.orgId = null;
       $scope.months = [];
+      $scope.overall = null;
+      $scope.viewMode = 'overall';
       $scope.selectedIndex = 0;
       $scope.selected = null;
 
@@ -611,6 +623,34 @@
         return Math.max(4, Math.round((part / maxValue) * 100));
       }
 
+      function withStats(base) {
+        var present = base.present || 0;
+        var absent = base.absent || 0;
+        var late = base.late || 0;
+        var total = present + absent + late;
+        var maxValue = Math.max(present, absent, late, 1);
+        var presentPct = pct(present, total);
+        var latePct = pct(late, total);
+        var absentPct = pct(absent, total);
+        if (total > 0 && presentPct + latePct + absentPct !== 100) {
+          absentPct = Math.max(0, 100 - presentPct - latePct);
+        }
+        var presentDeg = total ? (present / total) * 360 : 0;
+        var lateDeg = total ? (late / total) * 360 : 0;
+
+        return angular.extend({}, base, {
+          total: total,
+          presentPct: presentPct,
+          absentPct: absentPct,
+          latePct: latePct,
+          presentBar: barHeight(present, maxValue),
+          absentBar: barHeight(absent, maxValue),
+          lateBar: barHeight(late, maxValue),
+          presentDeg: presentDeg,
+          lateEndDeg: presentDeg + lateDeg
+        });
+      }
+
       function buildMonth(raw, userId) {
         var monthIndex = (raw.Month || 1) - 1;
         var year = raw.Year || 0;
@@ -620,6 +660,7 @@
         var absent = 0;
         var late = 0;
         var absentDates = [];
+        var monthShort = (MONTH_NAMES[monthIndex] || '').slice(0, 3);
 
         attendance.forEach(function(entry) {
           var status = dayStatus(entry.DayAttendanceList, userId);
@@ -638,6 +679,7 @@
             date: entry.Date,
             status: status,
             shortLabel: dayNum,
+            overallLabel: dayNum + (monthShort ? (' ' + monthShort) : ''),
             weekday: weekday,
             fullLabel: fullLabel
           };
@@ -652,45 +694,63 @@
           if (status === 'late') late += 1;
         });
 
-        var total = present + absent + late;
-        var maxValue = Math.max(present, absent, late, 1);
-        var presentPct = pct(present, total);
-        var latePct = pct(late, total);
-        var absentPct = total ? Math.max(0, 100 - presentPct - latePct) : 0;
-        // Keep percentages summing to 100 via residual on absent
-        if (total && present + late + absent === total) {
-          absentPct = pct(absent, total);
-          var sum = presentPct + latePct + absentPct;
-          if (sum !== 100 && total > 0) {
-            absentPct = Math.max(0, 100 - presentPct - latePct);
-          }
-        }
-
-        var presentDeg = total ? (present / total) * 360 : 0;
-        var lateDeg = total ? (late / total) * 360 : 0;
-
-        return {
+        return withStats({
           month: raw.Month,
           year: year,
           label: (MONTH_NAMES[monthIndex] || ('Month ' + raw.Month)) + ' ' + year,
+          shortLabel: (MONTH_NAMES[monthIndex] || ('M' + raw.Month)).slice(0, 3) + ' ' + String(year).slice(-2),
           days: days,
           present: present,
           absent: absent,
           late: late,
-          total: total,
-          presentPct: presentPct,
-          absentPct: absentPct,
-          latePct: latePct,
-          presentBar: barHeight(present, maxValue),
-          absentBar: barHeight(absent, maxValue),
-          lateBar: barHeight(late, maxValue),
-          presentDeg: presentDeg,
-          lateEndDeg: presentDeg + lateDeg,
           absentDates: absentDates
-        };
+        });
       }
 
+      function buildOverall(months) {
+        var present = 0;
+        var absent = 0;
+        var late = 0;
+        var days = [];
+        var absentDates = [];
+
+        (months || []).forEach(function(m) {
+          present += m.present || 0;
+          absent += m.absent || 0;
+          late += m.late || 0;
+          (m.days || []).forEach(function(day) {
+            days.push({
+              date: day.date,
+              status: day.status,
+              shortLabel: day.overallLabel || day.shortLabel,
+              weekday: day.weekday,
+              fullLabel: day.fullLabel
+            });
+          });
+          (m.absentDates || []).forEach(function(day) {
+            absentDates.push(day);
+          });
+        });
+
+        return withStats({
+          label: 'Overall summary',
+          shortLabel: 'Overall',
+          isOverall: true,
+          days: days,
+          present: present,
+          absent: absent,
+          late: late,
+          absentDates: absentDates
+        });
+      }
+
+      $scope.selectOverall = function() {
+        $scope.viewMode = 'overall';
+        $scope.selected = $scope.overall;
+      };
+
       $scope.selectMonth = function(index) {
+        $scope.viewMode = 'month';
         $scope.selectedIndex = index;
         $scope.selected = $scope.months[index] || null;
       };
@@ -726,10 +786,12 @@
                 return b.month - a.month;
               });
 
-            $scope.selectMonth(0);
+            $scope.overall = buildOverall($scope.months);
+            $scope.selectOverall();
           })
           .catch(function(error) {
             $scope.months = [];
+            $scope.overall = null;
             $scope.selected = null;
             if (error && error.status === -1) {
               $scope.errorMessage = 'Unable to connect to API.';
