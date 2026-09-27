@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="homeworkDetailApp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Homework</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+
+  <style>
+    :root {
+      --ink: #0f1c24;
+      --muted: #5d7280;
+      --line: #d5e2ea;
+      --brand: #0d7a6f;
+      --deep: #0a3d48;
+      --surface: #ffffff;
+      --sand: #f3f7f4;
+      --ok: #047857;
+      --warn: #c2410c;
+      --bad: #b91c1c;
+      --pending: #1d4ed8;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "DM Sans", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse 100% 60% at 0% -10%, rgba(13, 122, 111, 0.1), transparent 50%),
+        linear-gradient(180deg, #e8f0f2 0%, #f2f6f8 40%, #f7fafb 100%);
+    }
+
+    .shell {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 14px 12px calc(28px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .banner,
+    .error,
+    .loading {
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .loading {
+      background: #e8f3f8;
+      color: var(--brand);
+    }
+
+    .error {
+      background: #fdeceb;
+      color: var(--bad);
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 12px 28px rgba(15, 28, 36, 0.06);
+      overflow: hidden;
+    }
+
+    .hero {
+      padding: 18px 16px 16px;
+      color: #f4fbf9;
+      background:
+        radial-gradient(ellipse 80% 90% at 100% 0%, rgba(56, 189, 168, 0.28), transparent 55%),
+        linear-gradient(155deg, #063640 0%, #0a4f55 48%, #0d6b63 100%);
+    }
+
+    .hero__kicker {
+      margin: 0 0 6px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      opacity: 0.85;
+    }
+
+    .hero__title {
+      margin: 0;
+      font-family: Fraunces, Georgia, serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+
+    .hero__meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .status--pending { background: #eff6ff; color: var(--pending); border: 1px solid #bfdbfe; }
+    .status--ok { background: #ecfdf3; color: var(--ok); border: 1px solid #bbf7d0; }
+    .status--bad { background: #fef2f2; color: var(--bad); border: 1px solid #fecaca; }
+    .status--warn { background: #fff7ed; color: var(--warn); border: 1px solid #fed7aa; }
+
+    .body {
+      padding: 14px;
+    }
+
+    .section {
+      margin-bottom: 12px;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: var(--sand);
+    }
+
+    .section:last-child { margin-bottom: 0; }
+
+    .section--submit {
+      background: #fff;
+      border-color: #b7ddd4;
+    }
+
+    .section--mine {
+      background: linear-gradient(135deg, #f3faf8, #f7fbfa);
+      border-color: #b7ddd4;
+    }
+
+    .section--teacher {
+      background: linear-gradient(135deg, #eef7ff, #f4f9fc);
+      border-color: #d3e5f5;
+    }
+
+    .section__label {
+      margin: 0 0 8px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--deep);
+    }
+
+    .section--mine .section__label { color: var(--brand); }
+    .section--teacher .section__label { color: #1d4f91; }
+
+    .text {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .muted {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .media {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .media img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      cursor: pointer;
+      background: #fff;
+    }
+
+    .media video {
+      width: 100%;
+      max-height: 220px;
+      border-radius: 12px;
+      background: #000;
+      grid-column: 1 / -1;
+    }
+
+    .rating {
+      margin-top: 8px;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--ink);
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      font: inherit;
+      font-size: 14px;
+      line-height: 1.45;
+      resize: vertical;
+      outline: none;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    textarea:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(13, 122, 111, 0.12);
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 48px;
+      margin-top: 12px;
+      border: 0;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #0a4f55, #0d7a6f);
+      color: #fff;
+      font: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 10px 22px rgba(10, 79, 85, 0.22);
+    }
+
+    .btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .btn--danger {
+      background: #fff;
+      color: var(--bad);
+      border: 1px solid #fecaca;
+      box-shadow: none;
+    }
+
+    .btn--danger:hover:not(:disabled) {
+      background: #fef2f2;
+    }
+
+    .section__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .section__head .section__label {
+      margin: 0;
+    }
+
+    .link-danger {
+      border: 0;
+      background: transparent;
+      color: var(--bad);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 4px 0;
+      white-space: nowrap;
+    }
+
+    .link-danger:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .hint {
+      margin: 8px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .upload {
+      margin-top: 12px;
+    }
+
+    .upload__btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      min-height: 44px;
+      border: 1.5px dashed #9ec9c1;
+      border-radius: 12px;
+      background: #f7fcfa;
+      color: var(--brand);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .upload__btn:hover {
+      background: #eef8f5;
+      border-color: var(--brand);
+    }
+
+    .upload__input {
+      display: none;
+    }
+
+    .file-list {
+      list-style: none;
+      margin: 10px 0 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .file-item__thumb {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: #e8f0f2;
+      flex-shrink: 0;
+    }
+
+    .file-item__icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      background: #e8f3f8;
+      color: var(--deep);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .file-item__meta {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .file-item__name {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .file-item__size {
+      margin: 2px 0 0;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .file-item__remove {
+      border: 0;
+      background: #fdeceb;
+      color: var(--bad);
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .footer {
+      margin-top: 14px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .preview {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 28, 36, 0.88);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 50;
+    }
+
+    .preview img {
+      max-width: 100%;
+      max-height: 90vh;
+      border-radius: 12px;
+    }
+
+    .preview__close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      border: 0;
+      background: #fff;
+      color: var(--ink);
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      font-size: 20px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body ng-controller="HomeworkDetailController">
+
+  <div class="shell">
+    <div class="loading" ng-if="isLoading">Loading homework...</div>
+    <div class="error" ng-if="errorMessage">{{errorMessage}}</div>
+    <div class="banner" ng-if="successMessage" style="background:#ecfdf3;color:#047857;">{{successMessage}}</div>
+
+    <article class="card" ng-if="homework && !isLoading">
+      <header class="hero">
+        <p class="hero__kicker">Student homework</p>
+        <h1 class="hero__title">{{homework.Title || 'Homework'}}</h1>
+        <div class="hero__meta">
+          <span class="pill" ng-if="homework.EntityName">{{homework.EntityName}}</span>
+          <span class="pill" ng-if="homework.CreatedUserInfo.FullName">{{homework.CreatedUserInfo.FullName}}</span>
+          <span class="status status--pending" ng-if="homework.IsSubmitted && !homework.Response">Submitted</span>
+          <span class="status status--warn"
+            ng-if="homework.Response && homework.Response.StatusId !== STATUS.Approved && homework.Response.StatusId !== STATUS.Rejected">
+            Pending review
+          </span>
+          <span class="status status--ok" ng-if="homework.Response.StatusId === STATUS.Approved">Approved</span>
+          <span class="status status--bad" ng-if="homework.Response.StatusId === STATUS.Rejected">Rejected</span>
+        </div>
+      </header>
+
+      <div class="body">
+
+        <!-- Assigned work -->
+        <section class="section">
+          <h2 class="section__label">Assigned work</h2>
+          <p class="text" ng-if="homework.Description">{{homework.Description}}</p>
+          <p class="muted" ng-if="!homework.Description && !(homework.ImageList && homework.ImageList.length)">
+            No written instructions. Check the attachments below if any.
+          </p>
+          <div class="media" ng-if="homework.ImageList.length">
+            <img ng-repeat="item in homework.ImageList" ng-if="!isVideo(item)"
+                 ng-src="{{item}}" alt="Homework attachment" ng-click="openPreview(item)">
+            <video ng-repeat="item in homework.ImageList" ng-if="isVideo(item)" controls>
+              <source ng-src="{{trustUrl(item)}}" type="video/mp4">
+            </video>
+          </div>
+        </section>
+
+        <!-- Submit form (only if not yet submitted) -->
+        <section class="section section--submit" ng-if="!homework.IsSubmitted">
+          <h2 class="section__label">Submit your work</h2>
+          <textarea ng-model="submitForm.description"
+                    placeholder="Write your answer or notes here..."></textarea>
+
+          <div class="upload">
+            <label class="upload__btn" for="homeworkFileInput">
+              {{ isUploading ? 'Uploading files...' : 'Add photos or files' }}
+            </label>
+            <input id="homeworkFileInput"
+                   class="upload__input"
+                   type="file"
+                   accept="image/*,video/*,.pdf,.doc,.docx"
+                   multiple
+                   onchange="angular.element(this).scope().onFilesSelected(this)">
+
+            <ul class="file-list" ng-if="pendingFiles.length">
+              <li class="file-item" ng-repeat="file in pendingFiles track by $index">
+                <img class="file-item__thumb"
+                     ng-if="file.previewUrl"
+                     ng-src="{{file.previewUrl}}"
+                     alt="">
+                <div class="file-item__icon" ng-if="!file.previewUrl">FILE</div>
+                <div class="file-item__meta">
+                  <p class="file-item__name">{{file.name}}</p>
+                  <p class="file-item__size">{{file.sizeLabel}}</p>
+                </div>
+                <button type="button"
+                        class="file-item__remove"
+                        ng-click="removeFile($index)"
+                        ng-disabled="isSubmitting || isUploading"
+                        aria-label="Remove file">&times;</button>
+              </li>
+            </ul>
+          </div>
+
+          <p class="hint">Add a written answer and/or attach files, then submit.</p>
+          <button class="btn" type="button"
+                  ng-disabled="isSubmitting || isUploading || (!submitForm.description && !pendingFiles.length)"
+                  ng-click="submitHomework()">
+            {{ isUploading ? 'Uploading...' : (isSubmitting ? 'Submitting...' : 'Submit Homework') }}
+          </button>
+        </section>
+
+        <!-- Student submission -->
+        <section class="section section--mine"
+          ng-if="homework.Submission && (homework.Submission.Description || homework.Submission.ImageList.length)">
+          <div class="section__head">
+            <h2 class="section__label">Your submission</h2>
+            <button type="button"
+                    class="link-danger"
+                    ng-if="canDeleteSubmission()"
+                    ng-disabled="isDeleting"
+                    ng-click="deleteSubmission()">
+              {{ isDeleting ? 'Deleting...' : 'Delete & resubmit' }}
+            </button>
+          </div>
+          <p class="text" ng-if="homework.Submission.Description">{{homework.Submission.Description}}</p>
+          <div class="media" ng-if="homework.Submission.ImageList.length">
+            <img ng-repeat="item in homework.Submission.ImageList" ng-if="!isVideo(item)"
+                 ng-src="{{item}}" alt="Your submission" ng-click="openPreview(item)">
+            <video ng-repeat="item in homework.Submission.ImageList" ng-if="isVideo(item)" controls>
+              <source ng-src="{{trustUrl(item)}}" type="video/mp4">
+            </video>
+          </div>
+          <p class="hint" ng-if="canDeleteSubmission()">
+            You can delete this submission and submit again until the teacher responds.
+          </p>
+        </section>
+
+        <!-- Teacher response (only after teacher has reviewed) -->
+        <section class="section section--teacher" ng-if="hasTeacherResponded()">
+          <h2 class="section__label">Teacher response</h2>
+          <div style="margin-bottom:8px;">
+            <span class="status status--ok" ng-if="homework.Response.StatusId === STATUS.Approved">Approved</span>
+            <span class="status status--bad" ng-if="homework.Response.StatusId === STATUS.Rejected">Rejected</span>
+          </div>
+          <p class="text" ng-if="homework.Response.Remarks">{{homework.Response.Remarks}}</p>
+          <p class="muted" ng-if="!homework.Response.Remarks">No written remarks.</p>
+          <div class="rating" ng-if="homework.Response.Rating > 0">
+            Rating: {{homework.Response.Rating}} / 5
+          </div>
+        </section>
+
+      </div>
+    </article>
+
+    <p class="footer" ng-if="homework">School Vertex · Homework</p>
+  </div>
+
+  <div class="preview" ng-if="previewUrl" ng-click="closePreview()">
+    <button type="button" class="preview__close" ng-click="closePreview()">&times;</button>
+    <img ng-src="{{previewUrl}}" alt="Preview" ng-click="$event.stopPropagation()">
+  </div>
+
+  <script>
+    angular.module('homeworkDetailApp', [])
+    .controller('HomeworkDetailController', function($scope, $http, $window, $sce, $q) {
+      var API_BASE = 'https://api.schoolvertex.com/api';
+      var GROUPIN_URL = 'https://stag-saas-messagebot.tech-v2.groupin.app/api/v1/';
+      var GROUPIN_KEY = '9fac14690fadaa1292760581f0b97fce';
+
+      // Matches lookup values used across School Vertex homework
+      $scope.STATUS = {
+        Submitted: 1601,
+        Approved: 1602,
+        Rejected: 1603
+      };
+
+      $scope.homework = null;
+      $scope.isLoading = false;
+      $scope.isSubmitting = false;
+      $scope.isUploading = false;
+      $scope.isDeleting = false;
+      $scope.errorMessage = '';
+      $scope.successMessage = '';
+      $scope.previewUrl = '';
+      $scope.submitForm = { description: '' };
+      $scope.pendingFiles = [];
+      $scope.homeworkId = null;
+      $scope.userId = null;
+
+      function getQueryParams() {
+        var params = {};
+        var search = $window.location.search || '';
+        if (search.charAt(0) === '?') {
+          search = search.substring(1);
+        }
+        search.split('&').forEach(function(item) {
+          if (!item) return;
+          var parts = item.split('=');
+          if (parts[0]) {
+            params[parts[0]] = decodeURIComponent((parts[1] || '').replace(/\+/g, ' '));
+          }
+        });
+        return params;
+      }
+
+      function parseId(value) {
+        if (value === undefined || value === null || value === '') return null;
+        var n = Number(value);
+        return isNaN(n) ? null : n;
+      }
+
+      function formatBytes(bytes) {
+        if (!bytes && bytes !== 0) return '';
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+      }
+
+      function clearPendingFiles() {
+        $scope.pendingFiles.forEach(function(item) {
+          if (item.previewUrl) {
+            URL.revokeObjectURL(item.previewUrl);
+          }
+        });
+        $scope.pendingFiles = [];
+      }
+
+      // Same contract as GroupInFileUploadService.uploadFile(file, path = "p")
+      function uploadFileToGroupIn(file, path) {
+        var formData = new FormData();
+        formData.append('file', file);
+
+        var uploadPath = (path === 'p' || !path) ? 'permanent' : 'temporary';
+        var uploadUrl = GROUPIN_URL + 'file/upload/' + uploadPath;
+
+        return $http.post(uploadUrl, formData, {
+          headers: {
+            accept: 'application/json',
+            'x-api-key': GROUPIN_KEY,
+            'Content-Type': undefined
+          },
+          transformRequest: angular.identity
+        }).then(function(response) {
+          var data = response.data || {};
+          var url = data.url || (data.data && data.data.url);
+          if (!url) {
+            return $q.reject(new Error('Upload succeeded but URL was not returned.'));
+          }
+          return url;
+        });
+      }
+
+      function uploadPendingFiles() {
+        if (!$scope.pendingFiles.length) {
+          return $q.resolve([]);
+        }
+
+        $scope.isUploading = true;
+        var uploads = $scope.pendingFiles.map(function(item) {
+          return uploadFileToGroupIn(item.file, 'p');
+        });
+
+        return $q.all(uploads).finally(function() {
+          $scope.isUploading = false;
+        });
+      }
+
+      $scope.isVideo = function(url) {
+        if (!url) return false;
+        var clean = String(url).split('?')[0].toLowerCase();
+        return /\.(mp4|webm|mov|m4v)$/.test(clean);
+      };
+
+      $scope.trustUrl = function(url) {
+        return $sce.trustAsResourceUrl(url);
+      };
+
+      $scope.openPreview = function(url) {
+        $scope.previewUrl = url;
+      };
+
+      $scope.closePreview = function() {
+        $scope.previewUrl = '';
+      };
+
+      function getSubmissionId() {
+        if (!$scope.homework) return null;
+        if ($scope.homework.Submission && $scope.homework.Submission.SubmissionId) {
+          return $scope.homework.Submission.SubmissionId;
+        }
+        if ($scope.homework.Response && $scope.homework.Response.SubmissionId) {
+          return $scope.homework.Response.SubmissionId;
+        }
+        return null;
+      }
+
+      // Teacher has responded once status is Approved or Rejected
+      $scope.hasTeacherResponded = function() {
+        if (!$scope.homework || !$scope.homework.Response) return false;
+        var statusId = $scope.homework.Response.StatusId;
+        return statusId === $scope.STATUS.Approved || statusId === $scope.STATUS.Rejected;
+      };
+
+      $scope.canDeleteSubmission = function() {
+        if (!$scope.homework || !$scope.homework.IsSubmitted) return false;
+        if (!getSubmissionId()) return false;
+        return !$scope.hasTeacherResponded();
+      };
+
+      $scope.deleteSubmission = function() {
+        var submissionId = getSubmissionId();
+        if (!submissionId || !$scope.canDeleteSubmission()) return;
+
+        var confirmed = $window.confirm('Delete this submission? You can submit again afterwards.');
+        if (!confirmed) return;
+
+        $scope.isDeleting = true;
+        $scope.errorMessage = '';
+        $scope.successMessage = '';
+
+        $http.get(API_BASE + '/Assignment/DeleteSubmission/' + encodeURIComponent(submissionId))
+          .then(function() {
+            $scope.successMessage = 'Submission deleted. You can submit again.';
+            $scope.submitForm.description = '';
+            clearPendingFiles();
+            $scope.loadHomework();
+          })
+          .catch(function(error) {
+            if (error && error.status === -1) {
+              $scope.errorMessage = 'Unable to connect to API.';
+            } else if (error) {
+              $scope.errorMessage = 'Delete failed (' + error.status + '). Please try again.';
+            } else {
+              $scope.errorMessage = 'Unable to delete submission.';
+            }
+          })
+          .finally(function() {
+            $scope.isDeleting = false;
+          });
+      };
+
+      $scope.onFilesSelected = function(input) {
+        var files = input && input.files ? Array.prototype.slice.call(input.files) : [];
+        files.forEach(function(file) {
+          var isImage = file.type && file.type.indexOf('image/') === 0;
+          $scope.pendingFiles.push({
+            file: file,
+            name: file.name,
+            sizeLabel: formatBytes(file.size),
+            previewUrl: isImage ? URL.createObjectURL(file) : ''
+          });
+        });
+        input.value = '';
+        if (!$scope.$$phase) {
+          $scope.$apply();
+        }
+      };
+
+      $scope.removeFile = function(index) {
+        var item = $scope.pendingFiles[index];
+        if (item && item.previewUrl) {
+          URL.revokeObjectURL(item.previewUrl);
+        }
+        $scope.pendingFiles.splice(index, 1);
+      };
+
+      $scope.loadHomework = function() {
+        var query = getQueryParams();
+        $scope.homeworkId = parseId(query.HomeworkId || query.homeworkId || query.id);
+        $scope.userId = parseId(query.userId || query.UserId);
+
+        if ($scope.homeworkId === null || $scope.userId === null) {
+          $scope.errorMessage = 'HomeworkId and userId are required. Example: ?HomeworkId=83036&userId=1234';
+          return;
+        }
+
+        $scope.isLoading = true;
+        $scope.errorMessage = '';
+        $scope.successMessage = '';
+
+        $http.get(API_BASE + '/Assignment/GetByIdView/' + encodeURIComponent($scope.homeworkId) + '/' + encodeURIComponent($scope.userId))
+          .then(function(response) {
+            $scope.homework = response.data || null;
+            if (!$scope.homework) {
+              $scope.errorMessage = 'Homework not found.';
+            }
+          })
+          .catch(function(error) {
+            $scope.homework = null;
+            if (error && error.status === -1) {
+              $scope.errorMessage = 'Unable to connect to API.';
+            } else if (error) {
+              $scope.errorMessage = 'API error ' + error.status + ': ' + (error.statusText || 'Unable to load homework.');
+            } else {
+              $scope.errorMessage = 'Unable to load homework.';
+            }
+          })
+          .finally(function() {
+            $scope.isLoading = false;
+          });
+      };
+
+      $scope.submitHomework = function() {
+        if (!$scope.homework || $scope.homework.IsSubmitted) return;
+        if ($scope.userId === null) {
+          $scope.errorMessage = 'userId is required in the URL.';
+          return;
+        }
+
+        var description = ($scope.submitForm.description || '').trim();
+        if (!description && !$scope.pendingFiles.length) {
+          $scope.errorMessage = 'Please write an answer or attach at least one file.';
+          return;
+        }
+
+        $scope.isSubmitting = true;
+        $scope.errorMessage = '';
+        $scope.successMessage = '';
+
+        uploadPendingFiles()
+          .then(function(imageUrls) {
+            var payload = {
+              AssignmentId: $scope.homework.AssignmentId,
+              UserId: $scope.userId,
+              Description: description,
+              ImageList: imageUrls || []
+            };
+
+            return $http.post(API_BASE + '/Assignment/AddSubmission', payload);
+          })
+          .then(function() {
+            $scope.successMessage = 'Homework submitted successfully.';
+            $scope.submitForm.description = '';
+            clearPendingFiles();
+            $scope.loadHomework();
+          })
+          .catch(function(error) {
+            if (error && error.message === 'Upload succeeded but URL was not returned.') {
+              $scope.errorMessage = 'File upload failed. Please try again.';
+            } else if (error && error.status === -1) {
+              $scope.errorMessage = 'Unable to connect to API.';
+            } else if (error && error.config && String(error.config.url || '').indexOf('groupin.app') !== -1) {
+              $scope.errorMessage = 'File upload failed (' + error.status + '). Please try again.';
+            } else if (error) {
+              $scope.errorMessage = 'Submit failed (' + (error.status || 'error') + '). Please try again.';
+            } else {
+              $scope.errorMessage = 'Unable to submit homework.';
+            }
+          })
+          .finally(function() {
+            $scope.isSubmitting = false;
+            $scope.isUploading = false;
+          });
+      };
+
+      $scope.loadHomework();
+    });
+  </script>
+</body>
+</html>
