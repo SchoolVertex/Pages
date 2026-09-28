@@ -504,7 +504,7 @@
     "PhotoHeight": 100,
     "PhotoBorderRadius": 50,
     "SchoolLogoBorderRadius": 50,
-    "PhotoObjectFit": "cover",
+    "PhotoObjectFit": "fill",
     "BackgroundImage": 5,
     "BackgroundOpacity": 1,
     "PrincipalSignature": "Principal Signature",
