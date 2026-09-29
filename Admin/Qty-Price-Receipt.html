@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Payment Receipt</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .editable-field {
+      width: 100%;
+      border: 1px dashed transparent;
+      background: transparent;
+      outline: none;
+      border-radius: 0.375rem;
+      padding: 0.25rem 0.4rem;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .editable-field:hover,
+    .editable-field:focus {
+      border-color: #c7d2fe;
+      background: #eef2ff;
+    }
+
+    .editable-field.right {
+      text-align: right;
+    }
+
+    .line-input {
+      width: 100%;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.5rem;
+      padding: 0.5rem 0.65rem;
+      font-size: 0.875rem;
+      color: #374151;
+      background: #fff;
+      outline: none;
+    }
+
+    .line-input:focus {
+      border-color: #818cf8;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    }
+
+    .line-input.right {
+      text-align: right;
+    }
+
+    .line-total {
+      font-weight: 600;
+      color: #4338ca;
+      text-align: right;
+      padding: 0.5rem 0.65rem;
+      white-space: nowrap;
+    }
+
+    .receipt-sheet {
+      position: relative;
+    }
+
+    .receipt-watermark {
+      position: absolute;
+      top: 35%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 55%;
+      max-width: 280px;
+      opacity: 0.06;
+      pointer-events: none;
+      z-index: 0;
+      user-select: none;
+    }
+
+    .receipt-sheet > *:not(.receipt-watermark) {
+      position: relative;
+      z-index: 1;
+    }
+
+    .no-print {
+      /* shown on screen only */
+    }
+
+    @media print {
+      body {
+        background: #fff !important;
+        padding: 0 !important;
+      }
+
+      .no-print {
+        display: none !important;
+      }
+
+      .receipt-sheet {
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        max-width: none !important;
+      }
+
+      .receipt-watermark {
+        opacity: 0.08;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .editable-field,
+      .editable-field:hover,
+      .editable-field:focus {
+        border-color: transparent !important;
+        background: transparent !important;
+        padding-left: 0;
+        padding-right: 0;
+      }
+
+      .line-input {
+        border: none !important;
+        box-shadow: none !important;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        background: transparent !important;
+      }
+
+      .print-hide-col {
+        display: none !important;
+      }
+
+      #schoolContact:placeholder-shown {
+        display: none !important;
+      }
+
+      .reference-field:has(#referenceNo:placeholder-shown) {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-gray-100 py-8 px-4">
+
+  <div class="max-w-4xl mx-auto mb-4 no-print flex flex-wrap items-center justify-between gap-3">
+    <p class="text-sm text-gray-600">Fill school details and payment particulars, then print.</p>
+    <div class="flex gap-2">
+      <button type="button" id="addRowBtn"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-gray-300 text-gray-700 text-sm font-semibold hover:bg-gray-50 shadow-sm">
+        + Add Particular
+      </button>
+      <button type="button" id="printBtn"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 shadow-sm">
+        Print Receipt
+      </button>
+    </div>
+  </div>
+
+  <div class="receipt-sheet max-w-4xl mx-auto bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-200">
+
+    <img class="receipt-watermark"
+         src="https://res.cloudinary.com/bashbook3/image/upload/v1686680797/School%20Logos/favicon1.png"
+         alt="" />
+
+    <!-- Header -->
+    <div class="flex items-center justify-between px-6 sm:px-8 py-6 border-b border-gray-200 bg-indigo-50">
+      <div>
+        <h1 class="text-2xl font-bold text-indigo-700">SCHOOL VERTEX</h1>
+        <p class="text-sm text-gray-600">Payment Receipt</p>
+      </div>
+      <div class="w-20 h-20 rounded-full bg-white overflow-hidden flex items-center justify-center shrink-0">
+        <img src="https://res.cloudinary.com/bashbook3/image/upload/v1686680797/School%20Logos/favicon1.png"
+             alt="Company Logo" class="w-full h-full object-contain" />
+      </div>
+    </div>
+
+    <!-- Meta Info -->
+    <div class="px-6 sm:px-8 py-4 text-sm text-gray-600 flex flex-col sm:flex-row sm:justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <span class="font-medium text-gray-700 shrink-0">Date:</span>
+        <input type="date" id="receiptDate" class="editable-field max-w-[11rem]" />
+      </div>
+      <div class="flex items-center gap-2 sm:justify-end">
+        <span class="font-medium text-gray-700 shrink-0">Receipt No:</span>
+        <input type="text" id="receiptNo" class="editable-field max-w-[10rem] sm:text-right" value="012802" />
+      </div>
+    </div>
+
+    <!-- Parties -->
+    <div class="px-6 sm:px-8 py-6 grid grid-cols-1 md:grid-cols-2 gap-8 border-b border-gray-100">
+      <div>
+        <h3 class="text-sm font-semibold text-gray-500 uppercase mb-2">Received From</h3>
+        <input type="text" id="schoolName" class="editable-field text-lg font-medium text-gray-800 mb-1"
+               placeholder="School Name" value="Swathi High School" />
+        <input type="text" id="schoolAddress1" class="editable-field text-sm text-gray-600 mb-1"
+               placeholder="Address line 1" value="Sai Nagar, Madhapur" />
+        <input type="text" id="schoolAddress2" class="editable-field text-sm text-gray-600 mb-1"
+               placeholder="City, PIN" value="Hyderabad, 500081" />
+        <input type="text" id="schoolContact" class="editable-field text-sm text-gray-600"
+               placeholder="Phone / Email (optional)" value="" />
+      </div>
+
+      <!-- Company details — static -->
+      <div class="text-left md:text-right">
+        <h3 class="text-sm font-semibold text-gray-500 uppercase mb-1">Received By</h3>
+        <p class="text-lg font-medium text-gray-800">VYSER TECHNOLOGIES PVT LTD</p>
+        <p class="text-sm text-gray-600">Near DLF Cyber City, Gachibowli</p>
+        <p class="text-sm text-gray-600">Hyderabad, Telangana, 500032</p>
+        <p class="text-sm text-gray-600 mt-1">Email: contact@schoolvertex.com</p>
+        <p class="text-sm text-gray-600">GSTIN - 37AAJCV1909P1ZO</p>
+      </div>
+    </div>
+
+    <!-- Payment Meta -->
+    <div class="px-6 sm:px-8 py-4 grid grid-cols-1 sm:grid-cols-2 gap-4 border-b border-gray-100 text-sm">
+      <div class="flex items-center gap-2">
+        <span class="font-medium text-gray-700 shrink-0">Payment Mode:</span>
+        <input type="text" id="paymentMode" class="editable-field" placeholder="Cash / UPI / Bank / Cheque" value="UPI" />
+      </div>
+      <div class="reference-field flex items-center gap-2 sm:justify-end">
+        <span class="font-medium text-gray-700 shrink-0">Reference No:</span>
+        <input type="text" id="referenceNo" class="editable-field max-w-[14rem] sm:text-right" placeholder="Txn / Cheque No" value="" />
+      </div>
+    </div>
+
+    <!-- Line Items -->
+    <div class="px-4 sm:px-8 py-6 overflow-x-auto">
+      <table class="w-full text-sm min-w-[640px]">
+        <thead>
+          <tr class="bg-gray-100 text-gray-700 uppercase text-xs">
+            <th class="text-left px-3 py-3 rounded-tl-lg w-[36%]">Particular</th>
+            <th class="text-right px-3 py-3 w-[14%]">Quantity</th>
+            <th class="text-right px-3 py-3 w-[16%]">Price</th>
+            <th class="text-right px-3 py-3 w-[18%]">Total</th>
+            <th class="text-center px-2 py-3 rounded-tr-lg w-[8%] no-print print-hide-col">Action</th>
+          </tr>
+        </thead>
+        <tbody id="itemsBody" class="text-gray-600">
+          <!-- rows injected by JS -->
+        </tbody>
+      </table>
+
+      <button type="button" id="addRowBtnBottom"
+        class="no-print mt-4 inline-flex items-center gap-1 text-sm font-semibold text-indigo-600 hover:text-indigo-800">
+        + Add more particulars
+      </button>
+    </div>
+
+    <!-- Amount Received -->
+    <div class="px-6 sm:px-8 pb-6">
+      <div class="flex justify-end">
+        <div class="bg-gray-50 rounded-xl p-4 w-full max-w-sm border border-gray-200">
+          <div class="flex justify-between items-center gap-4">
+            <span class="text-lg font-semibold text-gray-700">Amount Received :</span>
+            <div class="flex items-center gap-0">
+              <span class="text-xl font-bold text-indigo-700 leading-none">₹</span>
+              <input type="number" id="grandTotal" min="0" step="0.01"
+                     class="editable-field text-xl font-bold text-indigo-700 w-[7.5rem] !pl-0.5 !pr-1"
+                     value="0" />
+            </div>
+          </div>
+          <p class="no-print text-[11px] text-gray-400 mt-2 text-right">
+            Auto-calculated from line totals. You can override manually.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Acknowledgement -->
+    <div class="px-6 sm:px-8 pb-4">
+      <p class="text-sm text-gray-600 leading-relaxed">
+        We hereby acknowledge the receipt of the above amount towards the particulars mentioned.
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center text-xs text-gray-500 border-t px-8 py-4 bg-gray-50">
+      <p>This is a computer-generated receipt and does not require a physical signature.</p>
+      <p class="mt-1">We sincerely appreciate your continued trust in us</p>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var itemsBody = document.getElementById('itemsBody');
+      var grandTotalInput = document.getElementById('grandTotal');
+      var grandTotalManual = false;
+      var rowId = 0;
+
+      var defaultItems = [
+        { particular: 'ID Cards', quantity: 335, price: 50 },
+        { particular: 'Extra Tags', quantity: 36, price: 30 }
+      ];
+
+      function todayISO() {
+        var d = new Date();
+        var m = String(d.getMonth() + 1).padStart(2, '0');
+        var day = String(d.getDate()).padStart(2, '0');
+        return d.getFullYear() + '-' + m + '-' + day;
+      }
+
+      document.getElementById('receiptDate').value = todayISO();
+
+      function formatNumber(value) {
+        var num = Number(value) || 0;
+        return num.toLocaleString('en-IN', {
+          minimumFractionDigits: Number.isInteger(num) ? 0 : 2,
+          maximumFractionDigits: 2
+        });
+      }
+
+      function parseNum(value) {
+        var n = Number(value);
+        return isNaN(n) ? 0 : n;
+      }
+
+      function createRow(data) {
+        data = data || {};
+        rowId += 1;
+
+        var tr = document.createElement('tr');
+        tr.className = 'border-b align-middle';
+        tr.dataset.rowId = String(rowId);
+
+        tr.innerHTML =
+          '<td class="px-2 py-2">' +
+            '<input type="text" class="line-input particular" placeholder="Enter particular" value="' + escapeAttr(data.particular || '') + '" />' +
+          '</td>' +
+          '<td class="px-2 py-2">' +
+            '<input type="number" min="0" step="1" class="line-input right quantity" value="' + (data.quantity != null ? data.quantity : '') + '" />' +
+          '</td>' +
+          '<td class="px-2 py-2">' +
+            '<input type="number" min="0" step="0.01" class="line-input right price" value="' + (data.price != null ? data.price : '') + '" />' +
+          '</td>' +
+          '<td class="px-2 py-2">' +
+            '<div class="line-total row-total">₹0</div>' +
+          '</td>' +
+          '<td class="px-2 py-2 text-center no-print print-hide-col">' +
+            '<button type="button" class="remove-row text-red-500 hover:text-red-700 text-xs font-semibold px-2 py-1" title="Remove row">Remove</button>' +
+          '</td>';
+
+        itemsBody.appendChild(tr);
+        bindRow(tr);
+        updateRowTotal(tr);
+      }
+
+      function escapeAttr(value) {
+        return String(value)
+          .replace(/&/g, '&amp;')
+          .replace(/"/g, '&quot;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+      }
+
+      function bindRow(tr) {
+        var qty = tr.querySelector('.quantity');
+        var price = tr.querySelector('.price');
+        var removeBtn = tr.querySelector('.remove-row');
+
+        qty.addEventListener('input', function () {
+          updateRowTotal(tr);
+          if (!grandTotalManual) updateGrandTotal();
+        });
+
+        price.addEventListener('input', function () {
+          updateRowTotal(tr);
+          if (!grandTotalManual) updateGrandTotal();
+        });
+
+        removeBtn.addEventListener('click', function () {
+          if (itemsBody.querySelectorAll('tr').length <= 1) {
+            qty.value = '';
+            price.value = '';
+            tr.querySelector('.particular').value = '';
+            updateRowTotal(tr);
+            if (!grandTotalManual) updateGrandTotal();
+            return;
+          }
+          tr.remove();
+          if (!grandTotalManual) updateGrandTotal();
+        });
+      }
+
+      function updateRowTotal(tr) {
+        var qty = parseNum(tr.querySelector('.quantity').value);
+        var price = parseNum(tr.querySelector('.price').value);
+        var total = qty * price;
+        tr.querySelector('.row-total').textContent = '₹' + formatNumber(total);
+        tr.dataset.total = String(total);
+      }
+
+      function updateGrandTotal() {
+        var total = 0;
+        itemsBody.querySelectorAll('tr').forEach(function (tr) {
+          total += parseNum(tr.dataset.total);
+        });
+        grandTotalInput.value = Number.isInteger(total) ? String(total) : total.toFixed(2);
+      }
+
+      function addRow(data) {
+        createRow(data);
+        if (!grandTotalManual) updateGrandTotal();
+      }
+
+      document.getElementById('addRowBtn').addEventListener('click', function () {
+        addRow({ particular: '', quantity: '', price: '' });
+      });
+
+      document.getElementById('addRowBtnBottom').addEventListener('click', function () {
+        addRow({ particular: '', quantity: '', price: '' });
+      });
+
+      document.getElementById('printBtn').addEventListener('click', function () {
+        window.print();
+      });
+
+      grandTotalInput.addEventListener('input', function () {
+        grandTotalManual = true;
+      });
+
+      grandTotalInput.addEventListener('dblclick', function () {
+        grandTotalManual = false;
+        updateGrandTotal();
+      });
+
+      defaultItems.forEach(function (item) {
+        createRow(item);
+      });
+      updateGrandTotal();
+    })();
+  </script>
+
+</body>
+</html>
