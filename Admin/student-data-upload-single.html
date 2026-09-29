@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="excelApp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Student Excel Upload (Single Batch/Section)</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.2/angular.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      padding: 1em;
+      background-color: #f4f7f9;
+      color: #333;
+      line-height: 1.5;
+      font-size: 14px;
+    }
+    h2 {
+      color: #2c3e50;
+      font-size: 1.5em;
+      margin-top: 0;
+    }
+    .container {
+      max-width: 750px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 1.5em;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .form-group {
+      margin-bottom: 1em;
+    }
+    label {
+      display: block;
+      margin-bottom: .4em;
+      font-weight: bold;
+      color: #555;
+    }
+    input[type="file"], select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+      font-size: 1em;
+    }
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: background-color 0.3s;
+      width: 100%;
+    }
+    button:disabled {
+      background-color: #a9cce3;
+      cursor: not-allowed;
+    }
+    button:hover:not(:disabled) {
+      background-color: #2980b9;
+    }
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 1em;
+    }
+    .meta__item {
+      background: #ecf0f1;
+      border: 1px solid #bdc3c7;
+      border-radius: 5px;
+      padding: 10px;
+    }
+    .meta__label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #7f8c8d;
+      margin-bottom: 4px;
+    }
+    .meta__item input[type="number"] {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+      font-size: 15px;
+      font-weight: 700;
+      color: #2c3e50;
+      background: #fff;
+    }
+    .hint {
+      margin: 0 0 1em;
+      color: #7f8c8d;
+      font-size: 13px;
+    }
+    .display-title {
+      margin: 0 0 0.75em;
+      font-size: 1.05em;
+      color: #2c3e50;
+      line-height: 1.4;
+    }
+    .display-title strong {
+      color: #1a5276;
+    }
+    .error-banner {
+      background: #fdeceb;
+      color: #c0392b;
+      border: 1px solid #f5b7b1;
+      border-radius: 5px;
+      padding: 10px 12px;
+      margin-bottom: 1em;
+      font-weight: 600;
+    }
+    .log-area {
+      margin-top: 15px;
+      border: 1px solid #ddd;
+      padding: 10px;
+      border-radius: 5px;
+      background: #fdfdfd;
+      max-height: 350px;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+    }
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    li {
+      padding: 6px 8px;
+      border-bottom: 1px solid #eee;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.9em;
+    }
+    li:last-child {
+      border-bottom: none;
+    }
+    .record-success { color: #27ae60; font-weight: bold; }
+    .record-failure { color: #c0392b; font-weight: bold; }
+    .record-log { color: #7f8c8d; font-style: italic; }
+    .sheet-log {
+      background-color: #eaf2f8;
+      color: #34495e;
+      font-weight: bold;
+      text-align: center;
+      margin: 4px 0;
+      border-top: 1px solid #d4e6f1;
+      border-bottom: 1px solid #d4e6f1;
+    }
+    .summary {
+      background-color: #ecf0f1;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #bdc3c7;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body ng-controller="ExcelCtrl">
+
+  <div class="container">
+    <h2>Upload Students (Single Batch / Section)</h2>
+    <p class="display-title" ng-if="displayText">Upload data for <strong>{{displayText}}</strong></p>
+    <p class="hint">Reads the first sheet only. OrganisationId and BatchId are required; SectionId is optional. IDs from the URL stay hidden.</p>
+
+    <div class="error-banner" ng-if="paramError">{{paramError}}</div>
+
+    <div class="meta" ng-if="showOrgInput || showBatchInput || showSectionInput">
+      <div class="meta__item" ng-if="showOrgInput">
+        <label class="meta__label" for="orgId">OrganisationId</label>
+        <input type="number" id="orgId" ng-model="orgId" ng-change="clearParamError()" />
+      </div>
+      <div class="meta__item" ng-if="showBatchInput">
+        <label class="meta__label" for="batchId">BatchId</label>
+        <input type="number" id="batchId" ng-model="batchId" ng-change="clearParamError()" />
+      </div>
+      <div class="meta__item" ng-if="showSectionInput">
+        <label class="meta__label" for="sectionId">SectionId</label>
+        <input type="number" id="sectionId" ng-model="sectionId" placeholder="optional" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="fileInput">Select Excel File:</label>
+      <input type="file" id="fileInput" accept=".xlsx,.xls"
+             onchange="angular.element(this).scope().selectFile(this.files)" />
+    </div>
+
+    <div class="form-group" ng-if="selectedFile">
+      <button ng-click="handleFile()" ng-disabled="isProcessing">
+        {{ isProcessing ? 'Processing...' : 'Start Processing' }}
+      </button>
+    </div>
+
+    <div class="summary" ng-if="allRecords.length > 0">
+      <strong>Summary:</strong>
+      <span class="record-success">✅ Success: {{summary.success}}</span> |
+      <span class="record-failure">❌ Failure: {{summary.failure}}</span> |
+      <span class="record-log">📝 Logs: {{summary.log}}</span>
+    </div>
+
+    <div class="form-group" ng-if="allRecords.length > 0 && !isProcessing">
+      <label for="recordFilter"><strong>Filter Records:</strong></label>
+      <select id="recordFilter" ng-model="filterType">
+        <option value="">All</option>
+        <option value="success">Success</option>
+        <option value="failure">Failure</option>
+        <option value="log">Logs</option>
+      </select>
+    </div>
+
+    <div class="log-area" id="log-area" ng-if="allRecords.length > 0">
+      <h3>Processing Log</h3>
+      <ul>
+        <li ng-repeat="r in allRecords | filter:customFilter track by $index" ng-class="{
+            'record-success': r.type === 'success',
+            'record-failure': r.type === 'failure',
+            'record-log': r.type === 'log',
+            'sheet-log': r.type === 'sheet-event'
+          }">
+          <span ng-if="r.type === 'success' || r.type === 'failure'">{{r.Field3}} - {{r.FullName}} - {{r.Mobile}}</span>
+          <span ng-if="r.type === 'log' || r.type === 'sheet-event'">{{r.message}}</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    var app = angular.module('excelApp', []);
+
+    app.controller('ExcelCtrl', ['$scope', '$http', '$q', '$timeout', '$window', function($scope, $http, $q, $timeout, $window) {
+      $scope.orgId = null;
+      $scope.batchId = null;
+      $scope.sectionId = null;
+      $scope.displayText = '';
+      $scope.showOrgInput = true;
+      $scope.showBatchInput = true;
+      $scope.showSectionInput = true;
+      $scope.paramError = '';
+      $scope.allRecords = [];
+      $scope.filterType = "";
+      $scope.selectedFile = null;
+      $scope.isProcessing = false;
+      $scope.summary = { success: 0, failure: 0, log: 0 };
+
+      function getQueryParams() {
+        var params = {};
+        var search = $window.location.search || '';
+        if (search.charAt(0) === '?') search = search.substring(1);
+        search.split('&').forEach(function(item) {
+          if (!item) return;
+          var parts = item.split('=');
+          if (parts[0]) {
+            params[parts[0]] = decodeURIComponent((parts[1] || '').replace(/\+/g, ' '));
+          }
+        });
+        return params;
+      }
+
+      function parseId(value, allowZero) {
+        if (value === undefined || value === null || value === '') return null;
+        var n = Number(value);
+        if (isNaN(n)) return null;
+        if (!allowZero && n === 0) return null;
+        return n;
+      }
+
+      function initParams() {
+        var query = getQueryParams();
+        var orgFromQuery = parseId(query.OrganisationId || query.organisationId || query.OrgId || query.orgId);
+        var batchFromQuery = parseId(query.batchId || query.BatchId);
+        var sectionKey = query.sectionId !== undefined ? 'sectionId'
+          : (query.SectionId !== undefined ? 'SectionId' : null);
+        var sectionFromQuery = null;
+
+        if (sectionKey !== null) {
+          var sectionRaw = query[sectionKey];
+          sectionFromQuery = (sectionRaw === '') ? null : parseId(sectionRaw, true);
+        }
+
+        $scope.orgId = orgFromQuery;
+        $scope.batchId = batchFromQuery;
+        $scope.sectionId = sectionFromQuery;
+        $scope.displayText = (query.displayText || query.DisplayText || '').trim();
+
+        // Hide OrganisationId when it comes from the URL
+        $scope.showOrgInput = orgFromQuery === null;
+        // If batchId is in the URL, hide both BatchId and SectionId entry boxes.
+        // If batchId is missing, show both BatchId and SectionId for manual entry.
+        $scope.showBatchInput = batchFromQuery === null;
+        $scope.showSectionInput = batchFromQuery === null;
+      }
+
+      $scope.clearParamError = function() {
+        if ($scope.orgId && $scope.batchId) {
+          $scope.paramError = '';
+        }
+      };
+
+      $scope.selectFile = function(files) {
+        if (files && files[0]) {
+          $scope.selectedFile = files[0];
+          $scope.allRecords = [];
+          $scope.summary = { success: 0, failure: 0, log: 0 };
+          $scope.$apply();
+        }
+      };
+
+      $scope.customFilter = function(record) {
+        if (!$scope.filterType) return true;
+        if ($scope.filterType === 'log') {
+          return record.type === 'log' || record.type === 'sheet-event';
+        }
+        return record.type === $scope.filterType;
+      };
+
+      function getValue(row, keys) {
+        for (var i = 0; i < keys.length; i++) {
+          var value = row[keys[i]];
+          if (value !== undefined && value !== null) {
+            return typeof value === 'string' ? value.trim() : value;
+          }
+        }
+        return "";
+      }
+
+      function addRecordToList(record) {
+        $scope.allRecords.push(record);
+        $scope.$applyAsync();
+        $timeout(function() {
+          var logArea = document.getElementById('log-area');
+          if (logArea) logArea.scrollTop = logArea.scrollHeight;
+        }, 0);
+      }
+
+      $scope.handleFile = function() {
+        if (!$scope.orgId || !$scope.batchId) {
+          $scope.paramError = 'OrganisationId and batchId are required before uploading.';
+          alert($scope.paramError);
+          return;
+        }
+        // SectionId is optional — empty / blank becomes null (0 is allowed)
+        if ($scope.sectionId === '' || $scope.sectionId === undefined || $scope.sectionId === null) {
+          $scope.sectionId = null;
+        } else {
+          var sectionNum = Number($scope.sectionId);
+          $scope.sectionId = isNaN(sectionNum) ? null : sectionNum;
+        }
+        $scope.paramError = '';
+        if (!$scope.selectedFile) {
+          alert("Please select an Excel file.");
+          return;
+        }
+
+        $scope.isProcessing = true;
+        $scope.allRecords = [];
+        $scope.summary = { success: 0, failure: 0, log: 0 };
+
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var data = e.target.result;
+          var workbook = XLSX.read(data, { type: 'binary' });
+          var sheetNames = workbook.SheetNames || [];
+
+          if (!sheetNames.length) {
+            addRecordToList({ type: 'log', message: 'No sheets found in the Excel file.' });
+            $scope.isProcessing = false;
+            $scope.$apply();
+            return;
+          }
+
+          // Single batch/section upload: always use the first sheet only
+          var sheetName = sheetNames[0];
+          var rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "" });
+
+          addRecordToList({
+            type: 'sheet-event',
+            message: '--- Processing first sheet: [' + sheetName + '] (' + rows.length + ' rows) ---'
+          });
+          addRecordToList({
+            type: 'log',
+            message: 'Using OrganisationId=' + $scope.orgId +
+              ', BatchId=' + $scope.batchId +
+              ', SectionId=' + ($scope.sectionId === null ? 'null' : $scope.sectionId)
+          });
+
+          rows.reduce(function(rowPromise, row) {
+            return rowPromise.then(function() {
+              return processSingleRecord(row, sheetName);
+            });
+          }, $q.when())
+          .then(function() {
+            addRecordToList({ type: 'sheet-event', message: '--- Finished sheet: [' + sheetName + '] ---' });
+          })
+          .finally(function() {
+            $scope.isProcessing = false;
+            addRecordToList({ type: 'log', message: 'Upload complete.' });
+            $scope.$apply();
+          });
+        };
+        reader.readAsBinaryString($scope.selectedFile);
+      };
+
+      function processSingleRecord(row, sheetName) {
+        var student = mapRowToStudent(row, sheetName);
+
+        if (!student) {
+          addRecordToList({ type: 'log', message: 'Skipping invalid row. Missing Name or Mobile.' });
+          return $q.when();
+        }
+
+        $scope.summary.log++;
+
+        return $http.post('https://api.schoolvertex.com/api/Account/SystemAdmission', student)
+          .then(function(response) {
+            var studentId = response.data;
+            student.Field3 = sheetName;
+
+            addRecordToList(Object.assign({ type: 'success' }, student));
+            $scope.summary.success++;
+
+            return createParent(studentId, 'Father', row, student.Mobile, student.FullName)
+              .then(function() {
+                return createParent(studentId, 'Mother', row, student.Mobile, student.FullName);
+              });
+          })
+          .catch(function(err) {
+            student.Field3 = sheetName;
+            addRecordToList(Object.assign({ type: 'failure' }, student));
+            $scope.summary.failure++;
+            addRecordToList({
+              type: 'log',
+              message: 'FAILED: Could not create student ' + student.FullName + ' — ' + (err.statusText || 'Unknown Error')
+            });
+          });
+      }
+
+      function createParent(studentId, type, row, primaryMobile, studentName) {
+        var name = getValue(row, [type + 'Name', type + ' Name']);
+        if (!name) return $q.when();
+
+        var mobile = (type === 'Mother')
+          ? (getValue(row, ['MotherMobile', 'Mother Mobile']) || primaryMobile)
+          : primaryMobile;
+
+        var parent = {
+          UserId: studentId,
+          Name: name,
+          Mobile: mobile,
+          RelationId: (type === 'Father') ? 3102 : 3101,
+          IsPrimaryContact: (type === 'Father'),
+          UserParentInfoId: 112233
+        };
+
+        return $http.post('https://api.schoolvertex.com/api/UserParentInfo/AddBySystem', parent)
+          .then(function() {
+            addRecordToList({ type: 'log', message: '- SUCCESS: Added ' + type + ' (' + name + ')' });
+          })
+          .catch(function(err) {
+            addRecordToList({
+              type: 'log',
+              message: '- FAILED: Could not add ' + type + ' (' + name + '): ' + (err.statusText || 'Error')
+            });
+          });
+      }
+
+      function mapRowToStudent(row, sheetName) {
+        var fullName = getValue(row, ['StudentFullName', 'Student FullName']);
+        var mobile = getValue(row, ['FatherMobile', 'Father Mobile']);
+
+        if (!fullName || !mobile) return null;
+
+        try {
+          return {
+            FullName: fullName,
+            Mobile: mobile,
+            GenderId: parseGender(getValue(row, ['Gender'])),
+            DateOfBirth: parseExcelDate(getValue(row, ['DateOfBirth', 'Date Of Birth'])),
+            Address: getValue(row, ['Address']),
+            AadharNumber: getValue(row, ['AadharNumber', 'Aadhar Number']),
+            UserTypeId: parseUserType(getValue(row, ['DayResidential', 'Day/Residential'])),
+            RollNumber: getValue(row, ['RollNumber', 'Roll Number']),
+            ChildId: getValue(row, ['PEN', 'Govt Child Id(PEN)']),
+            ApaarNumber: getValue(row, ['ApaarNumber', 'Apaar Number']),
+            Caste: getValue(row, ['Caste']),
+            SubCaste: getValue(row, ['SubCaste', 'Sub Caste']),
+            Field1: getValue(row, ['OtherField1', 'Other Field1']),
+            Field2: getValue(row, ['OtherField2', 'Other Field2']),
+            Field3: getValue(row, ['OtherFiled3']),
+            Religion: getValue(row, ['Religion']),
+            MotherTougue: getValue(row, ['MotherTongue', 'Mother Tongue']),
+            AdmissionNumber: getValue(row, ['AdmissionNumber', 'Admission Number']),
+            AdmissionDate: parseExcelDate(getValue(row, ['AdmissionDate', 'Admission Date'])),
+            OrganisationId: $scope.orgId,
+            DeptId: 112233,
+            BatchId: $scope.batchId,
+            SectionId: $scope.sectionId,
+            YearId: 8,
+            IsJoiningPending: false
+          };
+        } catch (e) {
+          addRecordToList({ type: 'failure', message: 'Row parsing error: ' + e.message });
+          $scope.summary.failure++;
+          return null;
+        }
+      }
+
+      function parseGender(value) {
+        if (!value) return 503;
+        switch (String(value).toUpperCase()) {
+          case 'M': case 'MALE': case 'BOY': case 'B': return 501;
+          case 'F': case 'FEMALE': case 'GIRL': case 'G': return 502;
+          default: return 503;
+        }
+      }
+
+      function parseUserType(value) {
+        if (!value) return null;
+        switch (String(value).toUpperCase()) {
+          case 'D': case 'DAYSCHOLAR': return 4001;
+          case 'R': case 'H': case 'HOSTEL': case 'RESIDENTIAL': return 4002;
+          default: return null;
+        }
+      }
+
+      function parseExcelDate(excelDate) {
+        if (!excelDate) return null;
+        if (typeof excelDate === 'number') {
+          var utcDays = excelDate - 25569;
+          var utcValue = utcDays * 86400 * 1000;
+          var dateInfo = new Date(utcValue);
+          return new Date(Date.UTC(dateInfo.getUTCFullYear(), dateInfo.getUTCMonth(), dateInfo.getUTCDate())).toISOString();
+        }
+        if (typeof excelDate === 'string') {
+          var cleaned = excelDate.trim().replace(/[\/.]/g, "-");
+          var parts = cleaned.split("-");
+          if (parts.length === 3) {
+            var day = parseInt(parts[0], 10);
+            var month = parseInt(parts[1], 10);
+            var year = parseInt(parts[2], 10);
+            if (!isNaN(day) && !isNaN(month) && !isNaN(year) && year > 1900 && year < 2100) {
+              return new Date(Date.UTC(year, month - 1, day)).toISOString();
+            }
+          }
+        }
+        return null;
+      }
+
+      initParams();
+    }]);
+  </script>
+</body>
+</html>
