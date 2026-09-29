@@ -33,6 +33,7 @@
       "TempPasswordMessage": "*Temparory Password* \n\nDear User,\n\nYour temporary School Vertex password is:\n\n{{otp}}\n\nFor security, please log in and change your password as soon as possible.\n\nRegards,\nSchool Vertex"
     }
   },
+  "PushNotifySchoolList": [],
   "ExternalSchoolDevices": [
     {
       "SchoolId": 102,
