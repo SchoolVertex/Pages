@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Daily Parent Article</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Nunito:wght@500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #1c2a32;
+      --muted: #5a6d78;
+      --paper: #fffdf8;
+      --line: rgba(28, 42, 50, 0.08);
+      --leaf: #2f8f6b;
+      --shadow: 0 18px 50px rgba(31, 74, 104, 0.12);
+      --ui-font: "Nunito", system-ui, sans-serif;
+      --read-font: "Source Serif 4", Georgia, serif;
+      --display-font: "Fraunces", Georgia, serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      font-family: var(--ui-font);
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse 90% 55% at 10% -10%, #ffe8c8 0%, transparent 55%),
+        radial-gradient(ellipse 70% 50% at 100% 0%, #cfefff 0%, transparent 50%),
+        linear-gradient(180deg, #f3f9fd 0%, #eef6f1 100%);
+    }
+
+    .wrap {
+      width: min(920px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 28px 0 64px;
+    }
+
+    .status {
+      display: none;
+      margin-bottom: 14px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-weight: 750;
+      background: #e8f3f8;
+      color: #1f5c73;
+    }
+
+    .status.show { display: block; }
+    .status.error { background: #fdeceb; color: #9a3228; }
+
+    .panel {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 28px 26px 32px;
+    }
+
+    .kicker {
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--leaf);
+      margin-bottom: 8px;
+    }
+
+    .meta { color: var(--muted); font-weight: 750; margin-bottom: 14px; }
+
+    h1 {
+      font-family: var(--display-font);
+      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+
+    .notification { font-weight: 750; color: #3d5563; margin-bottom: 18px; line-height: 1.45; }
+
+    .article {
+      font-family: var(--read-font);
+      font-size: 1.08rem;
+      line-height: 1.75;
+      white-space: pre-wrap;
+      margin-bottom: 20px;
+    }
+
+    blockquote {
+      margin: 0 0 20px;
+      padding: 14px 16px;
+      border-left: 4px solid var(--leaf);
+      background: #f4faf7;
+      border-radius: 0 14px 14px 0;
+      font-family: var(--read-font);
+      font-style: italic;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .card h2 {
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .card p { font-weight: 650; line-height: 1.5; }
+
+    footer {
+      margin-top: 16px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-weight: 750;
+    }
+
+    @media (max-width: 720px) {
+      .grid { grid-template-columns: 1fr; }
+      .panel { padding: 22px 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div id="status" class="status" role="status"></div>
+
+    <main class="panel">
+      <article id="content" hidden>
+        <div class="kicker" id="series"></div>
+        <div class="meta" id="fullDate"></div>
+        <h1 id="title"></h1>
+        <p class="notification" id="notification"></p>
+        <div class="article" id="article"></div>
+        <blockquote id="quote"></blockquote>
+        <div class="grid">
+          <section class="card">
+            <h2>Takeaway</h2>
+            <p id="moral"></p>
+          </section>
+          <section class="card">
+            <h2>Ask yourself</h2>
+            <p id="question"></p>
+          </section>
+          <section class="card">
+            <h2>Try this</h2>
+            <p id="activity"></p>
+          </section>
+          <section class="card">
+            <h2>Today’s step</h2>
+            <p id="challenge"></p>
+          </section>
+        </div>
+      </article>
+    </main>
+    <footer>365 Daily Parent Articles · One idea for today</footer>
+  </div>
+
+  <script>
+    const DATA_URL = "https://schoolvertex.github.io/Pages/Daily-Article/data.json";
+
+    function pad(n) { return String(n).padStart(2, "0"); }
+
+    function todayKey(date) {
+      return pad(date.getMonth() + 1) + "-" + pad(date.getDate());
+    }
+
+    function formatDate(key) {
+      const [m, d] = key.split("-").map(Number);
+      const dt = new Date(new Date().getFullYear(), m - 1, d);
+      return dt.toLocaleDateString(undefined, {
+        weekday: "long", day: "numeric", month: "long", year: "numeric"
+      });
+    }
+
+    function setStatus(message, isError) {
+      const box = document.getElementById("status");
+      box.textContent = message || "";
+      box.className = "status" + (message ? " show" : "") + (isError ? " error" : "");
+    }
+
+    function showArticle(item, key) {
+      document.getElementById("series").textContent = item.series || item.category || "";
+      document.getElementById("fullDate").textContent = formatDate(key);
+      document.getElementById("title").textContent = item.title || "";
+      document.getElementById("notification").textContent = item.notification || "";
+      document.getElementById("article").textContent = item.article || "";
+      document.getElementById("quote").textContent = item.quote || "";
+      document.getElementById("moral").textContent = item.moral || "";
+      document.getElementById("question").textContent = item.question || "";
+      document.getElementById("activity").textContent = item.activity || "";
+      document.getElementById("challenge").textContent = item.challenge || "";
+      document.getElementById("content").hidden = false;
+    }
+
+    async function load() {
+      const key = todayKey(new Date());
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(function () { controller.abort(); }, 8000);
+        const res = await fetch(DATA_URL, { cache: "no-store", signal: controller.signal });
+        clearTimeout(timer);
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const list = await res.json();
+        const item = (list || []).find(function (row) { return row && row.date === key; });
+        if (!item) {
+          setStatus("No parent article for " + key + ".", true);
+          return;
+        }
+        showArticle(item, key);
+      } catch (err) {
+        setStatus(
+          "Could not load articles.json. Keep both files in the same folder and open with a local server: cd DailyNotes && python3 -m http.server 8765",
+          true
+        );
+        console.error(err);
+      }
+    }
+
+    load();
+  </script>
+</body>
+</html>
