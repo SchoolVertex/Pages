@@ -178,6 +178,25 @@
       return pad(date.getMonth() + 1) + "-" + pad(date.getDate());
     }
 
+    function normalizeDayParam(raw) {
+      if (!raw) return null;
+      const text = String(raw).trim().replace(/[\/.]/g, "-");
+      const match = text.match(/^(\d{1,2})-(\d{1,2})$/);
+      if (!match) return null;
+      const month = Number(match[1]);
+      const day = Number(match[2]);
+      if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+      const probe = new Date(2026, month - 1, day);
+      if (probe.getMonth() !== month - 1 || probe.getDate() !== day) return null;
+      return pad(month) + "-" + pad(day);
+    }
+
+    function articleKey() {
+      const params = new URLSearchParams(window.location.search);
+      const fromQuery = normalizeDayParam(params.get("day"));
+      return fromQuery || todayKey(new Date());
+    }
+
     function formatDate(key) {
       const [m, d] = key.split("-").map(Number);
       const dt = new Date(new Date().getFullYear(), m - 1, d);
@@ -207,7 +226,7 @@
     }
 
     async function load() {
-      const key = todayKey(new Date());
+      const key = articleKey();
       try {
         const controller = new AbortController();
         const timer = setTimeout(function () { controller.abort(); }, 8000);
@@ -223,7 +242,7 @@
         showArticle(item, key);
       } catch (err) {
         setStatus(
-          "Could not load articles.json. Keep both files in the same folder and open with a local server: cd DailyNotes && python3 -m http.server 8765",
+          "Could not load 365-daily-parent-articles.json. Keep both files in the same folder and open with a local server: cd DailyNotes && python3 -m http.server 8765",
           true
         );
         console.error(err);
