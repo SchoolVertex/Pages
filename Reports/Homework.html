@@ -471,9 +471,34 @@
       margin-top: 10px;
     }
 
-    .recorder__preview audio {
+    .recorder__preview audio,
+    .recorder__preview video {
       width: 100%;
       display: block;
+    }
+
+    .recorder__preview video,
+    .recorder__live {
+      max-height: 220px;
+      border-radius: 10px;
+      background: #000;
+    }
+
+    .recorder__live {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    .file-item audio,
+    .file-item video {
+      width: 100%;
+      margin-top: 6px;
+    }
+
+    .file-item video {
+      max-height: 140px;
+      border-radius: 8px;
+      background: #000;
     }
 
     .file-item__icon--audio {
@@ -486,10 +511,6 @@
       color: #1d4ed8;
     }
 
-    .file-item audio {
-      width: 100%;
-      margin-top: 6px;
-    }
 
     @media (max-width: 380px) {
       .upload__actions {
@@ -646,16 +667,13 @@
             No written instructions. Check the attachments below if any.
           </p>
           <div class="media" ng-if="homework.ImageList.length">
-            <img ng-repeat="item in homework.ImageList" ng-if="isImage(item)"
-                 ng-src="{{item}}" alt="Homework attachment" ng-click="openPreview(item)">
-            <video ng-repeat="item in homework.ImageList" ng-if="isVideo(item)" controls>
-              <source ng-src="{{trustUrl(item)}}" type="video/mp4">
-            </video>
-            <div class="media__audio" ng-repeat="item in homework.ImageList" ng-if="isAudio(item)">
+            <img ng-repeat="item in homework.ImageList" ng-if="mediaKind(item) === 'image'"
+                 ng-src="{{plainMediaUrl(item)}}" alt="Homework attachment" ng-click="openPreview(plainMediaUrl(item))">
+            <video ng-repeat="item in homework.ImageList" ng-if="mediaKind(item) === 'video'"
+                   controls preload="metadata" ng-src="{{trustUrl(plainMediaUrl(item))}}"></video>
+            <div class="media__audio" ng-repeat="item in homework.ImageList" ng-if="mediaKind(item) === 'audio'">
               <p class="media__audio-label">Audio</p>
-              <audio controls preload="metadata">
-                <source ng-src="{{trustUrl(item)}}">
-              </audio>
+              <audio controls preload="metadata" ng-src="{{trustUrl(plainMediaUrl(item))}}"></audio>
             </div>
           </div>
         </section>
@@ -675,10 +693,16 @@
                 Upload audio
               </label>
               <button type="button"
-                      class="upload__btn upload__btn--full"
-                      ng-click="toggleRecorder()"
+                      class="upload__btn"
+                      ng-click="toggleRecorder('audio')"
                       ng-disabled="isSubmitting || isUploading">
-                {{ showRecorder ? 'Hide reading recorder' : 'Record Audio' }}
+                {{ showRecorder && recorderMode === 'audio' ? 'Hide audio recorder' : 'Record audio' }}
+              </button>
+              <button type="button"
+                      class="upload__btn"
+                      ng-click="toggleRecorder('video')"
+                      ng-disabled="isSubmitting || isUploading">
+                {{ showRecorder && recorderMode === 'video' ? 'Hide video recorder' : 'Record video' }}
               </button>
             </div>
 
@@ -696,10 +720,17 @@
                    onchange="angular.element(this).scope().onFilesSelected(this)">
 
             <div class="recorder" ng-if="showRecorder">
-              <p class="recorder__title">Reading skill recording</p>
+              <p class="recorder__title">{{ recorderMode === 'video' ? 'Video recording' : 'Audio / reading recording' }}</p>
               <p class="recorder__hint">
-                Read the poem or article aloud, then record and add it to your submission.
+                {{ recorderMode === 'video'
+                  ? 'Record yourself, then add the clip to your submission.'
+                  : 'Read the poem or article aloud, then record and add it to your submission.' }}
               </p>
+
+              <video id="liveRecorder"
+                     class="recorder__live"
+                     ng-if="recorderMode === 'video' && isRecording"
+                     autoplay muted playsinline></video>
 
               <div class="recorder__status" ng-if="isRecording">
                 <span class="recorder__dot" aria-hidden="true"></span>
@@ -738,7 +769,8 @@
               </div>
 
               <div class="recorder__preview" ng-if="recordedPreviewUrl">
-                <audio controls ng-src="{{trustUrl(recordedPreviewUrl)}}"></audio>
+                <audio ng-if="recorderMode === 'audio'" controls ng-src="{{trustUrl(recordedPreviewUrl)}}"></audio>
+                <video ng-if="recorderMode === 'video'" controls playsinline ng-src="{{trustUrl(recordedPreviewUrl)}}"></video>
               </div>
               <p class="hint" ng-if="recorderError">{{ recorderError }}</p>
             </div>
@@ -759,6 +791,11 @@
                          controls
                          preload="metadata"
                          ng-src="{{trustUrl(file.previewUrl)}}"></audio>
+                  <video ng-if="file.kind === 'video' && file.previewUrl"
+                         controls
+                         playsinline
+                         preload="metadata"
+                         ng-src="{{trustUrl(file.previewUrl)}}"></video>
                 </div>
                 <button type="button"
                         class="file-item__remove"
@@ -769,7 +806,7 @@
             </ul>
           </div>
 
-          <p class="hint">Write an answer and/or attach images, video, or audio (including a reading recording), then submit.</p>
+          <p class="hint">Write an answer and/or attach images, video, or audio (upload or record), then submit.</p>
           <button class="btn" type="button"
                   ng-disabled="isSubmitting || isUploading || isRecording || (!submitForm.description && !pendingFiles.length)"
                   ng-click="submitHomework()">
@@ -792,16 +829,13 @@
           </div>
           <p class="text" ng-if="homework.Submission.Description">{{homework.Submission.Description}}</p>
           <div class="media" ng-if="homework.Submission.ImageList.length">
-            <img ng-repeat="item in homework.Submission.ImageList" ng-if="isImage(item)"
-                 ng-src="{{item}}" alt="Your submission" ng-click="openPreview(item)">
-            <video ng-repeat="item in homework.Submission.ImageList" ng-if="isVideo(item)" controls>
-              <source ng-src="{{trustUrl(item)}}" type="video/mp4">
-            </video>
-            <div class="media__audio" ng-repeat="item in homework.Submission.ImageList" ng-if="isAudio(item)">
-              <p class="media__audio-label">Reading / audio</p>
-              <audio controls preload="metadata">
-                <source ng-src="{{trustUrl(item)}}">
-              </audio>
+            <img ng-repeat="item in homework.Submission.ImageList" ng-if="mediaKind(item) === 'image'"
+                 ng-src="{{plainMediaUrl(item)}}" alt="Your submission" ng-click="openPreview(plainMediaUrl(item))">
+            <video ng-repeat="item in homework.Submission.ImageList" ng-if="mediaKind(item) === 'video'"
+                   controls preload="metadata" ng-src="{{trustUrl(plainMediaUrl(item))}}"></video>
+            <div class="media__audio" ng-repeat="item in homework.Submission.ImageList" ng-if="mediaKind(item) === 'audio'">
+              <p class="media__audio-label">Audio</p>
+              <audio controls preload="metadata" ng-src="{{trustUrl(plainMediaUrl(item))}}"></audio>
             </div>
           </div>
           <p class="hint" ng-if="canDeleteSubmission()">
@@ -862,6 +896,7 @@
       $scope.userId = null;
 
       $scope.showRecorder = false;
+      $scope.recorderMode = 'audio';
       $scope.isRecording = false;
       $scope.recordingTimeLabel = '0:00';
       $scope.recordedBlob = null;
@@ -971,7 +1006,8 @@
         }
         // .webm can be audio or video — use MIME / reading-* name, else treat as audio
         if (/\.webm$/.test(name)) {
-          if (/reading[-_]/.test(name)) return 'audio';
+          if (/reading[-_]/.test(name) || type.indexOf('audio/') === 0) return 'audio';
+          if (/video[-_]/.test(name) || type.indexOf('video/') === 0) return 'video';
           return type.indexOf('video/') === 0 ? 'video' : 'audio';
         }
         return 'file';
@@ -993,12 +1029,29 @@
         return '';
       }
 
+      function pickVideoMimeType() {
+        if (!$window.MediaRecorder) return '';
+        var candidates = [
+          'video/webm;codecs=vp9,opus',
+          'video/webm;codecs=vp8,opus',
+          'video/webm',
+          'video/mp4'
+        ];
+        for (var i = 0; i < candidates.length; i++) {
+          if ($window.MediaRecorder.isTypeSupported && $window.MediaRecorder.isTypeSupported(candidates[i])) {
+            return candidates[i];
+          }
+        }
+        return '';
+      }
+
       function extensionForMime(mime) {
         if (!mime) return 'webm';
-        if (mime.indexOf('audio/mp4') === 0) return 'm4a';
+        if (mime.indexOf('audio/mp4') === 0 || mime.indexOf('video/mp4') === 0) return mime.indexOf('audio/') === 0 ? 'm4a' : 'mp4';
         if (mime.indexOf('audio/ogg') === 0) return 'ogg';
         if (mime.indexOf('audio/mpeg') === 0) return 'mp3';
         if (mime.indexOf('audio/wav') === 0) return 'wav';
+        if (mime.indexOf('video/quicktime') === 0) return 'mov';
         return 'webm';
       }
 
@@ -1031,6 +1084,56 @@
         });
       }
 
+      function getMediaTypeTag(url) {
+        var href = String(url || '');
+        // Primary: prefix marker survives most API URL storage
+        // Example: audio|https://cdn.example.com/file
+        var prefix = href.match(/^(audio|video|image)\|/i);
+        if (prefix) {
+          return prefix[1].toLowerCase();
+        }
+        // Hash marker (does not affect signed CDN query strings)
+        var hash = href.indexOf('#') === -1 ? '' : href.substring(href.indexOf('#') + 1);
+        var hashMatch = hash.match(/(?:^|&)svType=([^&]+)/i);
+        if (hashMatch) {
+          return decodeURIComponent(hashMatch[1] || '').toLowerCase();
+        }
+        // Query marker fallback
+        var bare = href.replace(/^(audio|video|image)\|/i, '');
+        var qIndex = bare.indexOf('?');
+        if (qIndex === -1) return '';
+        var query = bare.substring(qIndex + 1).split('#')[0];
+        var parts = query.split('&');
+        for (var i = 0; i < parts.length; i++) {
+          var pair = parts[i].split('=');
+          if (decodeURIComponent(pair[0] || '') === 'svType') {
+            return decodeURIComponent((pair[1] || '').replace(/\+/g, ' ')).toLowerCase();
+          }
+        }
+        return '';
+      }
+
+      function withMediaType(url, kind) {
+        if (!url || !kind) return url;
+        var href = String(url);
+        if (getMediaTypeTag(href)) return href;
+        return kind + '|' + href;
+      }
+
+      // Playback URL without our type marker
+      $scope.plainMediaUrl = function(url) {
+        if (!url) return '';
+        return String(url)
+          .replace(/^(audio|video|image)\|/i, '')
+          .split('#')[0];
+      };
+
+      function pathExtension(url) {
+        var path = String(url || '').split('?')[0].split('#')[0].toLowerCase();
+        var match = path.match(/\.([a-z0-9]+)$/i);
+        return match ? match[1] : '';
+      }
+
       function uploadPendingFiles() {
         if (!$scope.pendingFiles.length) {
           return $q.resolve([]);
@@ -1038,7 +1141,14 @@
 
         $scope.isUploading = true;
         var uploads = $scope.pendingFiles.map(function(item) {
-          return uploadFileToGroupIn(item.file, 'p', item.name);
+          return uploadFileToGroupIn(item.file, 'p', item.name).then(function(url) {
+            var kind = item.kind || getFileKind(item.file);
+            // Persist kind so submission view can render audio after CDN renames files
+            if (kind === 'audio' || kind === 'video' || kind === 'image') {
+              return withMediaType(url, kind);
+            }
+            return url;
+          });
         });
 
         return $q.all(uploads).finally(function() {
@@ -1046,73 +1156,83 @@
         });
       }
 
-      $scope.isAudio = function(url) {
-        if (!url) return false;
-        var clean = String(url).split('?')[0].toLowerCase();
-        if (/\.(mp3|wav|m4a|aac|ogg|oga|mpeg)$/.test(clean)) return true;
-        // In-app reading recordings are named reading-*.webm / reading-*.m4a
-        if (/reading[-_].*\.(webm|m4a|ogg)$/i.test(clean)) return true;
-        return false;
+      $scope.mediaKind = function(url) {
+        if (!url) return 'file';
+
+        var tagged = getMediaTypeTag(url);
+        if (tagged === 'audio' || tagged === 'video' || tagged === 'image') {
+          return tagged;
+        }
+
+        var ext = pathExtension(url);
+        var path = String(url).split('?')[0].split('#')[0].toLowerCase();
+
+        if (/^(mp3|wav|m4a|aac|ogg|oga|mpeg)$/.test(ext)) return 'audio';
+        if (/reading[-_].*\.(webm|m4a|ogg)$/i.test(path)) return 'audio';
+        if (/video[-_].*\.(webm|mp4|mov|m4v)$/i.test(path)) return 'video';
+        if (/^(mp4|mov|m4v)$/.test(ext)) return 'video';
+        if (ext === 'webm') {
+          return /reading[-_]/i.test(path) ? 'audio' : 'video';
+        }
+        if (/^(png|jpe?g|gif|webp|bmp|heic)$/.test(ext)) return 'image';
+
+        // Legacy extensionless CDN URLs were almost always images
+        if (!ext) return 'image';
+        return 'file';
       };
 
-      $scope.isVideo = function(url) {
-        if (!url) return false;
-        if ($scope.isAudio(url)) return false;
-        var clean = String(url).split('?')[0].toLowerCase();
-        return /\.(mp4|webm|mov|m4v)$/.test(clean);
-      };
-
-      $scope.isImage = function(url) {
-        if (!url) return false;
-        if ($scope.isVideo(url) || $scope.isAudio(url)) return false;
-        var clean = String(url).split('?')[0].toLowerCase();
-        // Treat unknown URLs without extension as images (legacy uploads)
-        if (!/\.[a-z0-9]+$/i.test(clean)) return true;
-        return /\.(png|jpe?g|gif|webp|bmp|heic)$/.test(clean);
-      };
+      $scope.isAudio = function(url) { return $scope.mediaKind(url) === 'audio'; };
+      $scope.isVideo = function(url) { return $scope.mediaKind(url) === 'video'; };
+      $scope.isImage = function(url) { return $scope.mediaKind(url) === 'image'; };
 
       $scope.trustUrl = function(url) {
         return $sce.trustAsResourceUrl(url);
       };
 
-      $scope.toggleRecorder = function() {
-        $scope.showRecorder = !$scope.showRecorder;
-        $scope.recorderError = '';
-        if (!$scope.showRecorder && !$scope.isRecording) {
-          // Keep a finished preview if already added; only clear error state
+      $scope.toggleRecorder = function(mode) {
+        var nextMode = mode || 'audio';
+        if ($scope.showRecorder && $scope.recorderMode === nextMode) {
+          if ($scope.isRecording) $scope.stopRecording();
+          $scope.showRecorder = false;
+          $scope.recorderError = '';
           return;
         }
-        if (!$scope.showRecorder && $scope.isRecording) {
-          $scope.stopRecording();
-        }
+        if ($scope.isRecording) $scope.stopRecording();
+        clearRecordedPreview();
+        $scope.recorderMode = nextMode;
+        $scope.showRecorder = true;
+        $scope.recorderError = '';
       };
 
       $scope.startRecording = function() {
         $scope.recorderError = '';
+        var isVideo = $scope.recorderMode === 'video';
 
         if (!$window.navigator || !$window.navigator.mediaDevices || !$window.navigator.mediaDevices.getUserMedia) {
-          $scope.recorderError = 'Audio recording is not supported on this device/browser.';
+          $scope.recorderError = (isVideo ? 'Video' : 'Audio') + ' recording is not supported on this device/browser.';
           return;
         }
         if (!$window.MediaRecorder) {
-          $scope.recorderError = 'Audio recording is not supported on this device/browser.';
+          $scope.recorderError = (isVideo ? 'Video' : 'Audio') + ' recording is not supported on this device/browser.';
           return;
         }
 
         clearRecordedPreview();
         recordedChunks = [];
 
-        $window.navigator.mediaDevices.getUserMedia({ audio: true })
+        var constraints = isVideo ? { audio: true, video: { facingMode: 'user' } } : { audio: true };
+
+        $window.navigator.mediaDevices.getUserMedia(constraints)
           .then(function(stream) {
             mediaStream = stream;
-            var mimeType = pickAudioMimeType();
+            var mimeType = isVideo ? pickVideoMimeType() : pickAudioMimeType();
             try {
               mediaRecorder = mimeType
                 ? new $window.MediaRecorder(stream, { mimeType: mimeType })
                 : new $window.MediaRecorder(stream);
             } catch (err) {
               stopMediaStream();
-              $scope.recorderError = 'Unable to start the microphone recorder.';
+              $scope.recorderError = 'Unable to start the ' + (isVideo ? 'camera' : 'microphone') + ' recorder.';
               if (!$scope.$$phase) $scope.$apply();
               return;
             }
@@ -1129,12 +1249,12 @@
               $scope.isRecording = false;
 
               if (!recordedChunks.length) {
-                $scope.recorderError = 'No audio was captured. Please try again.';
+                $scope.recorderError = 'Nothing was captured. Please try again.';
                 if (!$scope.$$phase) $scope.$apply();
                 return;
               }
 
-              var blobType = (mediaRecorder && mediaRecorder.mimeType) || mimeType || 'audio/webm';
+              var blobType = (mediaRecorder && mediaRecorder.mimeType) || mimeType || (isVideo ? 'video/webm' : 'audio/webm');
               var blob = new Blob(recordedChunks, { type: blobType });
               $scope.recordedBlob = blob;
               $scope.recordedPreviewUrl = URL.createObjectURL(blob);
@@ -1151,9 +1271,18 @@
               if (!$scope.$$phase) $scope.$apply();
             }, 250);
             if (!$scope.$$phase) $scope.$apply();
+
+            $window.setTimeout(function() {
+              var live = $window.document.getElementById('liveRecorder');
+              if (live && isVideo) {
+                live.srcObject = stream;
+              }
+            }, 0);
           })
           .catch(function() {
-            $scope.recorderError = 'Microphone access denied. Allow mic permission to record reading.';
+            $scope.recorderError = isVideo
+              ? 'Camera/microphone access denied. Allow permission to record video.'
+              : 'Microphone access denied. Allow mic permission to record audio.';
             if (!$scope.$$phase) $scope.$apply();
           });
       };
@@ -1186,11 +1315,13 @@
       $scope.addRecordingToFiles = function() {
         if (!$scope.recordedBlob) return;
 
-        var mime = $scope.recordedBlob.type || 'audio/webm';
+        var mime = $scope.recordedBlob.type || ($scope.recorderMode === 'video' ? 'video/webm' : 'audio/webm');
         var ext = extensionForMime(mime);
         var stamp = new Date();
         var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
-        var fileName = 'reading-' +
+        var kind = $scope.recorderMode === 'video' ? 'video' : 'audio';
+        var prefix = kind === 'video' ? 'video-' : 'reading-';
+        var fileName = prefix +
           stamp.getFullYear() +
           pad(stamp.getMonth() + 1) +
           pad(stamp.getDate()) + '-' +
@@ -1212,7 +1343,7 @@
           file: file,
           name: fileName,
           sizeLabel: formatBytes($scope.recordedBlob.size),
-          kind: 'audio',
+          kind: kind,
           previewUrl: $scope.recordedPreviewUrl
         });
 
@@ -1221,7 +1352,7 @@
         $scope.recordedBlob = null;
         recordedChunks = [];
         $scope.recorderError = '';
-        $scope.successMessage = 'Reading recording added. You can record another or submit.';
+        $scope.successMessage = (kind === 'video' ? 'Video' : 'Audio') + ' recording added. You can record another or submit.';
       };
 
       $scope.openPreview = function(url) {
@@ -1295,7 +1426,7 @@
         files.forEach(function(file) {
           var kind = getFileKind(file);
           var previewUrl = '';
-          if (kind === 'image' || kind === 'audio') {
+          if (kind === 'image' || kind === 'audio' || kind === 'video') {
             previewUrl = URL.createObjectURL(file);
           }
           $scope.pendingFiles.push({
