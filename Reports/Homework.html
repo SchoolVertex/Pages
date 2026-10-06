@@ -708,10 +708,10 @@
             <img ng-repeat="item in homework.ImageList" ng-if="mediaKind(item) === 'image'"
                  ng-src="{{plainMediaUrl(item)}}" alt="Homework attachment" ng-click="openPreview(plainMediaUrl(item))">
             <video ng-repeat="item in homework.ImageList" ng-if="mediaKind(item) === 'video'"
-                   controls preload="metadata" ng-src="{{trustUrl(plainMediaUrl(item))}}"></video>
+                   controls preload="metadata" playsinline sv-media-src="{{plainMediaUrl(item)}}"></video>
             <div class="media__audio" ng-repeat="item in homework.ImageList" ng-if="mediaKind(item) === 'audio'">
               <p class="media__audio-label">Audio</p>
-              <audio controls preload="metadata" ng-src="{{trustUrl(plainMediaUrl(item))}}"></audio>
+              <audio controls preload="metadata" sv-media-src="{{plainMediaUrl(item)}}"></audio>
             </div>
           </div>
         </section>
@@ -826,8 +826,8 @@
               </div>
 
               <div class="recorder__preview" ng-if="recordedPreviewUrl">
-                <audio ng-if="recorderMode === 'audio'" controls ng-src="{{trustUrl(recordedPreviewUrl)}}"></audio>
-                <video ng-if="recorderMode === 'video'" controls playsinline ng-src="{{trustUrl(recordedPreviewUrl)}}"></video>
+                <audio ng-if="recorderMode === 'audio'" controls preload="metadata" sv-media-src="{{recordedPreviewUrl}}"></audio>
+                <video ng-if="recorderMode === 'video'" controls playsinline preload="metadata" sv-media-src="{{recordedPreviewUrl}}"></video>
               </div>
               <p class="hint" ng-if="recorderError">{{ recorderError }}</p>
             </div>
@@ -847,12 +847,12 @@
                   <audio ng-if="file.kind === 'audio' && file.previewUrl"
                          controls
                          preload="metadata"
-                         ng-src="{{trustUrl(file.previewUrl)}}"></audio>
+                         sv-media-src="{{file.previewUrl}}"></audio>
                   <video ng-if="file.kind === 'video' && file.previewUrl"
                          controls
                          playsinline
                          preload="metadata"
-                         ng-src="{{trustUrl(file.previewUrl)}}"></video>
+                         sv-media-src="{{file.previewUrl}}"></video>
                 </div>
                 <button type="button"
                         class="file-item__remove"
@@ -889,10 +889,10 @@
             <img ng-repeat="item in homework.Submission.ImageList" ng-if="mediaKind(item) === 'image'"
                  ng-src="{{plainMediaUrl(item)}}" alt="Your submission" ng-click="openPreview(plainMediaUrl(item))">
             <video ng-repeat="item in homework.Submission.ImageList" ng-if="mediaKind(item) === 'video'"
-                   controls preload="metadata" ng-src="{{trustUrl(plainMediaUrl(item))}}"></video>
+                   controls preload="metadata" playsinline sv-media-src="{{plainMediaUrl(item)}}"></video>
             <div class="media__audio" ng-repeat="item in homework.Submission.ImageList" ng-if="mediaKind(item) === 'audio'">
               <p class="media__audio-label">Audio</p>
-              <audio controls preload="metadata" ng-src="{{trustUrl(plainMediaUrl(item))}}"></audio>
+              <audio controls preload="metadata" sv-media-src="{{plainMediaUrl(item)}}"></audio>
             </div>
           </div>
           <p class="hint" ng-if="canDeleteSubmission()">
@@ -927,6 +927,48 @@
 
   <script>
     angular.module('homeworkDetailApp', [])
+    // Sets media src once and fixes WebM/MediaRecorder duration (progress jumping to end)
+    .directive('svMediaSrc', function() {
+      return {
+        restrict: 'A',
+        link: function(scope, element, attrs) {
+          var el = element[0];
+          var lastSrc = '';
+          var fixingDuration = false;
+
+          function fixMissingDuration() {
+            if (fixingDuration) return;
+            if (!(el.duration === Infinity || isNaN(el.duration))) return;
+            fixingDuration = true;
+            var onTimeUpdate = function() {
+              el.removeEventListener('timeupdate', onTimeUpdate);
+              fixingDuration = false;
+              try {
+                el.currentTime = 0;
+              } catch (e) { /* ignore */ }
+            };
+            el.addEventListener('timeupdate', onTimeUpdate);
+            try {
+              el.currentTime = 1e101;
+            } catch (e) {
+              fixingDuration = false;
+              el.removeEventListener('timeupdate', onTimeUpdate);
+            }
+          }
+
+          el.addEventListener('loadedmetadata', fixMissingDuration);
+          el.addEventListener('durationchange', fixMissingDuration);
+
+          attrs.$observe('svMediaSrc', function(url) {
+            var next = String(url || '').trim();
+            if (!next || next === lastSrc) return;
+            lastSrc = next;
+            el.src = next;
+            if (el.load) el.load();
+          });
+        }
+      };
+    })
     .controller('HomeworkDetailController', function($scope, $http, $window, $sce, $q) {
       var API_BASE = 'https://api.schoolvertex.com/api';
       var GROUPIN_URL = 'https://stag-saas-messagebot.tech-v2.groupin.app/api/v1/';
@@ -1316,8 +1358,14 @@
       $scope.isVideo = function(url) { return $scope.mediaKind(url) === 'video'; };
       $scope.isImage = function(url) { return $scope.mediaKind(url) === 'image'; };
 
+      var trustedUrlCache = {};
       $scope.trustUrl = function(url) {
-        return $sce.trustAsResourceUrl(url);
+        if (!url) return '';
+        var key = String(url);
+        if (!trustedUrlCache[key]) {
+          trustedUrlCache[key] = $sce.trustAsResourceUrl(key);
+        }
+        return trustedUrlCache[key];
       };
 
       $scope.toggleRecorder = function(mode) {
