@@ -489,6 +489,44 @@
       margin-bottom: 10px;
     }
 
+    .recorder__live-wrap {
+      position: relative;
+      margin-bottom: 10px;
+    }
+
+    .recorder__live-wrap .recorder__live {
+      margin-bottom: 0;
+    }
+
+    .recorder__cam-btn {
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      z-index: 2;
+      border: 0;
+      border-radius: 999px;
+      min-height: 40px;
+      padding: 0 14px;
+      background: rgba(15, 28, 36, 0.78);
+      color: #fff;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .recorder__cam-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .recorder__cam-label {
+      margin: 0 0 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
     .file-item audio,
     .file-item video {
       width: 100%;
@@ -727,10 +765,22 @@
                   : 'Read the poem or article aloud, then record and add it to your submission.' }}
               </p>
 
-              <video id="liveRecorder"
-                     class="recorder__live"
-                     ng-if="recorderMode === 'video' && isRecording"
-                     autoplay muted playsinline></video>
+              <p class="recorder__cam-label" ng-if="recorderMode === 'video' && hasLivePreview">
+                Using {{ cameraFacing === 'user' ? 'front' : 'back' }} camera
+              </p>
+
+              <div class="recorder__live-wrap" ng-if="recorderMode === 'video' && (hasLivePreview || isRecording)">
+                <video id="liveRecorder"
+                       class="recorder__live"
+                       autoplay muted playsinline></video>
+                <button type="button"
+                        class="recorder__cam-btn"
+                        ng-if="!isRecording"
+                        ng-click="switchCamera()"
+                        ng-disabled="isSubmitting || isUploading || isSwitchingCamera">
+                  {{ isSwitchingCamera ? 'Switching...' : (cameraFacing === 'user' ? 'Switch to back' : 'Switch to front') }}
+                </button>
+              </div>
 
               <div class="recorder__status" ng-if="isRecording">
                 <span class="recorder__dot" aria-hidden="true"></span>
@@ -743,7 +793,7 @@
                         class="btn btn--record"
                         ng-if="!isRecording"
                         ng-click="startRecording()"
-                        ng-disabled="isSubmitting || isUploading">
+                        ng-disabled="isSubmitting || isUploading || isSwitchingCamera">
                   Start recording
                 </button>
                 <button type="button"
@@ -751,6 +801,13 @@
                         ng-if="isRecording"
                         ng-click="stopRecording()">
                   Stop
+                </button>
+                <button type="button"
+                        class="btn btn--secondary"
+                        ng-if="recorderMode === 'video' && !isRecording && !recordedBlob"
+                        ng-click="switchCamera()"
+                        ng-disabled="isSubmitting || isUploading || isSwitchingCamera">
+                  {{ isSwitchingCamera ? 'Switching...' : (cameraFacing === 'user' ? 'Use back camera' : 'Use front camera') }}
                 </button>
                 <button type="button"
                         class="btn btn--secondary"
@@ -902,12 +959,17 @@
       $scope.recordedBlob = null;
       $scope.recordedPreviewUrl = '';
       $scope.recorderError = '';
+      // Default to back camera for homework filming; user can switch to front
+      $scope.cameraFacing = 'environment';
+      $scope.hasLivePreview = false;
+      $scope.isSwitchingCamera = false;
 
       var mediaRecorder = null;
       var mediaStream = null;
       var recordedChunks = [];
       var recordingTimer = null;
       var recordingStartedAt = 0;
+      var keepPreviewAfterStop = false;
 
       function getQueryParams() {
         var params = {};
@@ -968,6 +1030,75 @@
           });
           mediaStream = null;
         }
+        $scope.hasLivePreview = false;
+        var live = $window.document.getElementById('liveRecorder');
+        if (live) {
+          live.srcObject = null;
+        }
+      }
+
+      function bindLiveVideo(stream) {
+        // Wait for ng-if to create #liveRecorder after hasLivePreview flips true
+        $window.setTimeout(function() {
+          var live = $window.document.getElementById('liveRecorder');
+          if (live && stream) {
+            live.srcObject = stream;
+            var playPromise = live.play && live.play();
+            if (playPromise && playPromise.catch) {
+              playPromise.catch(function() { /* autoplay can be blocked until gesture */ });
+            }
+          }
+        }, 60);
+      }
+
+      function getVideoConstraints(facing) {
+        return {
+          audio: true,
+          video: {
+            facingMode: { ideal: facing || $scope.cameraFacing || 'environment' }
+          }
+        };
+      }
+
+      function requestCameraStream(facing) {
+        var preferred = facing || $scope.cameraFacing || 'environment';
+        return $window.navigator.mediaDevices.getUserMedia(getVideoConstraints(preferred))
+          .catch(function() {
+            // Some devices reject ideal constraints; retry with exact/simple facingMode
+            return $window.navigator.mediaDevices.getUserMedia({
+              audio: true,
+              video: { facingMode: preferred }
+            });
+          })
+          .catch(function() {
+            // Last resort: any camera
+            return $window.navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+          });
+      }
+
+      function startVideoPreview() {
+        if (!$window.navigator || !$window.navigator.mediaDevices || !$window.navigator.mediaDevices.getUserMedia) {
+          $scope.recorderError = 'Camera is not supported on this device/browser.';
+          return $q.reject();
+        }
+
+        stopMediaStream();
+        $scope.recorderError = '';
+
+        return requestCameraStream($scope.cameraFacing)
+          .then(function(stream) {
+            mediaStream = stream;
+            $scope.hasLivePreview = true;
+            if (!$scope.$$phase) $scope.$apply();
+            bindLiveVideo(stream);
+            return stream;
+          })
+          .catch(function() {
+            $scope.hasLivePreview = false;
+            $scope.recorderError = 'Camera access denied. Allow camera permission, then try again.';
+            if (!$scope.$$phase) $scope.$apply();
+            return $q.reject();
+          });
       }
 
       function clearRecordedPreview() {
@@ -1193,16 +1324,106 @@
         var nextMode = mode || 'audio';
         if ($scope.showRecorder && $scope.recorderMode === nextMode) {
           if ($scope.isRecording) $scope.stopRecording();
+          stopMediaStream();
           $scope.showRecorder = false;
           $scope.recorderError = '';
+          $scope.isSwitchingCamera = false;
           return;
         }
         if ($scope.isRecording) $scope.stopRecording();
+        stopMediaStream();
         clearRecordedPreview();
         $scope.recorderMode = nextMode;
         $scope.showRecorder = true;
         $scope.recorderError = '';
+        $scope.isSwitchingCamera = false;
+        if (nextMode === 'video') {
+          // Prefer back camera for homework; user can switch before recording
+          if (!$scope.cameraFacing) $scope.cameraFacing = 'environment';
+          startVideoPreview();
+        }
       };
+
+      $scope.switchCamera = function() {
+        if ($scope.recorderMode !== 'video' || $scope.isRecording || $scope.isSwitchingCamera) return;
+        $scope.cameraFacing = $scope.cameraFacing === 'user' ? 'environment' : 'user';
+        $scope.isSwitchingCamera = true;
+        $scope.recorderError = '';
+        startVideoPreview()
+          .finally(function() {
+            $scope.isSwitchingCamera = false;
+            if (!$scope.$$phase) $scope.$apply();
+          });
+      };
+
+      function beginRecordingWithStream(stream, isVideo) {
+        var mimeType = isVideo ? pickVideoMimeType() : pickAudioMimeType();
+        try {
+          mediaRecorder = mimeType
+            ? new $window.MediaRecorder(stream, { mimeType: mimeType })
+            : new $window.MediaRecorder(stream);
+        } catch (err) {
+          if (!isVideo) stopMediaStream();
+          $scope.recorderError = 'Unable to start the ' + (isVideo ? 'camera' : 'microphone') + ' recorder.';
+          if (!$scope.$$phase) $scope.$apply();
+          return;
+        }
+
+        recordedChunks = [];
+
+        mediaRecorder.ondataavailable = function(event) {
+          if (event.data && event.data.size > 0) {
+            recordedChunks.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = function() {
+          stopRecordingTimer();
+          $scope.isRecording = false;
+
+          if (!recordedChunks.length) {
+            $scope.recorderError = 'Nothing was captured. Please try again.';
+            if ($scope.recorderMode === 'video') {
+              startVideoPreview();
+            } else {
+              stopMediaStream();
+            }
+            if (!$scope.$$phase) $scope.$apply();
+            return;
+          }
+
+          var blobType = (mediaRecorder && mediaRecorder.mimeType) || mimeType || (isVideo ? 'video/webm' : 'audio/webm');
+          var blob = new Blob(recordedChunks, { type: blobType });
+          $scope.recordedBlob = blob;
+          $scope.recordedPreviewUrl = URL.createObjectURL(blob);
+
+          // Keep camera preview available after stop so student can switch cam / re-record
+          if (isVideo && keepPreviewAfterStop) {
+            startVideoPreview();
+          } else if (!isVideo) {
+            stopMediaStream();
+          }
+
+          keepPreviewAfterStop = false;
+          if (!$scope.$$phase) $scope.$apply();
+        };
+
+        mediaRecorder.start(250);
+        $scope.isRecording = true;
+        recordingStartedAt = Date.now();
+        $scope.recordingTimeLabel = '0:00';
+        stopRecordingTimer();
+        recordingTimer = setInterval(function() {
+          $scope.recordingTimeLabel = formatRecordingTime(Date.now() - recordingStartedAt);
+          if (!$scope.$$phase) $scope.$apply();
+        }, 250);
+
+        if (isVideo) {
+          $scope.hasLivePreview = true;
+          bindLiveVideo(stream);
+        }
+        if (!$scope.$$phase) $scope.$apply();
+      }
 
       $scope.startRecording = function() {
         $scope.recorderError = '';
@@ -1219,65 +1440,23 @@
 
         clearRecordedPreview();
         recordedChunks = [];
+        keepPreviewAfterStop = isVideo;
 
-        var constraints = isVideo ? { audio: true, video: { facingMode: 'user' } } : { audio: true };
+        // Reuse the already-open camera preview (keeps selected front/back camera)
+        if (isVideo && mediaStream) {
+          beginRecordingWithStream(mediaStream, true);
+          return;
+        }
 
-        $window.navigator.mediaDevices.getUserMedia(constraints)
+        var streamPromise = isVideo
+          ? requestCameraStream($scope.cameraFacing)
+          : $window.navigator.mediaDevices.getUserMedia({ audio: true });
+
+        streamPromise
           .then(function(stream) {
             mediaStream = stream;
-            var mimeType = isVideo ? pickVideoMimeType() : pickAudioMimeType();
-            try {
-              mediaRecorder = mimeType
-                ? new $window.MediaRecorder(stream, { mimeType: mimeType })
-                : new $window.MediaRecorder(stream);
-            } catch (err) {
-              stopMediaStream();
-              $scope.recorderError = 'Unable to start the ' + (isVideo ? 'camera' : 'microphone') + ' recorder.';
-              if (!$scope.$$phase) $scope.$apply();
-              return;
-            }
-
-            mediaRecorder.ondataavailable = function(event) {
-              if (event.data && event.data.size > 0) {
-                recordedChunks.push(event.data);
-              }
-            };
-
-            mediaRecorder.onstop = function() {
-              stopRecordingTimer();
-              stopMediaStream();
-              $scope.isRecording = false;
-
-              if (!recordedChunks.length) {
-                $scope.recorderError = 'Nothing was captured. Please try again.';
-                if (!$scope.$$phase) $scope.$apply();
-                return;
-              }
-
-              var blobType = (mediaRecorder && mediaRecorder.mimeType) || mimeType || (isVideo ? 'video/webm' : 'audio/webm');
-              var blob = new Blob(recordedChunks, { type: blobType });
-              $scope.recordedBlob = blob;
-              $scope.recordedPreviewUrl = URL.createObjectURL(blob);
-              if (!$scope.$$phase) $scope.$apply();
-            };
-
-            mediaRecorder.start(250);
-            $scope.isRecording = true;
-            recordingStartedAt = Date.now();
-            $scope.recordingTimeLabel = '0:00';
-            stopRecordingTimer();
-            recordingTimer = setInterval(function() {
-              $scope.recordingTimeLabel = formatRecordingTime(Date.now() - recordingStartedAt);
-              if (!$scope.$$phase) $scope.$apply();
-            }, 250);
-            if (!$scope.$$phase) $scope.$apply();
-
-            $window.setTimeout(function() {
-              var live = $window.document.getElementById('liveRecorder');
-              if (live && isVideo) {
-                live.srcObject = stream;
-              }
-            }, 0);
+            if (isVideo) $scope.hasLivePreview = true;
+            beginRecordingWithStream(stream, isVideo);
           })
           .catch(function() {
             $scope.recorderError = isVideo
@@ -1288,10 +1467,15 @@
       };
 
       $scope.stopRecording = function() {
+        keepPreviewAfterStop = $scope.recorderMode === 'video';
         if (!mediaRecorder || mediaRecorder.state === 'inactive') {
           $scope.isRecording = false;
           stopRecordingTimer();
-          stopMediaStream();
+          if ($scope.recorderMode === 'video') {
+            startVideoPreview();
+          } else {
+            stopMediaStream();
+          }
           return;
         }
         try {
@@ -1299,7 +1483,11 @@
         } catch (e) {
           $scope.isRecording = false;
           stopRecordingTimer();
-          stopMediaStream();
+          if ($scope.recorderMode === 'video') {
+            startVideoPreview();
+          } else {
+            stopMediaStream();
+          }
         }
       };
 
