@@ -693,24 +693,6 @@
         <button type="button" class="panel__close" ng-click="closeEvaluate()">&times;</button>
       </div>
 
-      <p class="text" ng-if="selected.Description" style="margin-bottom:12px;">{{selected.Description}}</p>
-      <div ng-if="selected.ImageList.length" style="margin-bottom:14px;">
-        <label class="field-label">Student work</label>
-        <div class="media">
-          <img ng-repeat="media in selected.ImageList" ng-if="mediaKind(media) === 'image'"
-               ng-src="{{plainMediaUrl(media)}}" alt="Submission attachment" ng-click="openPreview(plainMediaUrl(media))">
-          <video ng-repeat="media in selected.ImageList" ng-if="mediaKind(media) === 'video'"
-                 controls preload="metadata" playsinline sv-media-src="{{plainMediaUrl(media)}}"></video>
-          <div class="media__audio" ng-repeat="media in selected.ImageList" ng-if="mediaKind(media) === 'audio'">
-            <p class="media__audio-label">Audio</p>
-            <audio controls preload="metadata" sv-media-src="{{plainMediaUrl(media)}}"></audio>
-          </div>
-          <a class="media__file" ng-repeat="media in selected.ImageList"
-             ng-if="mediaKind(media) === 'file'"
-             ng-href="{{plainMediaUrl(media)}}" target="_blank" rel="noopener">Open file</a>
-        </div>
-      </div>
-
       <label class="field-label" for="remarks">Remarks</label>
       <textarea id="remarks"
                 ng-model="evalForm.Remarks"
