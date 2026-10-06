@@ -194,6 +194,32 @@
       grid-column: 1 / -1;
     }
 
+    .media audio,
+    .media__audio {
+      width: 100%;
+      grid-column: 1 / -1;
+      margin-top: 2px;
+    }
+
+    .media__audio {
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .media__audio-label {
+      margin: 0 0 8px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--deep);
+    }
+
+    .media__audio audio {
+      width: 100%;
+      display: block;
+    }
+
     .media__file {
       display: flex;
       align-items: center;
@@ -571,14 +597,17 @@
       <div class="section-pad" ng-if="assignment.ImageList.length">
         <h2 class="section-title">Assigned attachments</h2>
         <div class="media">
-          <img ng-repeat="item in assignment.ImageList" ng-if="isImage(item)"
-               ng-src="{{item}}" alt="Homework attachment" ng-click="openPreview(item)">
-          <video ng-repeat="item in assignment.ImageList" ng-if="isVideo(item)" controls>
-            <source ng-src="{{trustUrl(item)}}" type="video/mp4">
-          </video>
+          <img ng-repeat="item in assignment.ImageList" ng-if="mediaKind(item) === 'image'"
+               ng-src="{{plainMediaUrl(item)}}" alt="Homework attachment" ng-click="openPreview(plainMediaUrl(item))">
+          <video ng-repeat="item in assignment.ImageList" ng-if="mediaKind(item) === 'video'"
+                 controls preload="metadata" playsinline sv-media-src="{{plainMediaUrl(item)}}"></video>
+          <div class="media__audio" ng-repeat="item in assignment.ImageList" ng-if="mediaKind(item) === 'audio'">
+            <p class="media__audio-label">Audio</p>
+            <audio controls preload="metadata" sv-media-src="{{plainMediaUrl(item)}}"></audio>
+          </div>
           <a class="media__file" ng-repeat="item in assignment.ImageList"
-             ng-if="!isImage(item) && !isVideo(item)"
-             ng-href="{{item}}" target="_blank" rel="noopener">Open file</a>
+             ng-if="mediaKind(item) === 'file'"
+             ng-href="{{plainMediaUrl(item)}}" target="_blank" rel="noopener">Open file</a>
         </div>
       </div>
     </article>
@@ -617,14 +646,17 @@
           <p class="text" ng-if="!item.Description" style="color:var(--muted);">No written answer.</p>
 
           <div class="media" ng-if="item.ImageList.length">
-            <img ng-repeat="media in item.ImageList" ng-if="isImage(media)"
-                 ng-src="{{media}}" alt="Submission attachment" ng-click="openPreview(media)">
-            <video ng-repeat="media in item.ImageList" ng-if="isVideo(media)" controls>
-              <source ng-src="{{trustUrl(media)}}" type="video/mp4">
-            </video>
+            <img ng-repeat="media in item.ImageList" ng-if="mediaKind(media) === 'image'"
+                 ng-src="{{plainMediaUrl(media)}}" alt="Submission attachment" ng-click="openPreview(plainMediaUrl(media))">
+            <video ng-repeat="media in item.ImageList" ng-if="mediaKind(media) === 'video'"
+                   controls preload="metadata" playsinline sv-media-src="{{plainMediaUrl(media)}}"></video>
+            <div class="media__audio" ng-repeat="media in item.ImageList" ng-if="mediaKind(media) === 'audio'">
+              <p class="media__audio-label">Audio</p>
+              <audio controls preload="metadata" sv-media-src="{{plainMediaUrl(media)}}"></audio>
+            </div>
             <a class="media__file" ng-repeat="media in item.ImageList"
-               ng-if="!isImage(media) && !isVideo(media)"
-               ng-href="{{media}}" target="_blank" rel="noopener">Open file</a>
+               ng-if="mediaKind(media) === 'file'"
+               ng-href="{{plainMediaUrl(media)}}" target="_blank" rel="noopener">Open file</a>
           </div>
 
           <div class="feedback" ng-if="item.Remarks || item.Rating > 0">
@@ -659,6 +691,24 @@
           <p class="panel__sub">{{selected.studentName || 'Student'}}</p>
         </div>
         <button type="button" class="panel__close" ng-click="closeEvaluate()">&times;</button>
+      </div>
+
+      <p class="text" ng-if="selected.Description" style="margin-bottom:12px;">{{selected.Description}}</p>
+      <div ng-if="selected.ImageList.length" style="margin-bottom:14px;">
+        <label class="field-label">Student work</label>
+        <div class="media">
+          <img ng-repeat="media in selected.ImageList" ng-if="mediaKind(media) === 'image'"
+               ng-src="{{plainMediaUrl(media)}}" alt="Submission attachment" ng-click="openPreview(plainMediaUrl(media))">
+          <video ng-repeat="media in selected.ImageList" ng-if="mediaKind(media) === 'video'"
+                 controls preload="metadata" playsinline sv-media-src="{{plainMediaUrl(media)}}"></video>
+          <div class="media__audio" ng-repeat="media in selected.ImageList" ng-if="mediaKind(media) === 'audio'">
+            <p class="media__audio-label">Audio</p>
+            <audio controls preload="metadata" sv-media-src="{{plainMediaUrl(media)}}"></audio>
+          </div>
+          <a class="media__file" ng-repeat="media in selected.ImageList"
+             ng-if="mediaKind(media) === 'file'"
+             ng-href="{{plainMediaUrl(media)}}" target="_blank" rel="noopener">Open file</a>
+        </div>
       </div>
 
       <label class="field-label" for="remarks">Remarks</label>
@@ -699,6 +749,48 @@
 
   <script>
     angular.module('teacherHomeworkApp', [])
+    // Sets media src once and fixes WebM/MediaRecorder duration (progress jumping to end)
+    .directive('svMediaSrc', function() {
+      return {
+        restrict: 'A',
+        link: function(scope, element, attrs) {
+          var el = element[0];
+          var lastSrc = '';
+          var fixingDuration = false;
+
+          function fixMissingDuration() {
+            if (fixingDuration) return;
+            if (!(el.duration === Infinity || isNaN(el.duration))) return;
+            fixingDuration = true;
+            var onTimeUpdate = function() {
+              el.removeEventListener('timeupdate', onTimeUpdate);
+              fixingDuration = false;
+              try {
+                el.currentTime = 0;
+              } catch (e) { /* ignore */ }
+            };
+            el.addEventListener('timeupdate', onTimeUpdate);
+            try {
+              el.currentTime = 1e101;
+            } catch (e) {
+              fixingDuration = false;
+              el.removeEventListener('timeupdate', onTimeUpdate);
+            }
+          }
+
+          el.addEventListener('loadedmetadata', fixMissingDuration);
+          el.addEventListener('durationchange', fixMissingDuration);
+
+          attrs.$observe('svMediaSrc', function(url) {
+            var next = String(url || '').trim();
+            if (!next || next === lastSrc) return;
+            lastSrc = next;
+            el.src = next;
+            if (el.load) el.load();
+          });
+        }
+      };
+    })
     .controller('TeacherHomeworkController', function($scope, $http, $window, $sce) {
       var API_BASE = 'https://api.schoolvertex.com/api';
 
@@ -741,9 +833,88 @@
         return isNaN(n) ? null : n;
       }
 
-      function cleanUrl(url) {
-        return String(url || '').split('?')[0].toLowerCase();
+      function getMediaTypeTag(url) {
+        var href = String(url || '');
+        var prefix = href.match(/^(audio|video|image)\|/i);
+        if (prefix) {
+          return prefix[1].toLowerCase();
+        }
+        var hash = href.indexOf('#') === -1 ? '' : href.substring(href.indexOf('#') + 1);
+        var hashMatch = hash.match(/(?:^|&)svType=([^&]+)/i);
+        if (hashMatch) {
+          return decodeURIComponent(hashMatch[1] || '').toLowerCase();
+        }
+        var bare = href.replace(/^(audio|video|image)\|/i, '');
+        var qIndex = bare.indexOf('?');
+        if (qIndex === -1) return '';
+        var query = bare.substring(qIndex + 1).split('#')[0];
+        var parts = query.split('&');
+        for (var i = 0; i < parts.length; i++) {
+          var pair = parts[i].split('=');
+          if (decodeURIComponent(pair[0] || '') === 'svType') {
+            return decodeURIComponent((pair[1] || '').replace(/\+/g, ' ')).toLowerCase();
+          }
+        }
+        return '';
       }
+
+      $scope.plainMediaUrl = function(url) {
+        if (!url) return '';
+        return String(url)
+          .replace(/^(audio|video|image)\|/i, '')
+          .split('#')[0];
+      };
+
+      function pathExtension(url) {
+        var path = String(url || '').split('?')[0].split('#')[0]
+          .replace(/^(audio|video|image)\|/i, '')
+          .toLowerCase();
+        var match = path.match(/\.([a-z0-9]+)$/i);
+        return match ? match[1] : '';
+      }
+
+      $scope.mediaKind = function(url) {
+        if (!url) return 'file';
+
+        var tagged = getMediaTypeTag(url);
+        if (tagged === 'audio' || tagged === 'video' || tagged === 'image') {
+          return tagged;
+        }
+
+        var ext = pathExtension(url);
+        var path = String(url).split('?')[0].split('#')[0]
+          .replace(/^(audio|video|image)\|/i, '')
+          .toLowerCase();
+
+        if (/^(mp3|wav|m4a|aac|ogg|oga|mpeg)$/.test(ext)) return 'audio';
+        if (/reading[-_].*\.(webm|m4a|ogg)$/i.test(path)) return 'audio';
+        if (/video[-_].*\.(webm|mp4|mov|m4v)$/i.test(path)) return 'video';
+        if (/^(mp4|mov|m4v)$/.test(ext)) return 'video';
+        if (ext === 'webm') {
+          return /reading[-_]/i.test(path) ? 'audio' : 'video';
+        }
+        if (/^(png|jpe?g|gif|webp|bmp|heic|svg)$/.test(ext)) return 'image';
+        if (/^(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|zip|rar)$/.test(ext)) return 'file';
+        if (!ext) return 'image';
+        return 'file';
+      };
+
+      $scope.isAudio = function(url) { return $scope.mediaKind(url) === 'audio'; };
+      $scope.isVideo = function(url) { return $scope.mediaKind(url) === 'video'; };
+      $scope.isImage = function(url) { return $scope.mediaKind(url) === 'image'; };
+
+      var trustedUrlCache = {};
+      $scope.trustUrl = function(url) {
+        if (!url) return '';
+        var key = String(url);
+        if (!trustedUrlCache[key]) {
+          trustedUrlCache[key] = $sce.trustAsResourceUrl(key);
+        }
+        return trustedUrlCache[key];
+      };
+
+      $scope.openPreview = function(url) { $scope.previewUrl = url; };
+      $scope.closePreview = function() { $scope.previewUrl = ''; };
 
       // Merge Submissions + Responses from GetByIdViewAll
       function buildSubmissionList(data) {
@@ -779,24 +950,6 @@
           };
         });
       }
-
-      $scope.isVideo = function(url) {
-        return /\.(mp4|webm|mov|m4v)$/.test(cleanUrl(url));
-      };
-
-      $scope.isImage = function(url) {
-        if (!url || $scope.isVideo(url)) return false;
-        var clean = cleanUrl(url);
-        if (/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|zip|rar)$/.test(clean)) return false;
-        return /\.(jpe?g|png|gif|webp|bmp|svg)$/.test(clean) || !/\.[a-z0-9]+$/i.test(clean);
-      };
-
-      $scope.trustUrl = function(url) {
-        return $sce.trustAsResourceUrl(url);
-      };
-
-      $scope.openPreview = function(url) { $scope.previewUrl = url; };
-      $scope.closePreview = function() { $scope.previewUrl = ''; };
 
       $scope.getStatusCount = function(statusId) {
         return ($scope.submissionList || []).filter(function(item) {
