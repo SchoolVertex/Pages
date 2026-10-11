@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="reportApp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Exam Report Summary</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root {
+      --ink: #15202b;
+      --ink-soft: #3d4f5f;
+      --muted: #6b7c8a;
+      --line: #d8e0e8;
+      --surface: #ffffff;
+      --page: #e8eef3;
+      --page-accent: #d4e4f0;
+      --brand: #0b4f6c;
+      --brand-deep: #083a50;
+      --pass: #1b7a4a;
+      --warn: #9a6b14;
+      --fail: #b42318;
+      --radius: 14px;
+      --shadow: 0 10px 30px rgba(11, 79, 108, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "DM Sans", sans-serif;
+      background:
+        radial-gradient(ellipse 120% 80% at 0% -10%, rgba(11, 79, 108, 0.12), transparent 55%),
+        radial-gradient(ellipse 90% 60% at 100% 0%, rgba(27, 122, 74, 0.08), transparent 50%),
+        linear-gradient(180deg, var(--page-accent) 0%, var(--page) 40%, #f2f6f9 100%);
+    }
+
+    .shell {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 16px 14px calc(40px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .report {
+      position: relative;
+      background: var(--surface);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      border: 1px solid rgba(11, 79, 108, 0.08);
+    }
+
+    .watermark {
+      position: absolute;
+      top: 48%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0.035;
+      width: 55%;
+      max-width: 220px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .report > *:not(.watermark) { position: relative; z-index: 1; }
+
+    .banner {
+      margin: 14px 14px 0;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .banner.error { background: #fdeceb; color: var(--fail); }
+    .banner.loading { background: #e8f3f8; color: var(--brand); }
+
+    .report-top {
+      padding: 22px 18px 20px;
+      background: linear-gradient(145deg, #0b4f6c 0%, #0d5f7f 48%, #147a6a 100%);
+      color: #f7fbfd;
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .school-logo {
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+      object-fit: contain;
+      background: #fff;
+      border: 2px solid rgba(255, 255, 255, 0.55);
+      flex: 0 0 auto;
+    }
+
+    .school-copy { min-width: 0; flex: 1; }
+
+    .school-copy h1 {
+      margin: 0;
+      font-family: Fraunces, Georgia, serif;
+      font-size: 1.28rem;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    .school-copy .address {
+      margin: 6px 0 0;
+      font-size: 0.72rem;
+      opacity: 0.78;
+      line-height: 1.4;
+    }
+
+    .doc-label-wrap {
+      display: flex;
+      justify-content: center;
+      margin-top: 16px;
+    }
+
+    .doc-label {
+      display: inline-block;
+      padding: 5px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 6px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .body { padding: 18px 16px 22px; }
+
+    .student-panel {
+      padding: 14px;
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, #f4f8fb 0%, #eef4f8 100%);
+      border: 1px solid var(--line);
+    }
+
+    .student-name {
+      margin: 0 0 12px;
+      font-family: Fraunces, Georgia, serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--brand-deep);
+      line-height: 1.25;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 12px;
+    }
+
+    .meta-item.full { grid-column: 1 / -1; }
+
+    .meta-item .label {
+      display: block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+
+    .meta-item .value {
+      display: block;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.3;
+      word-break: break-word;
+    }
+
+    .toggle-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .chip {
+      flex: 1;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink-soft);
+      border-radius: 999px;
+      padding: 8px 10px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .chip.active {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #fff;
+    }
+
+    .section { margin-top: 22px; }
+
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--brand);
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-family: Fraunces, Georgia, serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--brand-deep);
+    }
+
+    .section-head .count {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .kpi {
+      padding: 14px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #f8fbfd;
+      text-align: center;
+    }
+
+    .kpi.accent {
+      grid-column: 1 / -1;
+      background: linear-gradient(135deg, #0b4f6c 0%, #147a6a 100%);
+      border-color: transparent;
+      color: #fff;
+    }
+
+    .kpi .label {
+      margin: 0;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .kpi.accent .label { color: rgba(255, 255, 255, 0.8); }
+
+    .kpi .amount {
+      margin: 6px 0 0;
+      font-size: 1.28rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .kpi.accent .amount { color: #fff; font-size: 1.55rem; }
+
+    .insight-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .insight {
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #fff;
+      font-size: 0.84rem;
+      line-height: 1.45;
+      color: var(--ink-soft);
+    }
+
+    .insight strong { color: var(--brand-deep); }
+
+    .insight.good { border-color: rgba(27, 122, 74, 0.25); background: #f3faf6; }
+    .insight.warn { border-color: rgba(154, 107, 20, 0.28); background: #fbf7ef; }
+    .insight.bad { border-color: rgba(180, 35, 24, 0.22); background: #fdf4f3; }
+
+    .chart-card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      background: #fff;
+      margin-bottom: 10px;
+    }
+
+    .chart-card h3 {
+      margin: 0 0 10px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--brand-deep);
+    }
+
+    .chart-wrap {
+      position: relative;
+      width: 100%;
+      min-height: 210px;
+    }
+
+    .exam-card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      background: #fff;
+      margin-bottom: 10px;
+    }
+
+    .exam-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .exam-card-top h3 {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.3;
+    }
+
+    .exam-meta {
+      margin: 4px 0 0;
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .pct-pill {
+      flex: 0 0 auto;
+      padding: 5px 9px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      background: #e8f3f8;
+      color: var(--brand-deep);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .pct-pill.good { background: #e8f6ee; color: var(--pass); }
+    .pct-pill.warn { background: #f8efd9; color: var(--warn); }
+    .pct-pill.bad { background: #fdeceb; color: var(--fail); }
+
+    .subj-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 0;
+      border-top: 1px dashed var(--line);
+      font-size: 0.84rem;
+    }
+
+    .subj-row:first-of-type { border-top: none; }
+
+    .subj-name { font-weight: 600; color: var(--ink); min-width: 0; }
+    .subj-score {
+      flex: 0 0 auto;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--brand-deep);
+      white-space: nowrap;
+    }
+
+    .bar-track {
+      margin-top: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #e8eef3;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #0b4f6c, #147a6a);
+    }
+
+    .subject-rank {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .rank-row {
+      display: grid;
+      grid-template-columns: 28px 1fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .rank-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      background: #e8f3f8;
+      color: var(--brand-deep);
+    }
+
+    .rank-name { font-size: 0.86rem; font-weight: 600; }
+    .rank-pct {
+      font-size: 0.84rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 22px 12px;
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 500;
+    }
+
+    .footer-note {
+      margin: 18px 0 0;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      text-align: center;
+      font-size: 0.68rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .link-btn {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--brand);
+      text-decoration: none;
+    }
+
+    @media (min-width: 481px) {
+      .shell { padding: 24px 16px 48px; }
+      .body { padding: 22px 22px 28px; }
+      .report-top { padding: 26px 22px 22px; }
+    }
+
+    @media print {
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      body { background: #fff; }
+      .shell { max-width: none; padding: 0; }
+      .report { border: none; border-radius: 0; box-shadow: none; }
+      .toggle-row, .banner { display: none !important; }
+    }
+  </style>
+</head>
+
+<body ng-controller="ReportController">
+  <div class="shell">
+    <article class="report">
+      <img ng-if="orgInfo.Image" ng-src="{{orgInfo.Image}}" class="watermark" alt="">
+
+      <div class="banner loading" ng-if="loading">Loading academic year marks…</div>
+      <div class="banner error" ng-if="errorMessage">{{errorMessage}}</div>
+
+      <header class="report-top">
+        <div class="brand-row">
+          <img ng-if="orgInfo.Image" ng-src="{{orgInfo.Image}}" class="school-logo" alt="School Logo">
+          <div class="school-copy">
+            <h1>{{orgInfo.Name || 'School Name'}}</h1>
+            <p class="address" ng-if="orgInfo.FullAddress">{{orgInfo.FullAddress}}</p>
+          </div>
+        </div>
+        <div class="doc-label-wrap">
+          <div class="doc-label">Year Marks Summary</div>
+        </div>
+      </header>
+
+      <div class="body">
+        <section class="student-panel">
+          <h2 class="student-name">{{student.FullName || 'Student'}}</h2>
+          <div class="meta-grid">
+            <div class="meta-item" ng-if="student.ClassName || student.class">
+              <span class="label">Class</span>
+              <span class="value">{{student.ClassName || student.class}}</span>
+            </div>
+            <div class="meta-item">
+              <span class="label">Academic Year</span>
+              <span class="value">{{yearLabel}}</span>
+            </div>
+            <div class="meta-item">
+              <span class="label">Report Date</span>
+              <span class="value">{{today | date:'dd-MM-yyyy'}}</span>
+            </div>
+            <div class="meta-item">
+              <span class="label">Exams Covered</span>
+              <span class="value">{{examRows.length || 0}}</span>
+            </div>
+          </div>
+
+          <div class="toggle-row">
+            <button type="button" class="chip" ng-class="{active: isMain}" ng-click="setMain(true)">Main Exams</button>
+            <button type="button" class="chip" ng-class="{active: !isMain}" ng-click="setMain(false)">Chapters</button>
+          </div>
+        </section>
+
+        <section class="section" ng-if="examRows.length">
+          <div class="section-head">
+            <h2>Overall Snapshot</h2>
+          </div>
+          <div class="kpi-strip">
+            <div class="kpi accent">
+              <p class="label">Year Average</p>
+              <p class="amount">{{summary.yearAvg}}%</p>
+            </div>
+            <div class="kpi">
+              <p class="label">Best Exam</p>
+              <p class="amount">{{summary.bestExamPct}}%</p>
+            </div>
+            <div class="kpi">
+              <p class="label">Latest Exam</p>
+              <p class="amount">{{summary.latestExamPct}}%</p>
+            </div>
+            <div class="kpi">
+              <p class="label">Strongest Subject</p>
+              <p class="amount" style="font-size:1rem;">{{summary.bestSubject || '-'}}</p>
+            </div>
+            <div class="kpi">
+              <p class="label">Needs Focus</p>
+              <p class="amount" style="font-size:1rem;">{{summary.weakSubject || '-'}}</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" ng-if="insights.length">
+          <div class="section-head">
+            <h2>Parent Insights</h2>
+          </div>
+          <div class="insight-list">
+            <div class="insight" ng-repeat="item in insights" ng-class="item.tone">{{item.text}}</div>
+          </div>
+        </section>
+
+        <section class="section" ng-if="examRows.length">
+          <div class="section-head">
+            <h2>Progress &amp; Comparison</h2>
+          </div>
+          <div class="chart-card">
+            <h3>Exam-wise percentage trend</h3>
+            <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <h3>Subject performance across exams (%)</h3>
+            <div class="chart-wrap"><canvas id="subjectChart"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <h3>Subject average ranking</h3>
+            <div class="chart-wrap"><canvas id="rankChart"></canvas></div>
+          </div>
+        </section>
+
+        <section class="section" ng-if="subjectRanks.length">
+          <div class="section-head">
+            <h2>Subject Strengths</h2>
+            <span class="count">Average %</span>
+          </div>
+          <div class="subject-rank">
+            <div class="rank-row" ng-repeat="s in subjectRanks">
+              <div class="rank-num">{{$index + 1}}</div>
+              <div class="rank-name">{{s.name}}</div>
+              <div class="rank-pct" ng-style="{color: gradeColor(s.avg)}">{{s.avg}}%</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-head">
+            <h2>Exam Marks</h2>
+            <span class="count" ng-if="examRows.length">{{examRows.length}} exams</span>
+          </div>
+
+          <div ng-if="examRows.length">
+            <div class="exam-card" ng-repeat="exam in examRows">
+              <div class="exam-card-top">
+                <div>
+                  <h3>{{exam.name}}</h3>
+                  <p class="exam-meta">{{exam.secured}} / {{exam.total}} · Grade {{exam.grade}}</p>
+                  <a class="link-btn" ng-href="{{exam.detailUrl}}" target="_blank" rel="noopener">Open exam report</a>
+                </div>
+                <span class="pct-pill" ng-class="pctTone(exam.pct)">{{exam.pct}}%</span>
+              </div>
+              <div class="bar-track"><div class="bar-fill" ng-style="{width: exam.pct + '%'}"></div></div>
+              <div class="subj-row" ng-repeat="row in exam.subjects">
+                <span class="subj-name">{{row.name}}</span>
+                <span class="subj-score" ng-style="{color: gradeColor(row.pct)}">
+                  <span ng-if="row.status === 'ok'">{{row.marks}} / {{row.total}}</span>
+                  <span ng-if="row.status === 'ab'">AB</span>
+                  <span ng-if="row.status === 'na'">NA</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="empty-state" ng-if="!loading && !examRows.length && !errorMessage">
+            No published marks found for this academic year.
+          </div>
+        </section>
+
+        <p class="footer-note">System-generated academic year marks summary for parent review.</p>
+      </div>
+    </article>
+  </div>
+
+  <script>
+    var app = angular.module('reportApp', []);
+
+    app.controller('ReportController', function($scope, $http, $timeout) {
+      var baseUrl = 'https://api.schoolvertex.com/api';
+      var ENTITY_BATCH = 118;
+      var ENTITY_SECTION = 119;
+      var IGNORE_SUBJECTS = [79, 80, 81, 82];
+      var CHART_COLORS = ['#0b4f6c', '#147a6a', '#c2410c', '#7c3aed', '#0369a1', '#b45309', '#be123c', '#0f766e'];
+
+      var trendChart = null;
+      var subjectChart = null;
+      var rankChart = null;
+
+      function getQueryParams() {
+        var params = {};
+        var search = (location.search || '').replace(/^\?/, '');
+        search.split('&').forEach(function(item) {
+          if (!item) return;
+          var parts = item.split('=');
+          if (parts[0]) {
+            params[parts[0]] = decodeURIComponent((parts[1] || '').replace(/\+/g, ' '));
+          }
+        });
+        return params;
+      }
+
+      function num(v) {
+        var n = Number(v);
+        return isFinite(n) ? n : null;
+      }
+
+      function getGrade(val) {
+        if (!val && val !== 0) return '';
+        if (val > 90) return 'A1';
+        if (val > 80) return 'A2';
+        if (val > 70) return 'B1';
+        if (val > 60) return 'B2';
+        if (val > 50) return 'C1';
+        if (val > 40) return 'C2';
+        if (val > 34) return 'D';
+        return 'E';
+      }
+
+      function round2(v) {
+        return Math.round((Number(v) || 0) * 100) / 100;
+      }
+
+      $scope.orgInfo = {};
+      $scope.student = {};
+      $scope.today = new Date();
+      $scope.loading = false;
+      $scope.errorMessage = '';
+      $scope.isMain = true;
+      $scope.yearLabel = '-';
+      $scope.examRows = [];
+      $scope.subjectRanks = [];
+      $scope.insights = [];
+      $scope.summary = {
+        yearAvg: '0.00',
+        bestExamPct: '0.00',
+        latestExamPct: '0.00',
+        bestSubject: '-',
+        weakSubject: '-'
+      };
+
+      var query = getQueryParams();
+      var orgId = num(query.orgId || query.OrgId);
+      var userId = num(query.userId || query.UserId);
+      var entityId = num(query.entityId || query.EntityId);
+      var entityTypeId = num(query.entityTypeId || query.EntityTypeId);
+      var yearId = num(query.yearId || query.YearId);
+
+      if (!orgId || !userId || !yearId) {
+        $scope.errorMessage = 'orgId, userId and yearId are required. Example: ?orgId=1&userId=50602&entityId=274&entityTypeId=119&yearId=9';
+        return;
+      }
+
+      $scope.yearLabel = 'Year #' + yearId;
+
+      $http.get(baseUrl + '/Organisation/GetYearList')
+        .then(function(response) {
+          var years = response.data || [];
+          var found = years.find(function(y) {
+            return Number(y.value || y.Value || y.id || y.Id) === yearId;
+          });
+          if (found) {
+            $scope.yearLabel = found.label || found.Label || found.text || found.Text || $scope.yearLabel;
+          }
+        });
+
+      function subjectName(id, list) {
+        var found = (list || []).find(function(x) { return x.SubjectId === id; });
+        return found ? found.Name : ('Subject ' + id);
+      }
+
+      function examName(id, list) {
+        var found = (list || []).find(function(x) { return x.TestId === id; });
+        return found ? found.Name : ('Exam ' + id);
+      }
+
+      function totalFor(totals, examId, subjectId) {
+        var found = (totals || []).find(function(x) {
+          return x.TestId === examId && x.SubjectId === subjectId;
+        });
+        return found ? Number(found.Marks) || 0 : 0;
+      }
+
+      function marksFor(data, examId, subjectId) {
+        var found = (data || []).find(function(x) {
+          return x.TestId === examId && x.SubjectId === subjectId;
+        });
+        return found ? found.Marks : null;
+      }
+
+      $scope.pctTone = function(pct) {
+        if (pct >= 75) return 'good';
+        if (pct >= 50) return 'warn';
+        return 'bad';
+      };
+
+      $scope.gradeColor = function(pct) {
+        if (pct >= 75) return '#1b7a4a';
+        if (pct >= 50) return '#9a6b14';
+        return '#b42318';
+      };
+
+      $scope.setMain = function(isMain) {
+        if ($scope.isMain === isMain) return;
+        $scope.isMain = isMain;
+        loadAll();
+      };
+
+      function destroyCharts() {
+        if (trendChart) { trendChart.destroy(); trendChart = null; }
+        if (subjectChart) { subjectChart.destroy(); subjectChart = null; }
+        if (rankChart) { rankChart.destroy(); rankChart = null; }
+      }
+
+      function buildInsights(examRows, subjectRanks) {
+        var insights = [];
+        if (!examRows.length) return insights;
+
+        if (examRows.length >= 2) {
+          var first = examRows[0].pct;
+          var last = examRows[examRows.length - 1].pct;
+          var delta = round2(last - first);
+          if (delta > 2) {
+            insights.push({
+              tone: 'good',
+              text: 'Progress is up ' + delta + '% from ' + examRows[0].name + ' to ' + examRows[examRows.length - 1].name + '.'
+            });
+          } else if (delta < -2) {
+            insights.push({
+              tone: 'warn',
+              text: 'Overall score dipped ' + Math.abs(delta) + '% since ' + examRows[0].name + '. Extra revision may help.'
+            });
+          } else {
+            insights.push({
+              tone: '',
+              text: 'Performance is steady across exams so far this year.'
+            });
+          }
+        }
+
+        if (subjectRanks.length) {
+          var top = subjectRanks[0];
+          var weak = subjectRanks[subjectRanks.length - 1];
+          insights.push({
+            tone: 'good',
+            text: top.name + ' is the strongest subject at ' + top.avg + '% average.'
+          });
+          if (weak && weak.name !== top.name) {
+            insights.push({
+              tone: weak.avg < 40 ? 'bad' : 'warn',
+              text: 'Focus area: ' + weak.name + ' averages ' + weak.avg + '%. Short daily practice can lift this.'
+            });
+          }
+        }
+
+        var failing = examRows.filter(function(e) { return e.pct < 35; });
+        if (failing.length) {
+          insights.push({
+            tone: 'bad',
+            text: failing.length + ' exam(s) are below pass mark. Review those subject cards below.'
+          });
+        }
+
+        return insights;
+      }
+
+      function renderCharts(examRows, subjectRanks) {
+        destroyCharts();
+        if (!examRows.length || typeof Chart === 'undefined') return;
+
+        var trendCtx = document.getElementById('trendChart');
+        if (trendCtx) {
+          trendChart = new Chart(trendCtx, {
+            type: 'line',
+            data: {
+              labels: examRows.map(function(e) { return e.shortName; }),
+              datasets: [{
+                label: 'Percentage',
+                data: examRows.map(function(e) { return e.pct; }),
+                borderColor: '#0b4f6c',
+                backgroundColor: 'rgba(11, 79, 108, 0.12)',
+                fill: true,
+                tension: 0.35,
+                pointRadius: 4,
+                pointBackgroundColor: '#147a6a'
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                y: { min: 0, max: 100, ticks: { callback: function(v) { return v + '%'; } } }
+              }
+            }
+          });
+        }
+
+        var subjectIds = [];
+        examRows.forEach(function(e) {
+          e.subjects.forEach(function(s) {
+            if (subjectIds.indexOf(s.id) < 0) subjectIds.push(s.id);
+          });
+        });
+
+        var subjectCtx = document.getElementById('subjectChart');
+        if (subjectCtx && subjectIds.length) {
+          var datasets = examRows.map(function(exam, idx) {
+            return {
+              label: exam.shortName,
+              data: subjectIds.map(function(sid) {
+                var row = exam.subjects.find(function(s) { return s.id === sid; });
+                return row && row.status === 'ok' ? row.pct : null;
+              }),
+              backgroundColor: CHART_COLORS[idx % CHART_COLORS.length],
+              borderRadius: 4
+            };
+          });
+
+          var subjectLabels = subjectIds.map(function(sid) {
+            var row = examRows[0].subjects.find(function(s) { return s.id === sid; });
+            return row ? row.name : ('S' + sid);
+          });
+
+          subjectChart = new Chart(subjectCtx, {
+            type: 'bar',
+            data: { labels: subjectLabels, datasets: datasets },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } },
+              scales: {
+                y: { min: 0, max: 100, ticks: { callback: function(v) { return v + '%'; } } },
+                x: { ticks: { maxRotation: 45, minRotation: 0, font: { size: 10 } } }
+              }
+            }
+          });
+        }
+
+        var rankCtx = document.getElementById('rankChart');
+        if (rankCtx && subjectRanks.length) {
+          rankChart = new Chart(rankCtx, {
+            type: 'bar',
+            data: {
+              labels: subjectRanks.map(function(s) { return s.name; }),
+              datasets: [{
+                label: 'Average %',
+                data: subjectRanks.map(function(s) { return s.avg; }),
+                backgroundColor: subjectRanks.map(function(s) {
+                  if (s.avg >= 75) return '#1b7a4a';
+                  if (s.avg >= 50) return '#9a6b14';
+                  return '#b42318';
+                }),
+                borderRadius: 6
+              }]
+            },
+            options: {
+              indexAxis: 'y',
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                x: { min: 0, max: 100, ticks: { callback: function(v) { return v + '%'; } } }
+              }
+            }
+          });
+        }
+      }
+
+      function buildView(data, totals, tests, subjects) {
+        var examIds = [];
+        data.forEach(function(x) {
+          if (examIds.indexOf(x.TestId) < 0) examIds.push(x.TestId);
+        });
+        examIds.sort(function(a, b) { return a - b; });
+
+        var subjectIds = [];
+        data.forEach(function(x) {
+          if (subjectIds.indexOf(x.SubjectId) < 0) subjectIds.push(x.SubjectId);
+        });
+        subjectIds.sort(function(a, b) { return a - b; });
+
+        IGNORE_SUBJECTS.forEach(function(sid) {
+          var emptyCount = examIds.filter(function(eid) {
+            return marksFor(data, eid, sid) == null;
+          }).length;
+          if (emptyCount === examIds.length) {
+            subjectIds = subjectIds.filter(function(id) { return id !== sid; });
+          }
+        });
+
+        var examRows = examIds.map(function(eid) {
+          var name = examName(eid, tests);
+          var shortName = name.length > 16 ? name.substring(0, 14) + '…' : name;
+          var subjectRows = subjectIds.map(function(sid) {
+            var marks = marksFor(data, eid, sid);
+            var total = totalFor(totals, eid, sid);
+            var status = 'na';
+            var pct = 0;
+            if (total > 0 && marks == null) status = 'ab';
+            else if (total > 0 || marks != null) {
+              status = 'ok';
+              pct = total > 0 ? round2(((Number(marks) || 0) / total) * 100) : 0;
+            }
+            return {
+              id: sid,
+              name: subjectName(sid, subjects),
+              marks: marks == null ? null : Number(marks),
+              total: total,
+              pct: pct,
+              status: status
+            };
+          });
+
+          var secured = subjectRows.reduce(function(sum, r) {
+            return sum + (r.status === 'ok' ? (Number(r.marks) || 0) : 0);
+          }, 0);
+          var total = subjectRows.reduce(function(sum, r) {
+            return sum + (r.total > 0 ? r.total : 0);
+          }, 0);
+          var pct = total > 0 ? round2((secured / total) * 100) : 0;
+
+          return {
+            id: eid,
+            name: name,
+            shortName: shortName,
+            secured: secured,
+            total: total,
+            pct: pct,
+            grade: getGrade(pct),
+            subjects: subjectRows,
+            detailUrl: 'https://schoolvertex.github.io/Pages/Reports/Exam-Report.html?id=' +
+              encodeURIComponent(orgId + '-' + eid + '-' + userId)
+          };
+        });
+
+        var subjectRanks = subjectIds.map(function(sid) {
+          var pcts = examRows.map(function(e) {
+            var row = e.subjects.find(function(s) { return s.id === sid; });
+            return row && row.status === 'ok' ? row.pct : null;
+          }).filter(function(v) { return v != null; });
+          var avg = pcts.length
+            ? round2(pcts.reduce(function(a, b) { return a + b; }, 0) / pcts.length)
+            : 0;
+          return { id: sid, name: subjectName(sid, subjects), avg: avg };
+        }).sort(function(a, b) { return b.avg - a.avg; });
+
+        var yearAvg = examRows.length
+          ? round2(examRows.reduce(function(s, e) { return s + e.pct; }, 0) / examRows.length)
+          : 0;
+        var bestExam = examRows.reduce(function(best, e) {
+          return (!best || e.pct > best.pct) ? e : best;
+        }, null);
+        var latest = examRows.length ? examRows[examRows.length - 1] : null;
+
+        $scope.examRows = examRows;
+        $scope.subjectRanks = subjectRanks;
+        $scope.summary = {
+          yearAvg: yearAvg.toFixed(2),
+          bestExamPct: bestExam ? bestExam.pct.toFixed(2) : '0.00',
+          latestExamPct: latest ? latest.pct.toFixed(2) : '0.00',
+          bestSubject: subjectRanks[0] ? subjectRanks[0].name : '-',
+          weakSubject: subjectRanks.length ? subjectRanks[subjectRanks.length - 1].name : '-'
+        };
+        $scope.insights = buildInsights(examRows, subjectRanks);
+
+        $timeout(function() {
+          renderCharts(examRows, subjectRanks);
+        }, 50);
+      }
+
+      function loadAll() {
+        $scope.loading = true;
+        $scope.errorMessage = '';
+        $scope.examRows = [];
+        $scope.subjectRanks = [];
+        $scope.insights = [];
+        destroyCharts();
+
+        var batchId = 0;
+        var sectionId = 0;
+        if (entityTypeId === ENTITY_BATCH) batchId = entityId || 0;
+        if (entityTypeId === ENTITY_SECTION) sectionId = entityId || 0;
+
+        var marksUrl = baseUrl + '/Test/GetMarkSheetData/' + userId + '/' + orgId + '/' + yearId + '/' + $scope.isMain;
+        var totalsUrl = baseUrl + '/Subject/GetSubjectTotals/' + batchId + '/' + sectionId;
+        var testsUrl = baseUrl + '/Test/GetTestList/' + orgId + '/' + yearId + '/' + $scope.isMain;
+        var subjectsUrl = baseUrl + '/Subject/GetSubjectList/' + orgId;
+
+        $http.get(baseUrl + '/Organisation/GetInfoForCertificate/' + orgId)
+          .then(function(r) { $scope.orgInfo = r.data || {}; });
+
+        $http.get(baseUrl + '/User/GetPreviewById/' + userId)
+          .then(function(r) { $scope.student = r.data || {}; });
+
+        Promise.all([
+          $http.get(marksUrl).then(function(r) { return r.data || []; }),
+          $http.get(totalsUrl).then(function(r) { return r.data || []; }, function() { return []; }),
+          $http.get(testsUrl).then(function(r) { return r.data || []; }),
+          $http.get(subjectsUrl).then(function(r) { return r.data || []; })
+        ]).then(function(parts) {
+          buildView(parts[0], parts[1], parts[2], parts[3]);
+          $scope.loading = false;
+          $scope.$applyAsync();
+        }).catch(function() {
+          $scope.loading = false;
+          $scope.errorMessage = 'Unable to load year marks summary.';
+          $scope.$applyAsync();
+        });
+      }
+
+      loadAll();
+    });
+  </script>
+</body>
+</html>
