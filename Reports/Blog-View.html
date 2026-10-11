@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="blogViewApp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Blog</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+
+  <style>
+    :root {
+      --ink: #15202b;
+      --ink-soft: #3d4f5f;
+      --muted: #6b7c8a;
+      --line: #d8e0e8;
+      --surface: #ffffff;
+      --page: #e8eef3;
+      --page-accent: #d4e4f0;
+      --brand: #0b4f6c;
+      --brand-deep: #083a50;
+      --pass: #1b7a4a;
+      --fail: #b42318;
+      --radius: 14px;
+      --shadow: 0 10px 30px rgba(11, 79, 108, 0.08);
+      --shell-max: 720px;
+    }
+
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "DM Sans", sans-serif;
+      background:
+        radial-gradient(ellipse 120% 80% at 0% -10%, rgba(11, 79, 108, 0.12), transparent 55%),
+        radial-gradient(ellipse 90% 60% at 100% 0%, rgba(27, 122, 74, 0.08), transparent 50%),
+        linear-gradient(180deg, var(--page-accent) 0%, var(--page) 40%, #f2f6f9 100%);
+    }
+
+    .shell {
+      width: 100%;
+      max-width: var(--shell-max);
+      margin: 0 auto;
+      padding: 16px 14px calc(40px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .report {
+      background: var(--surface);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      border: 1px solid rgba(11, 79, 108, 0.08);
+    }
+
+    .banner {
+      margin: 14px 14px 0;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .banner.loading { background: #e8f3f8; color: var(--brand); }
+    .banner.error { background: #fdeceb; color: var(--fail); }
+
+    .report-top {
+      padding: 18px 18px 16px;
+      background: linear-gradient(145deg, #0b4f6c 0%, #0d5f7f 48%, #147a6a 100%);
+      color: #f7fbfd;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 12px;
+      color: rgba(247, 251, 253, 0.92);
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .back-link:hover { text-decoration: underline; }
+
+    .report-top h1 {
+      margin: 0;
+      font-family: Fraunces, Georgia, serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    .top-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      margin-top: 12px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      opacity: 0.9;
+    }
+
+    .verified-pill {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 0.66rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      background: rgba(232, 246, 238, 0.95);
+      color: var(--pass);
+    }
+
+    .body { padding: 18px 16px 22px; }
+
+    .author-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .author-row img,
+    .author-row .fallback {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex: 0 0 auto;
+    }
+
+    .author-row .fallback {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #e8f3f8;
+      color: var(--brand);
+      font-weight: 700;
+    }
+
+    .author-row .name {
+      margin: 0;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .author-row .sub {
+      margin: 2px 0 0;
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .short-desc {
+      margin: 0 0 14px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--ink-soft);
+      line-height: 1.45;
+    }
+
+    .content {
+      font-size: 0.94rem;
+      line-height: 1.65;
+      color: var(--ink);
+      word-break: break-word;
+    }
+
+    .content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      margin: 10px 0;
+    }
+
+    .content p { margin: 0 0 0.9em; }
+    .content p:last-child { margin-bottom: 0; }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 16px;
+    }
+
+    .tag {
+      padding: 4px 9px;
+      border-radius: 6px;
+      background: #eef4f8;
+      color: var(--brand-deep);
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    .attachments {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .attachments a {
+      display: block;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: #f4f8fb;
+    }
+
+    .attachments img {
+      display: block;
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+    }
+
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px dashed var(--line);
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .section {
+      margin-top: 22px;
+      padding-top: 8px;
+      border-top: 2px solid var(--brand);
+    }
+
+    .section h2 {
+      margin: 0 0 12px;
+      font-family: Fraunces, Georgia, serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--brand-deep);
+    }
+
+    .comment {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #f8fbfd;
+      margin-bottom: 10px;
+    }
+
+    .comment-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .comment-head img,
+    .comment-head .fallback {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex: 0 0 auto;
+    }
+
+    .comment-head .fallback {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #e8f3f8;
+      color: var(--brand);
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    .comment-head .name {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .comment-head .when {
+      margin-left: auto;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .comment-body {
+      margin: 0;
+      font-size: 0.84rem;
+      line-height: 1.5;
+      color: var(--ink-soft);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .empty-note {
+      margin: 0;
+      font-size: 0.84rem;
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    .footer-note {
+      margin: 18px 0 0;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      text-align: center;
+      font-size: 0.68rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    @media (min-width: 900px) {
+      :root { --shell-max: 860px; }
+      .shell { padding: 28px 24px 56px; }
+      .body { padding: 24px 28px 32px; }
+      .attachments { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    @media print {
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      body { background: #fff; }
+      .shell { max-width: none; padding: 0; }
+      .report { border: none; border-radius: 0; box-shadow: none; }
+      .back-link, .banner { display: none !important; }
+    }
+  </style>
+</head>
+
+<body ng-controller="BlogViewController">
+  <div class="shell">
+    <article class="report">
+      <div class="banner loading" ng-if="loading">Loading blog…</div>
+      <div class="banner error" ng-if="errorMessage">{{errorMessage}}</div>
+
+      <header class="report-top" ng-if="blog.QueryId">
+        <a class="back-link" ng-href="{{backUrl}}">← Back to blogs</a>
+        <h1 ng-bind-html="trusted(blog.Title)"></h1>
+        <div class="top-meta">
+          <span>{{formatDate(blog.CreatedOn)}}</span>
+          <span>{{blog.Views || 0}} views</span>
+          <span>{{blog.Likes || 0}} likes</span>
+        </div>
+        <span class="verified-pill" ng-if="blog.IsVerified">Verified</span>
+      </header>
+
+      <div class="body" ng-if="blog.QueryId">
+        <div class="author-row" ng-if="blog.UserInfo">
+          <img ng-if="blog.UserInfo.Image" ng-src="{{blog.UserInfo.Image}}" alt="">
+          <span ng-if="!blog.UserInfo.Image" class="fallback">{{initials}}</span>
+          <div>
+            <p class="name">{{blog.UserInfo.FullName}}</p>
+            <p class="sub">Author</p>
+          </div>
+        </div>
+
+        <p class="short-desc" ng-if="blog.ShortDescription" ng-bind-html="trusted(blog.ShortDescription)"></p>
+
+        <div class="content" ng-bind-html="trusted(blog.Description)"></div>
+
+        <div class="tags" ng-if="tagNames.length">
+          <span class="tag" ng-repeat="name in tagNames">{{name}}</span>
+        </div>
+
+        <div class="attachments" ng-if="blog.Attachments.length">
+          <a ng-repeat="attach in blog.Attachments" ng-href="{{attach.Url}}" target="_blank" rel="noopener">
+            <img ng-src="{{attach.Url}}" alt="">
+          </a>
+        </div>
+
+        <div class="stats">
+          <span>{{formatDate(blog.CreatedOn)}}</span>
+          <span>{{blog.Views || 0}} views</span>
+          <span>{{blog.Likes || 0}} likes</span>
+          <span>{{(blog.Comments.length || 0) + (blog.Answers.length || 0)}} comments</span>
+        </div>
+
+        <section class="section">
+          <h2>Comments ({{discussion.length}})</h2>
+          <div ng-if="discussion.length">
+            <article class="comment" ng-repeat="item in discussion">
+              <div class="comment-head">
+                <img ng-if="item.UserInfo.Image" ng-src="{{item.UserInfo.Image}}" alt="">
+                <span ng-if="!item.UserInfo.Image" class="fallback">{{item.initials}}</span>
+                <span class="name">{{item.UserInfo.FullName || 'Member'}}</span>
+                <span class="when">{{formatDate(item.CreatedOn)}}</span>
+              </div>
+              <p class="comment-body" ng-bind-html="trusted(item.Text)"></p>
+            </article>
+          </div>
+          <p class="empty-note" ng-if="!discussion.length">No comments yet.</p>
+        </section>
+
+        <p class="footer-note">System-generated blog view for parents and students.</p>
+      </div>
+    </article>
+  </div>
+
+  <script>
+    angular.module('blogViewApp', [])
+    .controller('BlogViewController', function($scope, $http, $q, $sce) {
+      var baseUrl = 'https://api.schoolvertex.com/api';
+
+      function getQueryParams() {
+        var params = {};
+        var search = (location.search || '').replace(/^\?/, '');
+        search.split('&').forEach(function(item) {
+          if (!item) return;
+          var parts = item.split('=');
+          if (parts[0]) {
+            params[parts[0]] = decodeURIComponent((parts[1] || '').replace(/\+/g, ' '));
+          }
+        });
+        return params;
+      }
+
+      function num(v) {
+        var n = Number(v);
+        return isFinite(n) ? n : null;
+      }
+
+      function initials(name) {
+        var parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+        if (!parts.length) return '?';
+        if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+        return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+      }
+
+      $scope.loading = false;
+      $scope.errorMessage = '';
+      $scope.blog = {};
+      $scope.tagNames = [];
+      $scope.discussion = [];
+      $scope.initials = '?';
+      $scope.backUrl = 'Blogs.html';
+
+      var query = getQueryParams();
+      var queryId = num(query.queryId || query.QueryId || query.id || query.Id);
+      var userId = num(query.userId || query.UserId) || 0;
+      $scope.backUrl = userId > 0 ? ('Blogs.html?userId=' + userId) : 'Blogs.html';
+
+      if (!queryId) {
+        $scope.errorMessage = 'queryId is required. Example: ?queryId=123&userId=456';
+        return;
+      }
+
+      $scope.trusted = function(html) {
+        return $sce.trustAsHtml(html || '');
+      };
+
+      $scope.formatDate = function(unix) {
+        var n = Number(unix);
+        if (!isFinite(n) || n <= 0) return '-';
+        var date = new Date(n * 1000);
+        if (isNaN(date.getTime())) return '-';
+        return date.toLocaleDateString('en-IN', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric'
+        });
+      };
+
+      function buildDiscussion(blog) {
+        var comments = (blog.Comments || []).map(function(c) {
+          return {
+            CreatedOn: c.CreatedOn,
+            Text: c.Comment || c.Description || '',
+            UserInfo: c.UserInfo || {},
+            initials: initials(c.UserInfo && c.UserInfo.FullName)
+          };
+        });
+        var answers = (blog.Answers || []).map(function(a) {
+          return {
+            CreatedOn: a.CreatedOn,
+            Text: a.Answer || a.Description || a.Comment || '',
+            UserInfo: a.UserInfo || {},
+            initials: initials(a.UserInfo && a.UserInfo.FullName)
+          };
+        });
+        return comments.concat(answers).sort(function(a, b) {
+          return (a.CreatedOn || 0) - (b.CreatedOn || 0);
+        });
+      }
+
+      function load() {
+        $scope.loading = true;
+        $scope.errorMessage = '';
+
+        var detailUrl = baseUrl + '/Query/GetByIdForUser/' + queryId + '/' + (userId || 0);
+
+        $q.all([
+          $http.get(detailUrl),
+          $http.get(baseUrl + '/Query/GetAllTags')
+        ])
+          .then(function(responses) {
+            var blog = (responses[0] && responses[0].data) || {};
+            if (!blog.QueryId) {
+              $scope.errorMessage = 'Blog not found.';
+              $scope.blog = {};
+              return;
+            }
+
+            var tagMap = {};
+            ((responses[1] && responses[1].data) || []).forEach(function(t) {
+              var id = t.TagId || t.tagId || t.Id || t.id;
+              var name = t.Name || t.name || t.label || t.Label;
+              if (id != null) tagMap[id] = name;
+            });
+
+            $scope.blog = blog;
+            $scope.blog.Attachments = blog.Attachments || [];
+            $scope.blog.Comments = blog.Comments || [];
+            $scope.blog.Answers = blog.Answers || [];
+            $scope.initials = initials(blog.UserInfo && blog.UserInfo.FullName);
+            $scope.tagNames = (blog.Tags || []).map(function(id) {
+              return tagMap[id] || ('#' + id);
+            });
+            $scope.discussion = buildDiscussion(blog);
+            document.title = (blog.Title ? String(blog.Title).replace(/<[^>]+>/g, '') : 'Blog');
+          })
+          .catch(function() {
+            $scope.blog = {};
+            $scope.errorMessage = 'Unable to load this blog.';
+          })
+          .finally(function() {
+            $scope.loading = false;
+          });
+      }
+
+      load();
+    });
+  </script>
+</body>
+</html>
