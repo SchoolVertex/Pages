@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="examScheduleApp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Exam Schedule</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+
+  <style>
+    :root {
+      --ink: #15202b;
+      --ink-soft: #3d4f5f;
+      --muted: #6b7c8a;
+      --line: #d8e0e8;
+      --surface: #ffffff;
+      --page: #e8eef3;
+      --page-accent: #d4e4f0;
+      --brand: #0b4f6c;
+      --brand-deep: #083a50;
+      --pass: #1b7a4a;
+      --warn: #9a6b14;
+      --fail: #b42318;
+      --radius: 14px;
+      --shadow: 0 10px 30px rgba(11, 79, 108, 0.08);
+      --shell-max: 520px;
+    }
+
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "DM Sans", sans-serif;
+      background:
+        radial-gradient(ellipse 120% 80% at 0% -10%, rgba(11, 79, 108, 0.12), transparent 55%),
+        radial-gradient(ellipse 90% 60% at 100% 0%, rgba(27, 122, 74, 0.08), transparent 50%),
+        linear-gradient(180deg, var(--page-accent) 0%, var(--page) 40%, #f2f6f9 100%);
+    }
+
+    .shell {
+      width: 100%;
+      max-width: var(--shell-max);
+      margin: 0 auto;
+      padding: 16px 14px calc(40px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .report {
+      position: relative;
+      background: var(--surface);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      border: 1px solid rgba(11, 79, 108, 0.08);
+    }
+
+    .watermark {
+      position: absolute;
+      top: 48%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0.035;
+      width: 55%;
+      max-width: 220px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .report > *:not(.watermark) { position: relative; z-index: 1; }
+
+    .banner {
+      margin: 14px 14px 0;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .banner.loading { background: #e8f3f8; color: var(--brand); }
+    .banner.error { background: #fdeceb; color: var(--fail); }
+
+    .report-top {
+      padding: 22px 18px 20px;
+      background: linear-gradient(145deg, #0b4f6c 0%, #0d5f7f 48%, #147a6a 100%);
+      color: #f7fbfd;
+    }
+
+    .report-top-inner {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .school-logo {
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+      object-fit: contain;
+      background: #fff;
+      border: 2px solid rgba(255, 255, 255, 0.55);
+      flex: 0 0 auto;
+    }
+
+    .school-copy { min-width: 0; flex: 1; }
+
+    .school-copy h1 {
+      margin: 0;
+      font-family: Fraunces, Georgia, serif;
+      font-size: 1.28rem;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    .school-copy .address {
+      margin: 6px 0 0;
+      font-size: 0.72rem;
+      opacity: 0.78;
+      line-height: 1.4;
+    }
+
+    .doc-label-wrap { display: flex; justify-content: center; }
+
+    .doc-label {
+      display: inline-block;
+      padding: 5px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 6px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.1);
+      white-space: nowrap;
+    }
+
+    .body { padding: 18px 16px 22px; }
+
+    .meta-panel {
+      padding: 14px;
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, #f4f8fb 0%, #eef4f8 100%);
+      border: 1px solid var(--line);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 12px;
+    }
+
+    .meta-item .label {
+      display: block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+
+    .meta-item .value {
+      display: block;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.3;
+      word-break: break-word;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink-soft);
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .chip.active {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #fff;
+    }
+
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .kpi {
+      padding: 12px 10px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #f8fbfd;
+      text-align: center;
+    }
+
+    .kpi .label {
+      margin: 0;
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .kpi .amount {
+      margin: 4px 0 0;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--brand-deep);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .section { margin-top: 22px; }
+
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--brand);
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-family: Fraunces, Georgia, serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--brand-deep);
+    }
+
+    .section-head .count {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .exam-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .exam-card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .exam-card.is-past { opacity: 0.72; }
+    .exam-card.is-next {
+      border-color: rgba(11, 79, 108, 0.35);
+      box-shadow: 0 8px 20px rgba(11, 79, 108, 0.08);
+    }
+
+    .exam-card-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      background: #f4f8fb;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .exam-card-head h3 {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.3;
+    }
+
+    .exam-range {
+      margin: 4px 0 0;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .status-pill {
+      flex: 0 0 auto;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .status-pill.upcoming { background: #e8f6ee; color: var(--pass); }
+    .status-pill.next { background: #e8f3f8; color: var(--brand-deep); }
+    .status-pill.past { background: #eef1f4; color: var(--muted); }
+
+    .schedule-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .schedule-table th,
+    .schedule-table td {
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+      border-top: 1px solid var(--line);
+      font-size: 0.84rem;
+    }
+
+    .schedule-table th {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: #fafcfd;
+    }
+
+    .schedule-table .subject {
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .schedule-table .when {
+      color: var(--ink-soft);
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .schedule-table .time {
+      color: var(--brand-deep);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 22px 12px;
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 500;
+    }
+
+    .footer-note {
+      margin: 18px 0 0;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      text-align: center;
+      font-size: 0.68rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    @media (min-width: 640px) {
+      :root { --shell-max: 760px; }
+      .shell { padding: 24px 20px 48px; }
+      .body { padding: 22px 22px 28px; }
+      .meta-grid { grid-template-columns: repeat(4, 1fr); }
+      .exam-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (min-width: 900px) {
+      :root { --shell-max: 1020px; }
+      .shell { padding: 28px 24px 56px; }
+      .body { padding: 26px 28px 32px; }
+      .report-top { padding: 28px 28px 24px; }
+      .report-top-inner {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .doc-label-wrap { justify-content: flex-end; }
+      .exam-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (min-width: 1200px) {
+      :root { --shell-max: 1180px; }
+      .exam-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    @media print {
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      body { background: #fff; }
+      .shell { max-width: none; padding: 0; }
+      .report { border: none; border-radius: 0; box-shadow: none; }
+      .filter-row, .banner { display: none !important; }
+      .exam-grid { grid-template-columns: 1fr 1fr !important; }
+    }
+  </style>
+</head>
+
+<body ng-controller="ExamScheduleController">
+  <div class="shell">
+    <article class="report">
+      <img ng-if="orgInfo.Image" ng-src="{{orgInfo.Image}}" class="watermark" alt="">
+
+      <div class="banner loading" ng-if="loading">Loading exam schedule…</div>
+      <div class="banner error" ng-if="errorMessage">{{errorMessage}}</div>
+
+      <header class="report-top">
+        <div class="report-top-inner">
+          <div class="brand-row">
+            <img ng-if="orgInfo.Image" ng-src="{{orgInfo.Image}}" class="school-logo" alt="School Logo">
+            <div class="school-copy">
+              <h1>{{orgInfo.Name || 'School Name'}}</h1>
+              <p class="address" ng-if="orgInfo.FullAddress">{{orgInfo.FullAddress}}</p>
+            </div>
+          </div>
+          <div class="doc-label-wrap">
+            <div class="doc-label">Exam Schedule</div>
+          </div>
+        </div>
+      </header>
+
+      <div class="body">
+        <section class="meta-panel">
+          <div class="meta-grid">
+            <div class="meta-item">
+              <span class="label">Academic Year</span>
+              <span class="value">{{yearLabel}}</span>
+            </div>
+            <div class="meta-item">
+              <span class="label">Exams</span>
+              <span class="value">{{examGroups.length || 0}}</span>
+            </div>
+            <div class="meta-item">
+              <span class="label">Subjects</span>
+              <span class="value">{{stats.totalSubjects || 0}}</span>
+            </div>
+            <div class="meta-item">
+              <span class="label">Report Date</span>
+              <span class="value">{{today | date:'dd-MM-yyyy'}}</span>
+            </div>
+          </div>
+
+          <div class="filter-row">
+            <button type="button" class="chip" ng-class="{active: filter === 'upcoming'}" ng-click="setFilter('upcoming')">Upcoming</button>
+            <button type="button" class="chip" ng-class="{active: filter === 'all'}" ng-click="setFilter('all')">All year</button>
+            <button type="button" class="chip" ng-class="{active: filter === 'past'}" ng-click="setFilter('past')">Completed</button>
+          </div>
+        </section>
+
+        <div class="kpi-strip" ng-if="rows.length">
+          <div class="kpi">
+            <p class="label">Upcoming</p>
+            <p class="amount">{{stats.upcoming}}</p>
+          </div>
+          <div class="kpi">
+            <p class="label">Completed</p>
+            <p class="amount">{{stats.past}}</p>
+          </div>
+          <div class="kpi">
+            <p class="label">Next Exam</p>
+            <p class="amount" style="font-size:0.86rem;">{{stats.nextExam || '-'}}</p>
+          </div>
+        </div>
+
+        <section class="section">
+          <div class="section-head">
+            <h2>Timetable</h2>
+            <span class="count" ng-if="visibleGroups.length">{{visibleGroups.length}} exam(s)</span>
+          </div>
+
+          <div class="exam-grid" ng-if="visibleGroups.length">
+            <article class="exam-card"
+              ng-repeat="exam in visibleGroups"
+              ng-class="{'is-past': exam.status === 'past', 'is-next': exam.status === 'next'}">
+              <div class="exam-card-head">
+                <div>
+                  <h3>{{exam.name}}</h3>
+                  <p class="exam-range">{{exam.dateRange}}</p>
+                </div>
+                <span class="status-pill" ng-class="exam.status">
+                  <span ng-if="exam.status === 'next'">Next</span>
+                  <span ng-if="exam.status === 'upcoming'">Upcoming</span>
+                  <span ng-if="exam.status === 'past'">Done</span>
+                </span>
+              </div>
+              <table class="schedule-table">
+                <thead>
+                  <tr>
+                    <th>Subject</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr ng-repeat="item in exam.subjects">
+                    <td class="subject">{{item.Subject}}</td>
+                    <td class="when">{{formatDate(item.ExamTime)}}</td>
+                    <td class="time">{{formatTime(item.ExamTime)}}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </article>
+          </div>
+
+          <div class="empty-state" ng-if="!loading && !errorMessage && !visibleGroups.length">
+            <span ng-if="filter === 'upcoming'">No upcoming exams in this academic year.</span>
+            <span ng-if="filter === 'past'">No completed exams yet.</span>
+            <span ng-if="filter === 'all'">No exam timetable found for this academic year.</span>
+          </div>
+        </section>
+
+        <p class="footer-note">System-generated academic year exam schedule for parents.</p>
+      </div>
+    </article>
+  </div>
+
+  <script>
+    angular.module('examScheduleApp', [])
+    .controller('ExamScheduleController', function($scope, $http) {
+      var baseUrl = 'https://api.schoolvertex.com/api';
+
+      function getQueryParams() {
+        var params = {};
+        var search = (location.search || '').replace(/^\?/, '');
+        search.split('&').forEach(function(item) {
+          if (!item) return;
+          var parts = item.split('=');
+          if (parts[0]) {
+            params[parts[0]] = decodeURIComponent((parts[1] || '').replace(/\+/g, ' '));
+          }
+        });
+        return params;
+      }
+
+      function num(v) {
+        var n = Number(v);
+        return isFinite(n) ? n : null;
+      }
+
+      function startOfDay(d) {
+        var x = new Date(d);
+        x.setHours(0, 0, 0, 0);
+        return x;
+      }
+
+      $scope.orgInfo = {};
+      $scope.today = new Date();
+      $scope.loading = false;
+      $scope.errorMessage = '';
+      $scope.yearLabel = '-';
+      $scope.filter = 'upcoming';
+      $scope.rows = [];
+      $scope.examGroups = [];
+      $scope.visibleGroups = [];
+      $scope.stats = { upcoming: 0, past: 0, totalSubjects: 0, nextExam: '-' };
+
+      var query = getQueryParams();
+      var orgId = num(query.orgId || query.OrgId);
+      var entityId = num(query.entityId || query.EntityId);
+      var entityTypeId = num(query.entityTypeId || query.EntityTypeId);
+      var yearId = num(query.yearId || query.YearId);
+
+      if (!orgId || !entityId || !entityTypeId || !yearId) {
+        $scope.errorMessage = 'orgId, entityId, entityTypeId and yearId are required. Example: ?orgId=1&entityId=274&entityTypeId=119&yearId=9';
+        return;
+      }
+
+      $scope.yearLabel = 'Year #' + yearId;
+
+      $http.get(baseUrl + '/Organisation/GetYearList')
+        .then(function(response) {
+          var years = response.data || [];
+          var found = years.find(function(y) {
+            return Number(y.value || y.Value || y.id || y.Id) === yearId;
+          });
+          if (found) {
+            $scope.yearLabel = found.label || found.Label || found.text || found.Text || $scope.yearLabel;
+          }
+        });
+
+      $scope.formatDate = function(value) {
+        if (!value) return '-';
+        var date = new Date(value);
+        if (isNaN(date.getTime())) return '-';
+        return date.toLocaleDateString('en-IN', {
+          weekday: 'short',
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric'
+        });
+      };
+
+      $scope.formatTime = function(value) {
+        if (!value) return '-';
+        var date = new Date(value);
+        if (isNaN(date.getTime())) return '-';
+        return date.toLocaleTimeString('en-IN', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        });
+      };
+
+      $scope.setFilter = function(filter) {
+        $scope.filter = filter;
+        applyFilter();
+      };
+
+      function buildGroups(rows) {
+        var today = startOfDay(new Date());
+        var map = {};
+        var order = [];
+
+        (rows || []).forEach(function(row) {
+          var key = String(row.TestId || row.TestName || '');
+          if (!map[key]) {
+            map[key] = {
+              id: row.TestId,
+              name: row.TestName || 'Exam',
+              subjects: []
+            };
+            order.push(key);
+          }
+          map[key].subjects.push(row);
+        });
+
+        var groups = order.map(function(key) {
+          var exam = map[key];
+          exam.subjects.sort(function(a, b) {
+            return new Date(a.ExamTime) - new Date(b.ExamTime);
+          });
+
+          var first = exam.subjects[0] ? new Date(exam.subjects[0].ExamTime) : null;
+          var last = exam.subjects.length
+            ? new Date(exam.subjects[exam.subjects.length - 1].ExamTime)
+            : null;
+
+          var hasUpcoming = exam.subjects.some(function(s) {
+            return startOfDay(s.ExamTime) >= today;
+          });
+          var allPast = exam.subjects.every(function(s) {
+            return startOfDay(s.ExamTime) < today;
+          });
+
+          exam.status = allPast ? 'past' : (hasUpcoming ? 'upcoming' : 'past');
+          exam.firstDate = first;
+          exam.lastDate = last;
+          exam.dateRange = first && last
+            ? (first.toDateString() === last.toDateString()
+              ? $scope.formatDate(first)
+              : ($scope.formatDate(first) + ' → ' + $scope.formatDate(last)))
+            : '-';
+          return exam;
+        });
+
+        // Most recent exams first
+        groups.sort(function(a, b) {
+          return (b.lastDate ? b.lastDate.getTime() : 0) - (a.lastDate ? a.lastDate.getTime() : 0);
+        });
+
+        // Mark the soonest upcoming exam as Next (not the most recent)
+        var soonest = null;
+        groups.forEach(function(exam) {
+          if (exam.status !== 'upcoming' || !exam.firstDate) {
+            return;
+          }
+          if (!soonest || exam.firstDate < soonest.firstDate) {
+            soonest = exam;
+          }
+        });
+        if (soonest) {
+          soonest.status = 'next';
+        }
+
+        return groups;
+      }
+
+      function applyFilter() {
+        var groups = $scope.examGroups || [];
+        if ($scope.filter === 'upcoming') {
+          $scope.visibleGroups = groups.filter(function(g) {
+            return g.status === 'upcoming' || g.status === 'next';
+          });
+        } else if ($scope.filter === 'past') {
+          $scope.visibleGroups = groups.filter(function(g) { return g.status === 'past'; });
+        } else {
+          $scope.visibleGroups = groups.slice();
+        }
+      }
+
+      function refreshStats(groups, rows) {
+        var upcoming = groups.filter(function(g) {
+          return g.status === 'upcoming' || g.status === 'next';
+        }).length;
+        var past = groups.filter(function(g) { return g.status === 'past'; }).length;
+        var next = groups.find(function(g) { return g.status === 'next'; });
+        $scope.stats = {
+          upcoming: upcoming,
+          past: past,
+          totalSubjects: (rows || []).length,
+          nextExam: next ? next.name : '-'
+        };
+      }
+
+      function load() {
+        $scope.loading = true;
+        $scope.errorMessage = '';
+
+        $http.get(baseUrl + '/Organisation/GetInfoForCertificate/' + orgId)
+          .then(function(r) { $scope.orgInfo = r.data || {}; });
+
+        var url = baseUrl + '/TestTimeTable/GetYearTestSchedule/' +
+          encodeURIComponent(entityId) + '/' +
+          encodeURIComponent(entityTypeId) + '/' +
+          encodeURIComponent(orgId) + '/' +
+          encodeURIComponent(yearId);
+
+        $http.get(url)
+          .then(function(response) {
+            $scope.rows = response.data || [];
+            $scope.examGroups = buildGroups($scope.rows);
+            refreshStats($scope.examGroups, $scope.rows);
+            // Default to upcoming when available, else full year
+            var hasUpcoming = $scope.examGroups.some(function(g) {
+              return g.status === 'upcoming' || g.status === 'next';
+            });
+            $scope.filter = hasUpcoming ? 'upcoming' : 'all';
+            applyFilter();
+          })
+          .catch(function() {
+            $scope.rows = [];
+            $scope.examGroups = [];
+            $scope.visibleGroups = [];
+            $scope.errorMessage = 'Unable to load exam schedule.';
+          })
+          .finally(function() {
+            $scope.loading = false;
+          });
+      }
+
+      load();
+    });
+  </script>
+</body>
+</html>
