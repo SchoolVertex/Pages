@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="eventsApp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>School Events</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+
+  <style>
+    :root {
+      --ink: #15202b;
+      --ink-soft: #3d4f5f;
+      --muted: #6b7c8a;
+      --line: #d8e0e8;
+      --surface: #ffffff;
+      --page: #e8eef3;
+      --page-accent: #d4e4f0;
+      --brand: #0b4f6c;
+      --brand-deep: #083a50;
+      --pass: #1b7a4a;
+      --fail: #b42318;
+      --radius: 14px;
+      --shadow: 0 10px 30px rgba(11, 79, 108, 0.08);
+      --shell-max: 520px;
+    }
+
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "DM Sans", sans-serif;
+      background:
+        radial-gradient(ellipse 120% 80% at 0% -10%, rgba(11, 79, 108, 0.12), transparent 55%),
+        radial-gradient(ellipse 90% 60% at 100% 0%, rgba(27, 122, 74, 0.08), transparent 50%),
+        linear-gradient(180deg, var(--page-accent) 0%, var(--page) 40%, #f2f6f9 100%);
+    }
+
+    .shell {
+      width: 100%;
+      max-width: var(--shell-max);
+      margin: 0 auto;
+      padding: 16px 14px calc(40px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .report {
+      position: relative;
+      background: var(--surface);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      border: 1px solid rgba(11, 79, 108, 0.08);
+    }
+
+    .watermark {
+      position: absolute;
+      top: 48%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0.035;
+      width: 55%;
+      max-width: 220px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .report > *:not(.watermark) { position: relative; z-index: 1; }
+
+    .banner {
+      margin: 14px 14px 0;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .banner.loading { background: #e8f3f8; color: var(--brand); }
+    .banner.error { background: #fdeceb; color: var(--fail); }
+
+    .report-top {
+      padding: 22px 18px 20px;
+      background: linear-gradient(145deg, #0b4f6c 0%, #0d5f7f 48%, #147a6a 100%);
+      color: #f7fbfd;
+    }
+
+    .report-top-inner {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .school-logo {
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+      object-fit: contain;
+      background: #fff;
+      border: 2px solid rgba(255, 255, 255, 0.55);
+      flex: 0 0 auto;
+    }
+
+    .school-copy { min-width: 0; flex: 1; }
+
+    .school-copy h1 {
+      margin: 0;
+      font-family: Fraunces, Georgia, serif;
+      font-size: 1.28rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .school-copy .address {
+      margin: 6px 0 0;
+      font-size: 0.72rem;
+      opacity: 0.78;
+      line-height: 1.4;
+    }
+
+    .doc-label-wrap { display: flex; justify-content: center; }
+
+    .doc-label {
+      display: inline-block;
+      padding: 5px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 6px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.1);
+      white-space: nowrap;
+    }
+
+    .body { padding: 18px 16px 22px; }
+
+    .meta-panel {
+      padding: 14px;
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, #f4f8fb 0%, #eef4f8 100%);
+      border: 1px solid var(--line);
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 12px;
+    }
+
+    .meta-item .label {
+      display: block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+
+    .meta-item .value {
+      display: block;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.3;
+      word-break: break-word;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink-soft);
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .chip.active {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #fff;
+    }
+
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .kpi {
+      padding: 12px 10px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #f8fbfd;
+      text-align: center;
+      min-width: 0;
+    }
+
+    .kpi .label {
+      margin: 0;
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .kpi .amount {
+      margin: 4px 0 0;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--brand-deep);
+      font-variant-numeric: tabular-nums;
+      word-break: break-word;
+    }
+
+    .section { margin-top: 22px; }
+
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--brand);
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-family: Fraunces, Georgia, serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--brand-deep);
+    }
+
+    .section-head .count {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .event-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .event-card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      overflow: hidden;
+      min-width: 0;
+      display: grid;
+      grid-template-columns: 72px 1fr;
+    }
+
+    .event-card.is-today {
+      border-color: rgba(27, 122, 74, 0.4);
+      box-shadow: 0 8px 20px rgba(27, 122, 74, 0.1);
+    }
+
+    .event-card.is-past { opacity: 0.72; }
+
+    .event-date-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      padding: 12px 8px;
+      background: linear-gradient(180deg, #e8f3f8 0%, #f4f8fb 100%);
+      border-right: 1px solid var(--line);
+      text-align: center;
+    }
+
+    .event-date-block .month {
+      margin: 0;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--brand);
+    }
+
+    .event-date-block .day {
+      margin: 0;
+      font-family: Fraunces, Georgia, serif;
+      font-size: 1.55rem;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--brand-deep);
+    }
+
+    .event-date-block .weekday {
+      margin: 2px 0 0;
+      font-size: 0.62rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .event-body { padding: 14px; min-width: 0; }
+
+    .event-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .event-top h3 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.3;
+    }
+
+    .status-pill {
+      flex: 0 0 auto;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .status-pill.today { background: #e8f6ee; color: var(--pass); }
+    .status-pill.upcoming { background: #e8f3f8; color: var(--brand-deep); }
+    .status-pill.past { background: #eef1f4; color: var(--muted); }
+
+    .event-scope {
+      margin: 0 0 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--brand-deep);
+      line-height: 1.35;
+    }
+
+    .event-desc {
+      margin: 0;
+      font-size: 0.84rem;
+      font-weight: 500;
+      color: var(--ink-soft);
+      line-height: 1.45;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .event-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--line);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 22px 12px;
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 500;
+    }
+
+    .footer-note {
+      margin: 18px 0 0;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      text-align: center;
+      font-size: 0.68rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    @media (min-width: 640px) {
+      :root { --shell-max: 760px; }
+      .shell { padding: 24px 20px 48px; }
+      .body { padding: 22px 22px 28px; }
+      .meta-grid { grid-template-columns: repeat(4, 1fr); }
+      .event-list { grid-template-columns: 1fr; }
+    }
+
+    @media (min-width: 900px) {
+      :root { --shell-max: 1040px; }
+      .shell { padding: 28px 24px 56px; }
+      .body { padding: 26px 28px 32px; }
+      .report-top { padding: 28px 28px 24px; }
+      .report-top-inner {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .doc-label-wrap { justify-content: flex-end; }
+      .event-list { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (min-width: 1200px) {
+      :root { --shell-max: 1240px; }
+    }
+
+    @media print {
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      body { background: #fff; }
+      .shell { max-width: none; padding: 0; }
+      .report { border: none; border-radius: 0; box-shadow: none; }
+      .filter-row, .banner { display: none !important; }
+      .event-list { grid-template-columns: 1fr 1fr !important; }
+    }
+  </style>
+</head>
+
+<body ng-controller="EventsController">
+  <div class="shell">
+    <article class="report">
+      <img ng-if="orgInfo.Image" ng-src="{{orgInfo.Image}}" class="watermark" alt="">
+
+      <div class="banner loading" ng-if="loading">Loading events…</div>
+      <div class="banner error" ng-if="errorMessage">{{errorMessage}}</div>
+
+      <header class="report-top">
+        <div class="report-top-inner">
+          <div class="brand-row">
+            <img ng-if="orgInfo.Image" ng-src="{{orgInfo.Image}}" class="school-logo" alt="School Logo">
+            <div class="school-copy">
+              <h1>{{orgInfo.Name || 'School Name'}}</h1>
+              <p class="address" ng-if="orgInfo.FullAddress">{{orgInfo.FullAddress}}</p>
+            </div>
+          </div>
+          <div class="doc-label-wrap">
+            <div class="doc-label">Events</div>
+          </div>
+        </div>
+      </header>
+
+      <div class="body">
+        <section class="meta-panel">
+          <div class="meta-grid">
+            <div class="meta-item">
+              <span class="label">Total</span>
+              <span class="value">{{rows.length || 0}}</span>
+            </div>
+            <div class="meta-item">
+              <span class="label">Showing</span>
+              <span class="value">{{visibleRows.length || 0}}</span>
+            </div>
+            <div class="meta-item">
+              <span class="label">Upcoming</span>
+              <span class="value">{{stats.upcoming}}</span>
+            </div>
+            <div class="meta-item">
+              <span class="label">Report Date</span>
+              <span class="value">{{today | date:'dd-MM-yyyy'}}</span>
+            </div>
+          </div>
+
+          <div class="filter-row">
+            <button type="button" class="chip" ng-class="{active: filter === 'upcoming'}" ng-click="setFilter('upcoming')">Upcoming</button>
+            <button type="button" class="chip" ng-class="{active: filter === 'all'}" ng-click="setFilter('all')">All</button>
+            <button type="button" class="chip" ng-class="{active: filter === 'past'}" ng-click="setFilter('past')">Past</button>
+          </div>
+        </section>
+
+        <div class="kpi-strip" ng-if="rows.length">
+          <div class="kpi">
+            <p class="label">Upcoming</p>
+            <p class="amount">{{stats.upcoming}}</p>
+          </div>
+          <div class="kpi">
+            <p class="label">Today</p>
+            <p class="amount">{{stats.today}}</p>
+          </div>
+          <div class="kpi">
+            <p class="label">Next Event</p>
+            <p class="amount" style="font-size:0.82rem;">{{stats.nextName || '-'}}</p>
+          </div>
+        </div>
+
+        <section class="section">
+          <div class="section-head">
+            <h2>Event List</h2>
+            <span class="count" ng-if="visibleRows.length">{{visibleRows.length}} event(s)</span>
+          </div>
+
+          <div class="event-list" ng-if="visibleRows.length">
+            <article class="event-card"
+              ng-repeat="item in visibleRows"
+              ng-class="{'is-today': item.status === 'today', 'is-past': item.status === 'past'}">
+              <div class="event-date-block">
+                <p class="month">{{item.monthLabel}}</p>
+                <p class="day">{{item.dayLabel}}</p>
+                <p class="weekday">{{item.weekdayShort}}</p>
+              </div>
+              <div class="event-body">
+                <div class="event-top">
+                  <h3>{{item.Title || 'Event'}}</h3>
+                  <span class="status-pill" ng-class="item.status">
+                    <span ng-if="item.status === 'today'">Today</span>
+                    <span ng-if="item.status === 'upcoming'">Upcoming</span>
+                    <span ng-if="item.status === 'past'">Past</span>
+                  </span>
+                </div>
+                <p class="event-scope" ng-if="item.EntityName">{{item.EntityName}}</p>
+                <p class="event-desc" ng-if="item.Description">{{item.Description}}</p>
+                <div class="event-meta">
+                  <span>{{formatDate(item.EventDate)}}</span>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <div class="empty-state" ng-if="!loading && !errorMessage && !visibleRows.length">
+            <span ng-if="filter === 'upcoming'">No upcoming events.</span>
+            <span ng-if="filter === 'past'">No past events.</span>
+            <span ng-if="filter === 'all'">No events found.</span>
+          </div>
+        </section>
+
+        <p class="footer-note">System-generated event list for parents.</p>
+      </div>
+    </article>
+  </div>
+
+  <script>
+    angular.module('eventsApp', [])
+    .controller('EventsController', function($scope, $http) {
+      var baseUrl = 'https://api.schoolvertex.com/api';
+      var WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+      function getQueryParams() {
+        var params = {};
+        var search = (location.search || '').replace(/^\?/, '');
+        search.split('&').forEach(function(item) {
+          if (!item) return;
+          var parts = item.split('=');
+          if (parts[0]) {
+            params[parts[0]] = decodeURIComponent((parts[1] || '').replace(/\+/g, ' '));
+          }
+        });
+        return params;
+      }
+
+      function num(v) {
+        var n = Number(v);
+        return isFinite(n) ? n : null;
+      }
+
+      function startOfDay(d) {
+        var x = new Date(d);
+        x.setHours(0, 0, 0, 0);
+        return x;
+      }
+
+      $scope.orgInfo = {};
+      $scope.today = new Date();
+      $scope.loading = false;
+      $scope.errorMessage = '';
+      $scope.filter = 'upcoming';
+      $scope.rows = [];
+      $scope.visibleRows = [];
+      $scope.stats = { upcoming: 0, today: 0, nextName: '-' };
+
+      var query = getQueryParams();
+      var entityId = num(query.entityId || query.EntityId);
+      var entityTypeId = num(query.entityTypeId || query.EntityTypeId);
+      var orgId = num(query.orgId || query.OrgId);
+
+      if (!entityId || !entityTypeId) {
+        $scope.errorMessage = 'entityId and entityTypeId are required. Example: ?entityTypeId=119&entityId=274';
+        return;
+      }
+
+      $scope.formatDate = function(value) {
+        if (!value) return '-';
+        var date = new Date(value);
+        if (isNaN(date.getTime())) return '-';
+        return date.toLocaleDateString('en-IN', {
+          weekday: 'short',
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric'
+        });
+      };
+
+      $scope.setFilter = function(filter) {
+        $scope.filter = filter;
+        applyFilter();
+      };
+
+      function enrich(rows) {
+        var today = startOfDay(new Date());
+        return (rows || []).map(function(row) {
+          var eventDate = row.EventDate ? startOfDay(row.EventDate) : null;
+          var status = 'upcoming';
+          var eventTime = 0;
+          var monthLabel = '-';
+          var dayLabel = '-';
+          var weekdayShort = '';
+
+          if (eventDate && !isNaN(eventDate.getTime())) {
+            eventTime = eventDate.getTime();
+            monthLabel = MONTHS[eventDate.getMonth()] || '';
+            dayLabel = String(eventDate.getDate());
+            weekdayShort = (WEEKDAYS[eventDate.getDay()] || '').slice(0, 3);
+            if (eventDate < today) status = 'past';
+            else if (eventDate.getTime() === today.getTime()) status = 'today';
+          }
+
+          return Object.assign({}, row, {
+            status: status,
+            eventTime: eventTime,
+            monthLabel: monthLabel,
+            dayLabel: dayLabel,
+            weekdayShort: weekdayShort
+          });
+        });
+      }
+
+      function sortRows(rows, filter) {
+        var list = (rows || []).slice();
+        if (filter === 'past') {
+          list.sort(function(a, b) { return b.eventTime - a.eventTime; });
+        } else {
+          list.sort(function(a, b) { return a.eventTime - b.eventTime; });
+        }
+        return list;
+      }
+
+      function applyFilter() {
+        var rows = $scope.rows || [];
+        var filtered;
+        if ($scope.filter === 'upcoming') {
+          filtered = rows.filter(function(r) {
+            return r.status === 'upcoming' || r.status === 'today';
+          });
+        } else if ($scope.filter === 'past') {
+          filtered = rows.filter(function(r) { return r.status === 'past'; });
+        } else {
+          filtered = rows.slice();
+        }
+        $scope.visibleRows = sortRows(filtered, $scope.filter);
+      }
+
+      function refreshStats(rows) {
+        var upcoming = rows.filter(function(r) {
+          return r.status === 'upcoming' || r.status === 'today';
+        });
+        var todayCount = rows.filter(function(r) { return r.status === 'today'; }).length;
+        var next = upcoming.slice().sort(function(a, b) { return a.eventTime - b.eventTime; })[0];
+        $scope.stats = {
+          upcoming: upcoming.length,
+          today: todayCount,
+          nextName: next ? next.Title : '-'
+        };
+      }
+
+      function loadOrg(id) {
+        if (!(id > 0)) return;
+        $http.get(baseUrl + '/Organisation/GetInfoForCertificate/' + id)
+          .then(function(r) { $scope.orgInfo = r.data || {}; });
+      }
+
+      function loadEvents() {
+        $scope.loading = true;
+        $scope.errorMessage = '';
+
+        $http.get(baseUrl + '/EntityUpdate/GetAll/' + entityId + '/' + entityTypeId)
+          .then(function(response) {
+            $scope.rows = enrich(response.data || []);
+            refreshStats($scope.rows);
+            var hasUpcoming = $scope.rows.some(function(r) {
+              return r.status === 'upcoming' || r.status === 'today';
+            });
+            $scope.filter = hasUpcoming ? 'upcoming' : 'all';
+            applyFilter();
+          })
+          .catch(function() {
+            $scope.rows = [];
+            $scope.visibleRows = [];
+            $scope.errorMessage = 'Unable to load events.';
+          })
+          .finally(function() {
+            $scope.loading = false;
+          });
+      }
+
+      function start() {
+        if (orgId > 0) {
+          loadOrg(orgId);
+          loadEvents();
+          return;
+        }
+
+        $http.get(baseUrl + '/Organisation/GetOrgId/' + entityTypeId + '/' + entityId)
+          .then(function(r) {
+            orgId = num(r.data);
+            loadOrg(orgId);
+          })
+          .catch(function() { /* branding optional */ })
+          .finally(function() {
+            loadEvents();
+          });
+      }
+
+      start();
+    });
+  </script>
+</body>
+</html>
