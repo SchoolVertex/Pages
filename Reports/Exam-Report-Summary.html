@@ -28,6 +28,8 @@
       --fail: #b42318;
       --radius: 14px;
       --shadow: 0 10px 30px rgba(11, 79, 108, 0.08);
+      --shell-max: 520px;
+      --chart-h: 210px;
     }
 
     * { box-sizing: border-box; }
@@ -45,7 +47,8 @@
     }
 
     .shell {
-      max-width: 520px;
+      width: 100%;
+      max-width: var(--shell-max);
       margin: 0 auto;
       padding: 16px 14px calc(40px + env(safe-area-inset-bottom, 0px));
     }
@@ -91,10 +94,17 @@
       color: #f7fbfd;
     }
 
+    .report-top-inner {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
     .brand-row {
       display: flex;
       align-items: center;
       gap: 14px;
+      min-width: 0;
     }
 
     .school-logo {
@@ -128,7 +138,6 @@
     .doc-label-wrap {
       display: flex;
       justify-content: center;
-      margin-top: 16px;
     }
 
     .doc-label {
@@ -141,6 +150,7 @@
       letter-spacing: 0.12em;
       text-transform: uppercase;
       background: rgba(255, 255, 255, 0.1);
+      white-space: nowrap;
     }
 
     .body { padding: 18px 16px 22px; }
@@ -152,8 +162,14 @@
       border: 1px solid var(--line);
     }
 
+    .student-panel-top {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
     .student-name {
-      margin: 0 0 12px;
+      margin: 0;
       font-family: Fraunces, Georgia, serif;
       font-size: 1.15rem;
       font-weight: 700;
@@ -165,6 +181,7 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px 12px;
+      margin-top: 12px;
     }
 
     .meta-item.full { grid-column: 1 / -1; }
@@ -192,6 +209,7 @@
       display: flex;
       gap: 8px;
       margin-top: 14px;
+      max-width: 360px;
     }
 
     .chip {
@@ -207,6 +225,94 @@
     }
 
     .chip.active {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #fff;
+    }
+
+    .subject-picker {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 8px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 2px 0 10px;
+      margin-bottom: 4px;
+      scrollbar-width: thin;
+    }
+
+    .subject-picker::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    .subject-chip {
+      flex: 0 0 auto;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink-soft);
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .subject-chip.active {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #fff;
+    }
+
+    .subject-chart-meta {
+      margin: 0 0 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .subject-chart-meta strong {
+      color: var(--brand-deep);
+    }
+
+    .view-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin: 0 0 10px;
+    }
+
+    .view-toolbar-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .view-toolbar-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-right: 2px;
+    }
+
+    .view-chip {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink-soft);
+      border-radius: 999px;
+      padding: 6px 11px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .view-chip.active {
       background: var(--brand);
       border-color: var(--brand);
       color: #fff;
@@ -250,6 +356,7 @@
       border: 1px solid var(--line);
       background: #f8fbfd;
       text-align: center;
+      min-width: 0;
     }
 
     .kpi.accent {
@@ -277,13 +384,15 @@
       letter-spacing: -0.02em;
       color: var(--ink);
       font-variant-numeric: tabular-nums;
+      word-break: break-word;
     }
 
     .kpi.accent .amount { color: #fff; font-size: 1.55rem; }
+    .kpi .amount.subject-name { font-size: 1rem; }
 
     .insight-list {
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-columns: 1fr;
       gap: 8px;
     }
 
@@ -303,13 +412,22 @@
     .insight.warn { border-color: rgba(154, 107, 20, 0.28); background: #fbf7ef; }
     .insight.bad { border-color: rgba(180, 35, 24, 0.22); background: #fdf4f3; }
 
+    .chart-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
     .chart-card {
       border: 1px solid var(--line);
       border-radius: 12px;
       padding: 12px;
       background: #fff;
-      margin-bottom: 10px;
+      min-width: 0;
     }
+
+    .chart-card.span-all,
+    .chart-legend.span-all { grid-column: 1 / -1; }
 
     .chart-card h3 {
       margin: 0 0 10px;
@@ -321,7 +439,68 @@
     .chart-wrap {
       position: relative;
       width: 100%;
-      min-height: 210px;
+      height: var(--chart-h);
+    }
+
+    .chart-legend {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      margin-top: 4px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #f8fbfd;
+    }
+
+    .chart-legend-title {
+      margin: 0 0 2px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .chart-legend-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .chart-legend-swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      flex: 0 0 auto;
+      margin-top: 3px;
+    }
+
+    .chart-legend-code {
+      flex: 0 0 auto;
+      min-width: 42px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--brand-deep);
+      font-variant-numeric: tabular-nums;
+      padding-top: 1px;
+    }
+
+    .chart-legend-name {
+      flex: 1;
+      min-width: 0;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.35;
+      word-break: break-word;
+    }
+
+    .exam-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
     }
 
     .exam-card {
@@ -329,7 +508,8 @@
       border-radius: 12px;
       padding: 12px;
       background: #fff;
-      margin-bottom: 10px;
+      min-width: 0;
+      height: 100%;
     }
 
     .exam-card-top {
@@ -406,8 +586,8 @@
     }
 
     .subject-rank {
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-columns: 1fr;
       gap: 8px;
     }
 
@@ -420,6 +600,7 @@
       border: 1px solid var(--line);
       border-radius: 10px;
       background: #fff;
+      min-width: 0;
     }
 
     .rank-num {
@@ -434,7 +615,15 @@
       color: var(--brand-deep);
     }
 
-    .rank-name { font-size: 0.86rem; font-weight: 600; }
+    .rank-name {
+      font-size: 0.86rem;
+      font-weight: 600;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
     .rank-pct {
       font-size: 0.84rem;
       font-weight: 700;
@@ -470,10 +659,159 @@
       text-decoration: none;
     }
 
-    @media (min-width: 481px) {
-      .shell { padding: 24px 16px 48px; }
+    /* Tablet */
+    @media (min-width: 640px) {
+      :root {
+        --shell-max: 720px;
+        --chart-h: 250px;
+      }
+
+      .shell { padding: 24px 20px 48px; }
       .body { padding: 22px 22px 28px; }
-      .report-top { padding: 26px 22px 22px; }
+      .report-top { padding: 26px 24px 22px; }
+
+      .school-copy h1 { font-size: 1.4rem; }
+      .student-name { font-size: 1.28rem; }
+
+      .meta-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .kpi-strip {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .kpi.accent {
+        grid-column: 1 / -1;
+      }
+
+      .insight-list {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .chart-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .chart-legend {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px 14px;
+      }
+
+      .chart-legend-title {
+        grid-column: 1 / -1;
+      }
+
+      .exam-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .subject-rank {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    /* Laptop */
+    @media (min-width: 900px) {
+      :root {
+        --shell-max: 980px;
+        --chart-h: 280px;
+      }
+
+      .shell { padding: 28px 24px 56px; }
+      .body { padding: 26px 28px 32px; }
+      .report-top { padding: 28px 28px 24px; }
+
+      .report-top-inner {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+      }
+
+      .doc-label-wrap {
+        justify-content: flex-end;
+        flex: 0 0 auto;
+      }
+
+      .school-logo {
+        width: 72px;
+        height: 72px;
+      }
+
+      .school-copy h1 { font-size: 1.55rem; }
+
+      .student-panel { padding: 18px 20px; }
+
+      .student-panel-top {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .toggle-row {
+        margin-top: 0;
+        flex: 0 0 auto;
+        width: 280px;
+        max-width: none;
+      }
+
+      .kpi-strip {
+        grid-template-columns: 1.4fr repeat(4, 1fr);
+        gap: 12px;
+      }
+
+      .kpi.accent {
+        grid-column: auto;
+      }
+
+      .kpi .amount.subject-name { font-size: 0.95rem; }
+
+      .section { margin-top: 28px; }
+      .section-head h2 { font-size: 1.18rem; }
+
+      .chart-card,
+      .exam-card,
+      .rank-row {
+        padding: 16px;
+      }
+
+      .chart-wrap { height: var(--chart-h); }
+    }
+
+    /* Desktop / wide laptop */
+    @media (min-width: 1200px) {
+      :root {
+        --shell-max: 1180px;
+        --chart-h: 300px;
+      }
+
+      .shell { padding: 32px 28px 64px; }
+
+      .exam-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .subject-rank {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .insight-list {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .chart-grid {
+        grid-template-columns: 1.15fr 1fr;
+      }
+
+      .chart-card.span-all {
+        grid-column: 1 / -1;
+      }
+
+      .chart-legend {
+        grid-template-columns: repeat(3, 1fr);
+      }
     }
 
     @media print {
@@ -482,6 +820,13 @@
       .shell { max-width: none; padding: 0; }
       .report { border: none; border-radius: 0; box-shadow: none; }
       .toggle-row, .banner { display: none !important; }
+      .chart-grid,
+      .exam-grid,
+      .subject-rank,
+      .insight-list,
+      .kpi-strip {
+        grid-template-columns: 1fr 1fr !important;
+      }
     }
   </style>
 </head>
@@ -495,21 +840,29 @@
       <div class="banner error" ng-if="errorMessage">{{errorMessage}}</div>
 
       <header class="report-top">
-        <div class="brand-row">
-          <img ng-if="orgInfo.Image" ng-src="{{orgInfo.Image}}" class="school-logo" alt="School Logo">
-          <div class="school-copy">
-            <h1>{{orgInfo.Name || 'School Name'}}</h1>
-            <p class="address" ng-if="orgInfo.FullAddress">{{orgInfo.FullAddress}}</p>
+        <div class="report-top-inner">
+          <div class="brand-row">
+            <img ng-if="orgInfo.Image" ng-src="{{orgInfo.Image}}" class="school-logo" alt="School Logo">
+            <div class="school-copy">
+              <h1>{{orgInfo.Name || 'School Name'}}</h1>
+              <p class="address" ng-if="orgInfo.FullAddress">{{orgInfo.FullAddress}}</p>
+            </div>
           </div>
-        </div>
-        <div class="doc-label-wrap">
-          <div class="doc-label">Year Marks Summary</div>
+          <div class="doc-label-wrap">
+            <div class="doc-label">Year Marks Summary</div>
+          </div>
         </div>
       </header>
 
       <div class="body">
         <section class="student-panel">
-          <h2 class="student-name">{{student.FullName || 'Student'}}</h2>
+          <div class="student-panel-top">
+            <h2 class="student-name">{{student.FullName || 'Student'}}</h2>
+            <div class="toggle-row">
+              <button type="button" class="chip" ng-class="{active: isMain}" ng-click="setMain(true)">Main Exams</button>
+              <button type="button" class="chip" ng-class="{active: !isMain}" ng-click="setMain(false)">Chapters</button>
+            </div>
+          </div>
           <div class="meta-grid">
             <div class="meta-item" ng-if="student.ClassName || student.class">
               <span class="label">Class</span>
@@ -527,11 +880,6 @@
               <span class="label">Exams Covered</span>
               <span class="value">{{examRows.length || 0}}</span>
             </div>
-          </div>
-
-          <div class="toggle-row">
-            <button type="button" class="chip" ng-class="{active: isMain}" ng-click="setMain(true)">Main Exams</button>
-            <button type="button" class="chip" ng-class="{active: !isMain}" ng-click="setMain(false)">Chapters</button>
           </div>
         </section>
 
@@ -554,11 +902,11 @@
             </div>
             <div class="kpi">
               <p class="label">Strongest Subject</p>
-              <p class="amount" style="font-size:1rem;">{{summary.bestSubject || '-'}}</p>
+              <p class="amount subject-name">{{summary.bestSubject || '-'}}</p>
             </div>
             <div class="kpi">
               <p class="label">Needs Focus</p>
-              <p class="amount" style="font-size:1rem;">{{summary.weakSubject || '-'}}</p>
+              <p class="amount subject-name">{{summary.weakSubject || '-'}}</p>
             </div>
           </div>
         </section>
@@ -576,17 +924,61 @@
           <div class="section-head">
             <h2>Progress &amp; Comparison</h2>
           </div>
-          <div class="chart-card">
-            <h3>Exam-wise percentage trend</h3>
-            <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
-          </div>
-          <div class="chart-card">
-            <h3>Subject performance across exams (%)</h3>
-            <div class="chart-wrap"><canvas id="subjectChart"></canvas></div>
-          </div>
-          <div class="chart-card">
-            <h3>Subject average ranking</h3>
-            <div class="chart-wrap"><canvas id="rankChart"></canvas></div>
+          <div class="chart-grid">
+            <div class="chart-card span-all">
+              <h3>{{trendTitle}}</h3>
+              <div class="view-toolbar">
+                <div class="view-toolbar-group">
+                  <span class="view-toolbar-label">View</span>
+                  <button type="button" class="view-chip" ng-class="{active: trendView === 'overall'}" ng-click="setTrendView('overall')">Overall</button>
+                  <button type="button" class="view-chip" ng-class="{active: trendView === 'subject'}" ng-click="setTrendView('subject')">One subject</button>
+                  <button type="button" class="view-chip" ng-class="{active: trendView === 'allSubjects'}" ng-click="setTrendView('allSubjects')">All subjects</button>
+                </div>
+                <div class="view-toolbar-group">
+                  <span class="view-toolbar-label">Chart</span>
+                  <button type="button" class="view-chip" ng-class="{active: trendChartType === 'line'}" ng-click="setTrendChartType('line')">Line</button>
+                  <button type="button" class="view-chip" ng-class="{active: trendChartType === 'bar'}" ng-click="setTrendChartType('bar')">Bar</button>
+                </div>
+              </div>
+              <div class="subject-picker" ng-if="trendView === 'subject' && subjectOptions.length">
+                <button type="button"
+                  class="subject-chip"
+                  ng-repeat="sub in subjectOptions"
+                  ng-class="{active: trendSubjectId === sub.id}"
+                  ng-click="selectTrendSubject(sub.id)">{{sub.name}}</button>
+              </div>
+              <p class="subject-chart-meta" ng-if="trendMeta">{{trendMeta}}</p>
+              <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+            </div>
+            <div class="chart-card">
+              <h3>Subject performance across exams (%)</h3>
+              <div class="subject-picker" ng-if="subjectOptions.length">
+                <button type="button"
+                  class="subject-chip"
+                  ng-repeat="sub in subjectOptions"
+                  ng-class="{active: selectedSubjectId === sub.id}"
+                  ng-click="selectSubject(sub.id)">{{sub.name}}</button>
+              </div>
+              <p class="subject-chart-meta" ng-if="selectedSubjectMeta">
+                <strong>{{selectedSubjectMeta.name}}</strong>
+                · Avg {{selectedSubjectMeta.avg}}%
+                · Best {{selectedSubjectMeta.best}}%
+                · Latest {{selectedSubjectMeta.latest}}%
+              </p>
+              <div class="chart-wrap"><canvas id="subjectChart"></canvas></div>
+            </div>
+            <div class="chart-card">
+              <h3>Subject average ranking</h3>
+              <div class="chart-wrap"><canvas id="rankChart"></canvas></div>
+            </div>
+            <div class="chart-legend span-all" ng-if="examRows.length">
+              <p class="chart-legend-title">Exam legend</p>
+              <div class="chart-legend-item" ng-repeat="exam in examRows">
+                <span class="chart-legend-swatch" ng-style="{'background-color': exam.color}"></span>
+                <span class="chart-legend-code">{{exam.axisLabel}}</span>
+                <span class="chart-legend-name">{{exam.name}}</span>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -610,7 +1002,7 @@
             <span class="count" ng-if="examRows.length">{{examRows.length}} exams</span>
           </div>
 
-          <div ng-if="examRows.length">
+          <div class="exam-grid" ng-if="examRows.length">
             <div class="exam-card" ng-repeat="exam in examRows">
               <div class="exam-card-top">
                 <div>
@@ -646,7 +1038,7 @@
     var app = angular.module('reportApp', []);
 
     app.controller('ReportController', function($scope, $http, $timeout) {
-      var baseUrl = 'https://api.schoolvertex.com/api';
+      var baseUrl = 'http://api.schoolvertex.com/api';
       var ENTITY_BATCH = 118;
       var ENTITY_SECTION = 119;
       var IGNORE_SUBJECTS = [79, 80, 81, 82];
@@ -690,6 +1082,31 @@
         return Math.round((Number(v) || 0) * 100) / 100;
       }
 
+      /** Compact axis/code label; full name stays in HTML legend. */
+      function makeAxisLabel(name, index, faCounter) {
+        var n = String(name || '').replace(/\s+/g, ' ').trim();
+        var lower = n.toLowerCase();
+
+        if (/formative/.test(lower)) {
+          faCounter.value += 1;
+          return 'FA-' + faCounter.value;
+        }
+
+        var saMatch = n.match(/s\s*\.?\s*a\s*[-–—:.]?\s*([ivxlcdm\d]+)/i)
+          || n.match(/summative[^0-9ivx]*([ivxlcdm\d]+)/i);
+        if (saMatch) {
+          return 'SA-' + String(saMatch[1]).toUpperCase().replace(/\s+/g, '');
+        }
+        if (/summative|^s\s*\.?\s*a\b/i.test(n)) {
+          return 'SA-' + (index + 1);
+        }
+
+        if (n.length <= 10) {
+          return n;
+        }
+        return 'E' + (index + 1);
+      }
+
       $scope.orgInfo = {};
       $scope.student = {};
       $scope.today = new Date();
@@ -699,6 +1116,14 @@
       $scope.yearLabel = '-';
       $scope.examRows = [];
       $scope.subjectRanks = [];
+      $scope.subjectOptions = [];
+      $scope.selectedSubjectId = null;
+      $scope.selectedSubjectMeta = null;
+      $scope.trendView = 'overall';
+      $scope.trendChartType = 'line';
+      $scope.trendSubjectId = null;
+      $scope.trendTitle = 'Exam-wise percentage trend';
+      $scope.trendMeta = '';
       $scope.insights = [];
       $scope.summary = {
         yearAvg: '0.00',
@@ -781,6 +1206,319 @@
         if (rankChart) { rankChart.destroy(); rankChart = null; }
       }
 
+      function destroyTrendChart() {
+        if (trendChart) { trendChart.destroy(); trendChart = null; }
+      }
+
+      function destroySubjectChart() {
+        if (subjectChart) { subjectChart.destroy(); subjectChart = null; }
+      }
+
+      function updateTrendMeta() {
+        var examRows = $scope.examRows || [];
+        if (!examRows.length) {
+          $scope.trendTitle = 'Exam-wise percentage trend';
+          $scope.trendMeta = '';
+          return;
+        }
+
+        if ($scope.trendView === 'overall') {
+          $scope.trendTitle = 'Overall exam percentage trend';
+          $scope.trendMeta = 'Shows combined percentage for each exam across all subjects.';
+          return;
+        }
+
+        if ($scope.trendView === 'allSubjects') {
+          $scope.trendTitle = 'All subjects across exams';
+          $scope.trendMeta = 'Each line/bar series is one subject. Tap a point for details.';
+          return;
+        }
+
+        var option = ($scope.subjectOptions || []).find(function(s) {
+          return s.id === $scope.trendSubjectId;
+        });
+        var name = option ? option.name : 'Subject';
+        $scope.trendTitle = name + ' across exams';
+        $scope.trendMeta = 'Tracking ' + name + ' percentage from exam to exam.';
+      }
+
+      function renderTrendChart() {
+        destroyTrendChart();
+        var examRows = $scope.examRows || [];
+        if (!examRows.length || typeof Chart === 'undefined') {
+          return;
+        }
+
+        var trendCtx = document.getElementById('trendChart');
+        if (!trendCtx) {
+          return;
+        }
+
+        updateTrendMeta();
+
+        var chartType = $scope.trendChartType === 'bar' ? 'bar' : 'line';
+        var labels = examRows.map(function(e) { return e.axisLabel; });
+        var datasets = [];
+        var showLegend = false;
+        var examNames = examRows.map(function(e) { return e.name; });
+
+        if ($scope.trendView === 'overall') {
+          datasets = [{
+            label: 'Overall %',
+            data: examRows.map(function(e) { return e.pct; }),
+            borderColor: '#0b4f6c',
+            backgroundColor: chartType === 'line' ? 'rgba(11, 79, 108, 0.12)' : '#0b4f6c',
+            fill: chartType === 'line',
+            tension: 0.35,
+            pointRadius: 4,
+            pointBackgroundColor: '#147a6a',
+            borderRadius: 6,
+            maxBarThickness: 42
+          }];
+        } else if ($scope.trendView === 'subject') {
+          var sid = $scope.trendSubjectId;
+          var option = ($scope.subjectOptions || []).find(function(s) { return s.id === sid; });
+          datasets = [{
+            label: option ? option.name : 'Subject',
+            data: examRows.map(function(exam) {
+              var row = (exam.subjects || []).find(function(s) { return s.id === sid; });
+              return row && row.status === 'ok' ? row.pct : null;
+            }),
+            borderColor: '#147a6a',
+            backgroundColor: chartType === 'line'
+              ? 'rgba(20, 122, 106, 0.14)'
+              : examRows.map(function(e) { return e.color || '#147a6a'; }),
+            fill: chartType === 'line',
+            tension: 0.35,
+            pointRadius: 4,
+            pointBackgroundColor: '#0b4f6c',
+            borderRadius: 6,
+            maxBarThickness: 42
+          }];
+        } else {
+          showLegend = true;
+          datasets = ($scope.subjectOptions || []).map(function(sub, idx) {
+            var color = CHART_COLORS[idx % CHART_COLORS.length];
+            return {
+              label: sub.name,
+              data: examRows.map(function(exam) {
+                var row = (exam.subjects || []).find(function(s) { return s.id === sub.id; });
+                return row && row.status === 'ok' ? row.pct : null;
+              }),
+              borderColor: color,
+              backgroundColor: chartType === 'line' ? color : color,
+              fill: false,
+              tension: 0.3,
+              pointRadius: 3,
+              borderWidth: 2,
+              borderRadius: 4,
+              maxBarThickness: 18
+            };
+          });
+        }
+
+        trendChart = new Chart(trendCtx, {
+          type: chartType,
+          data: { labels: labels, datasets: datasets },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+              mode: $scope.trendView === 'allSubjects' ? 'nearest' : 'index',
+              intersect: false
+            },
+            plugins: {
+              legend: {
+                display: showLegend,
+                position: 'bottom',
+                labels: {
+                  boxWidth: 10,
+                  font: { size: 11 },
+                  padding: 10
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  title: function(items) {
+                    var i = items && items[0] ? items[0].dataIndex : -1;
+                    return i >= 0 ? examNames[i] : '';
+                  },
+                  label: function(item) {
+                    var prefix = item.dataset.label ? item.dataset.label + ': ' : 'Score: ';
+                    return prefix + item.formattedValue + '%';
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                min: 0,
+                max: 100,
+                ticks: { callback: function(v) { return v + '%'; } }
+              },
+              x: {
+                ticks: {
+                  maxRotation: 0,
+                  autoSkip: false,
+                  font: { size: 11, weight: '600' }
+                }
+              }
+            }
+          }
+        });
+      }
+
+      $scope.setTrendView = function(view) {
+        if ($scope.trendView === view) {
+          return;
+        }
+        $scope.trendView = view;
+        if (view === 'subject' && !$scope.trendSubjectId && $scope.subjectOptions.length) {
+          $scope.trendSubjectId = $scope.selectedSubjectId || $scope.subjectOptions[0].id;
+        }
+        $timeout(function() {
+          renderTrendChart();
+        }, 0);
+      };
+
+      $scope.setTrendChartType = function(type) {
+        if ($scope.trendChartType === type) {
+          return;
+        }
+        $scope.trendChartType = type;
+        $timeout(function() {
+          renderTrendChart();
+        }, 0);
+      };
+
+      $scope.selectTrendSubject = function(subjectId) {
+        if (!subjectId || $scope.trendSubjectId === subjectId) {
+          return;
+        }
+        $scope.trendSubjectId = subjectId;
+        $timeout(function() {
+          renderTrendChart();
+        }, 0);
+      };
+
+      function updateSelectedSubjectMeta(subjectId) {
+        var examRows = $scope.examRows || [];
+        var option = ($scope.subjectOptions || []).find(function(s) { return s.id === subjectId; });
+        if (!option || !examRows.length) {
+          $scope.selectedSubjectMeta = null;
+          return;
+        }
+
+        var values = examRows.map(function(exam) {
+          var row = (exam.subjects || []).find(function(s) { return s.id === subjectId; });
+          return row && row.status === 'ok' ? row.pct : null;
+        }).filter(function(v) { return v != null; });
+
+        var latestRow = null;
+        for (var i = examRows.length - 1; i >= 0; i--) {
+          var r = (examRows[i].subjects || []).find(function(s) { return s.id === subjectId; });
+          if (r && r.status === 'ok') {
+            latestRow = r;
+            break;
+          }
+        }
+
+        var avg = values.length
+          ? round2(values.reduce(function(a, b) { return a + b; }, 0) / values.length)
+          : 0;
+        var best = values.length ? Math.max.apply(null, values) : 0;
+
+        $scope.selectedSubjectMeta = {
+          name: option.name,
+          avg: avg.toFixed(2),
+          best: round2(best).toFixed(2),
+          latest: latestRow ? round2(latestRow.pct).toFixed(2) : '0.00'
+        };
+      }
+
+      function renderSubjectChart(subjectId) {
+        destroySubjectChart();
+        var examRows = $scope.examRows || [];
+        if (!examRows.length || !subjectId || typeof Chart === 'undefined') {
+          return;
+        }
+
+        var subjectCtx = document.getElementById('subjectChart');
+        if (!subjectCtx) {
+          return;
+        }
+
+        var labels = [];
+        var values = [];
+        var colors = [];
+        var examNames = [];
+
+        examRows.forEach(function(exam) {
+          var row = (exam.subjects || []).find(function(s) { return s.id === subjectId; });
+          labels.push(exam.axisLabel);
+          examNames.push(exam.name);
+          colors.push(exam.color || '#0b4f6c');
+          values.push(row && row.status === 'ok' ? row.pct : null);
+        });
+
+        subjectChart = new Chart(subjectCtx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Score %',
+              data: values,
+              backgroundColor: colors,
+              borderRadius: 6,
+              maxBarThickness: 42
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  title: function(items) {
+                    var i = items && items[0] ? items[0].dataIndex : -1;
+                    return i >= 0 ? examNames[i] : '';
+                  },
+                  label: function(item) {
+                    return 'Score: ' + item.formattedValue + '%';
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                min: 0,
+                max: 100,
+                ticks: { callback: function(v) { return v + '%'; } }
+              },
+              x: {
+                ticks: {
+                  maxRotation: 0,
+                  autoSkip: false,
+                  font: { size: 11, weight: '600' }
+                }
+              }
+            }
+          }
+        });
+      }
+
+      $scope.selectSubject = function(subjectId) {
+        if (!subjectId || $scope.selectedSubjectId === subjectId) {
+          return;
+        }
+        $scope.selectedSubjectId = subjectId;
+        updateSelectedSubjectMeta(subjectId);
+        $timeout(function() {
+          renderSubjectChart(subjectId);
+        }, 0);
+      };
+
       function buildInsights(examRows, subjectRanks) {
         var insights = [];
         if (!examRows.length) return insights;
@@ -837,73 +1575,10 @@
         destroyCharts();
         if (!examRows.length || typeof Chart === 'undefined') return;
 
-        var trendCtx = document.getElementById('trendChart');
-        if (trendCtx) {
-          trendChart = new Chart(trendCtx, {
-            type: 'line',
-            data: {
-              labels: examRows.map(function(e) { return e.shortName; }),
-              datasets: [{
-                label: 'Percentage',
-                data: examRows.map(function(e) { return e.pct; }),
-                borderColor: '#0b4f6c',
-                backgroundColor: 'rgba(11, 79, 108, 0.12)',
-                fill: true,
-                tension: 0.35,
-                pointRadius: 4,
-                pointBackgroundColor: '#147a6a'
-              }]
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: { legend: { display: false } },
-              scales: {
-                y: { min: 0, max: 100, ticks: { callback: function(v) { return v + '%'; } } }
-              }
-            }
-          });
-        }
+        renderTrendChart();
 
-        var subjectIds = [];
-        examRows.forEach(function(e) {
-          e.subjects.forEach(function(s) {
-            if (subjectIds.indexOf(s.id) < 0) subjectIds.push(s.id);
-          });
-        });
-
-        var subjectCtx = document.getElementById('subjectChart');
-        if (subjectCtx && subjectIds.length) {
-          var datasets = examRows.map(function(exam, idx) {
-            return {
-              label: exam.shortName,
-              data: subjectIds.map(function(sid) {
-                var row = exam.subjects.find(function(s) { return s.id === sid; });
-                return row && row.status === 'ok' ? row.pct : null;
-              }),
-              backgroundColor: CHART_COLORS[idx % CHART_COLORS.length],
-              borderRadius: 4
-            };
-          });
-
-          var subjectLabels = subjectIds.map(function(sid) {
-            var row = examRows[0].subjects.find(function(s) { return s.id === sid; });
-            return row ? row.name : ('S' + sid);
-          });
-
-          subjectChart = new Chart(subjectCtx, {
-            type: 'bar',
-            data: { labels: subjectLabels, datasets: datasets },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } },
-              scales: {
-                y: { min: 0, max: 100, ticks: { callback: function(v) { return v + '%'; } } },
-                x: { ticks: { maxRotation: 45, minRotation: 0, font: { size: 10 } } }
-              }
-            }
-          });
+        if ($scope.selectedSubjectId) {
+          renderSubjectChart($scope.selectedSubjectId);
         }
 
         var rankCtx = document.getElementById('rankChart');
@@ -934,7 +1609,24 @@
             }
           });
         }
+
+        // Keep canvas sizes in sync when switching phone ↔ desktop widths
+        $timeout(function() {
+          [trendChart, subjectChart, rankChart].forEach(function(chart) {
+            if (chart) chart.resize();
+          });
+        }, 80);
       }
+
+      var resizeTimer = null;
+      window.addEventListener('resize', function() {
+        if (resizeTimer) clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function() {
+          [trendChart, subjectChart, rankChart].forEach(function(chart) {
+            if (chart) chart.resize();
+          });
+        }, 150);
+      });
 
       function buildView(data, totals, tests, subjects) {
         var examIds = [];
@@ -958,9 +1650,10 @@
           }
         });
 
-        var examRows = examIds.map(function(eid) {
+        var faCounter = { value: 0 };
+        var examRows = examIds.map(function(eid, idx) {
           var name = examName(eid, tests);
-          var shortName = name.length > 16 ? name.substring(0, 14) + '…' : name;
+          var axisLabel = makeAxisLabel(name, idx, faCounter);
           var subjectRows = subjectIds.map(function(sid) {
             var marks = marksFor(data, eid, sid);
             var total = totalFor(totals, eid, sid);
@@ -992,7 +1685,8 @@
           return {
             id: eid,
             name: name,
-            shortName: shortName,
+            axisLabel: axisLabel,
+            color: CHART_COLORS[idx % CHART_COLORS.length],
             secured: secured,
             total: total,
             pct: pct,
@@ -1024,6 +1718,18 @@
 
         $scope.examRows = examRows;
         $scope.subjectRanks = subjectRanks;
+        $scope.subjectOptions = subjectRanks.map(function(s) {
+          return { id: s.id, name: s.name, avg: s.avg };
+        });
+        // Default to strongest subject so the first view is meaningful
+        $scope.selectedSubjectId = $scope.subjectOptions.length
+          ? $scope.subjectOptions[0].id
+          : null;
+        $scope.trendSubjectId = $scope.selectedSubjectId;
+        $scope.trendView = 'overall';
+        $scope.trendChartType = 'line';
+        updateSelectedSubjectMeta($scope.selectedSubjectId);
+        updateTrendMeta();
         $scope.summary = {
           yearAvg: yearAvg.toFixed(2),
           bestExamPct: bestExam ? bestExam.pct.toFixed(2) : '0.00',
@@ -1043,6 +1749,14 @@
         $scope.errorMessage = '';
         $scope.examRows = [];
         $scope.subjectRanks = [];
+        $scope.subjectOptions = [];
+        $scope.selectedSubjectId = null;
+        $scope.selectedSubjectMeta = null;
+        $scope.trendView = 'overall';
+        $scope.trendChartType = 'line';
+        $scope.trendSubjectId = null;
+        $scope.trendTitle = 'Exam-wise percentage trend';
+        $scope.trendMeta = '';
         $scope.insights = [];
         destroyCharts();
 
