@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="blogsApp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>School Blogs</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+
+  <style>
+    :root {
+      --ink: #15202b;
+      --ink-soft: #3d4f5f;
+      --muted: #6b7c8a;
+      --line: #d8e0e8;
+      --surface: #ffffff;
+      --page: #e8eef3;
+      --page-accent: #d4e4f0;
+      --brand: #0b4f6c;
+      --brand-deep: #083a50;
+      --pass: #1b7a4a;
+      --fail: #b42318;
+      --radius: 14px;
+      --shadow: 0 10px 30px rgba(11, 79, 108, 0.08);
+      --shell-max: 520px;
+    }
+
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "DM Sans", sans-serif;
+      background:
+        radial-gradient(ellipse 120% 80% at 0% -10%, rgba(11, 79, 108, 0.12), transparent 55%),
+        radial-gradient(ellipse 90% 60% at 100% 0%, rgba(27, 122, 74, 0.08), transparent 50%),
+        linear-gradient(180deg, var(--page-accent) 0%, var(--page) 40%, #f2f6f9 100%);
+    }
+
+    .shell {
+      width: 100%;
+      max-width: var(--shell-max);
+      margin: 0 auto;
+      padding: 16px 14px calc(40px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .report {
+      position: relative;
+      background: var(--surface);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      border: 1px solid rgba(11, 79, 108, 0.08);
+    }
+
+    .banner {
+      margin: 14px 14px 0;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .banner.loading { background: #e8f3f8; color: var(--brand); }
+    .banner.error { background: #fdeceb; color: var(--fail); }
+
+    .report-top {
+      padding: 22px 18px 20px;
+      background: linear-gradient(145deg, #0b4f6c 0%, #0d5f7f 48%, #147a6a 100%);
+      color: #f7fbfd;
+    }
+
+    .report-top-inner {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .brand-copy h1 {
+      margin: 0;
+      font-family: Fraunces, Georgia, serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .brand-copy p {
+      margin: 6px 0 0;
+      font-size: 0.82rem;
+      opacity: 0.85;
+      line-height: 1.4;
+    }
+
+    .doc-label {
+      display: inline-block;
+      align-self: flex-start;
+      padding: 5px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 6px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .body { padding: 18px 16px 22px; }
+
+    .search-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font: inherit;
+      font-size: 0.88rem;
+      color: var(--ink);
+      background: #f8fbfd;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--brand);
+      background: #fff;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .chip {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink-soft);
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .chip.active {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #fff;
+    }
+
+    .tag-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin: 10px 0 4px;
+    }
+
+    .tag-chip {
+      border: 1px solid var(--line);
+      background: #f4f8fb;
+      color: var(--brand-deep);
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .tag-chip.active {
+      background: #e8f3f8;
+      border-color: var(--brand);
+      color: var(--brand);
+    }
+
+    .kpi-strip {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin: 16px 0 4px;
+    }
+
+    .kpi {
+      padding: 12px 10px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #f8fbfd;
+      text-align: center;
+      min-width: 0;
+    }
+
+    .kpi .label {
+      margin: 0;
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .kpi .amount {
+      margin: 4px 0 0;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--brand-deep);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .section { margin-top: 20px; }
+
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--brand);
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-family: Fraunces, Georgia, serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--brand-deep);
+    }
+
+    .section-head .count {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .blog-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .blog-card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      padding: 14px;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .blog-card.is-verified {
+      border-color: rgba(27, 122, 74, 0.35);
+    }
+
+    .blog-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .blog-top h3 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.35;
+    }
+
+    .verified-pill {
+      flex: 0 0 auto;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 0.66rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      background: #e8f6ee;
+      color: var(--pass);
+      white-space: nowrap;
+    }
+
+    .blog-desc {
+      margin: 0;
+      font-size: 0.84rem;
+      font-weight: 500;
+      color: var(--ink-soft);
+      line-height: 1.45;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .blog-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .blog-tag {
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: #eef4f8;
+      color: var(--brand-deep);
+      font-size: 0.68rem;
+      font-weight: 700;
+    }
+
+    .blog-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 12px;
+      margin-top: 4px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--line);
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .blog-author {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 2px;
+      min-width: 0;
+    }
+
+    .blog-author img,
+    .blog-author .fallback {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex: 0 0 auto;
+    }
+
+    .blog-author .fallback {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #e8f3f8;
+      color: var(--brand);
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .blog-author .name {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--ink-soft);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .read-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 4px;
+      align-self: flex-start;
+      padding: 8px 12px;
+      border-radius: 10px;
+      background: var(--brand);
+      color: #fff;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .read-link:hover { background: var(--brand-deep); }
+
+    .empty-state {
+      text-align: center;
+      padding: 22px 12px;
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 500;
+    }
+
+    .footer-note {
+      margin: 18px 0 0;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      text-align: center;
+      font-size: 0.68rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    @media (min-width: 640px) {
+      :root { --shell-max: 760px; }
+      .shell { padding: 24px 20px 48px; }
+      .body { padding: 22px; }
+      .blog-list { grid-template-columns: 1fr; }
+    }
+
+    @media (min-width: 900px) {
+      :root { --shell-max: 1040px; }
+      .shell { padding: 28px 24px 56px; }
+      .body { padding: 26px 28px 32px; }
+      .report-top { padding: 28px; }
+      .report-top-inner {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .doc-label { align-self: center; }
+      .blog-list { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (min-width: 1200px) {
+      :root { --shell-max: 1240px; }
+      .blog-list { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    @media print {
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      body { background: #fff; }
+      .shell { max-width: none; padding: 0; }
+      .report { border: none; border-radius: 0; box-shadow: none; }
+      .search-row, .filter-row, .tag-row, .banner, .read-link { display: none !important; }
+      .blog-list { grid-template-columns: 1fr 1fr !important; }
+    }
+  </style>
+</head>
+
+<body ng-controller="BlogsController">
+  <div class="shell">
+    <article class="report">
+      <div class="banner loading" ng-if="loading">Loading blogs…</div>
+      <div class="banner error" ng-if="errorMessage">{{errorMessage}}</div>
+
+      <header class="report-top">
+        <div class="report-top-inner">
+          <div class="brand-copy">
+            <h1>School Blogs</h1>
+            <p>Articles and updates shared for parents and students.</p>
+          </div>
+          <div class="doc-label">Blogs</div>
+        </div>
+      </header>
+
+      <div class="body">
+        <div class="search-row">
+          <input class="search-input" type="search" ng-model="searchKey" ng-change="applyFilter()"
+            placeholder="Search blogs…" aria-label="Search blogs">
+        </div>
+
+        <div class="filter-row">
+          <button type="button" class="chip" ng-class="{active: sort === 'date'}" ng-click="setSort('date')">Newest</button>
+          <button type="button" class="chip" ng-class="{active: sort === 'likes'}" ng-click="setSort('likes')">Most liked</button>
+          <button type="button" class="chip" ng-class="{active: sort === 'views'}" ng-click="setSort('views')">Most viewed</button>
+        </div>
+
+        <div class="tag-row" ng-if="popularTags.length">
+          <button type="button" class="tag-chip" ng-class="{active: !selectedTagId}" ng-click="setTag(null)">All tags</button>
+          <button type="button" class="tag-chip"
+            ng-repeat="tag in popularTags"
+            ng-class="{active: selectedTagId === tag.Id}"
+            ng-click="setTag(tag.Id)">
+            {{tag.Name}} ({{tag.Count}})
+          </button>
+        </div>
+
+        <div class="kpi-strip" ng-if="rows.length">
+          <div class="kpi">
+            <p class="label">Total</p>
+            <p class="amount">{{rows.length}}</p>
+          </div>
+          <div class="kpi">
+            <p class="label">Showing</p>
+            <p class="amount">{{visibleRows.length}}</p>
+          </div>
+          <div class="kpi">
+            <p class="label">Verified</p>
+            <p class="amount">{{stats.verified}}</p>
+          </div>
+        </div>
+
+        <section class="section">
+          <div class="section-head">
+            <h2>Blog List</h2>
+            <span class="count" ng-if="visibleRows.length">{{visibleRows.length}} blog(s)</span>
+          </div>
+
+          <div class="blog-list" ng-if="visibleRows.length">
+            <article class="blog-card"
+              ng-repeat="item in visibleRows"
+              ng-class="{'is-verified': item.IsVerified}">
+              <div class="blog-top">
+                <h3 ng-bind-html="trusted(item.Title)"></h3>
+                <span class="verified-pill" ng-if="item.IsVerified">Verified</span>
+              </div>
+
+              <p class="blog-desc" ng-if="item.ShortDescription" ng-bind-html="trusted(item.ShortDescription)"></p>
+
+              <div class="blog-tags" ng-if="item.tagNames.length">
+                <span class="blog-tag" ng-repeat="name in item.tagNames">{{name}}</span>
+              </div>
+
+              <div class="blog-author" ng-if="item.UserInfo">
+                <img ng-if="item.UserInfo.Image" ng-src="{{item.UserInfo.Image}}" alt="">
+                <span ng-if="!item.UserInfo.Image" class="fallback">{{item.initials}}</span>
+                <span class="name">{{item.UserInfo.FullName}}</span>
+              </div>
+
+              <div class="blog-meta">
+                <span>{{formatDate(item.CreatedOn)}}</span>
+                <span>{{item.Views || 0}} views</span>
+                <span>{{item.Likes || 0}} likes</span>
+                <span>{{item.Answers || 0}} comments</span>
+              </div>
+
+              <a class="read-link" ng-href="{{viewUrl(item)}}">Read blog</a>
+            </article>
+          </div>
+
+          <div class="empty-state" ng-if="!loading && !errorMessage && !visibleRows.length">
+            No blogs found{{selectedTagId || searchKey ? ' for this filter' : ''}}.
+          </div>
+        </section>
+
+        <p class="footer-note">System-generated public blog list for parents and students.</p>
+      </div>
+    </article>
+  </div>
+
+  <script>
+    angular.module('blogsApp', [])
+    .controller('BlogsController', function($scope, $http, $q, $sce) {
+      var baseUrl = 'https://api.schoolvertex.com/api';
+
+      function getQueryParams() {
+        var params = {};
+        var search = (location.search || '').replace(/^\?/, '');
+        search.split('&').forEach(function(item) {
+          if (!item) return;
+          var parts = item.split('=');
+          if (parts[0]) {
+            params[parts[0]] = decodeURIComponent((parts[1] || '').replace(/\+/g, ' '));
+          }
+        });
+        return params;
+      }
+
+      function num(v) {
+        var n = Number(v);
+        return isFinite(n) ? n : null;
+      }
+
+      function stripHtml(html) {
+        var tmp = document.createElement('div');
+        tmp.innerHTML = html || '';
+        return (tmp.textContent || tmp.innerText || '').replace(/\s+/g, ' ').trim();
+      }
+
+      function initials(name) {
+        var parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+        if (!parts.length) return '?';
+        if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+        return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+      }
+
+      $scope.loading = false;
+      $scope.errorMessage = '';
+      $scope.searchKey = '';
+      $scope.sort = 'date';
+      $scope.selectedTagId = null;
+      $scope.rows = [];
+      $scope.visibleRows = [];
+      $scope.popularTags = [];
+      $scope.tagMap = {};
+      $scope.stats = { verified: 0 };
+
+      var query = getQueryParams();
+      var initialTagId = num(query.tagId || query.TagId);
+      var viewerUserId = num(query.userId || query.UserId) || 0;
+
+      $scope.trusted = function(html) {
+        return $sce.trustAsHtml(html || '');
+      };
+
+      $scope.formatDate = function(unix) {
+        var n = Number(unix);
+        if (!isFinite(n) || n <= 0) return '-';
+        var date = new Date(n * 1000);
+        if (isNaN(date.getTime())) return '-';
+        return date.toLocaleDateString('en-IN', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric'
+        });
+      };
+
+      $scope.viewUrl = function(item) {
+        if (!item || !item.QueryId) return '#';
+        var url = 'Blog-View.html?queryId=' + item.QueryId; 
+        if (viewerUserId > 0) {
+          url += '&userId=' + viewerUserId;
+        }
+        return url;
+      };
+
+      $scope.setSort = function(sort) {
+        $scope.sort = sort;
+        applyFilter();
+      };
+
+      $scope.setTag = function(tagId) {
+        $scope.selectedTagId = tagId;
+        applyFilter();
+      };
+
+      function enrich(rows) {
+        return (rows || []).map(function(row) {
+          var tags = row.Tags || [];
+          var tagNames = tags.map(function(id) {
+            return $scope.tagMap[id] || ('#' + id);
+          }).filter(Boolean);
+
+          return Object.assign({}, row, {
+            tagNames: tagNames,
+            searchText: (
+              stripHtml(row.Title) + ' ' +
+              stripHtml(row.ShortDescription) + ' ' +
+              tagNames.join(' ') + ' ' +
+              ((row.UserInfo && row.UserInfo.FullName) || '')
+            ).toLowerCase(),
+            initials: initials(row.UserInfo && row.UserInfo.FullName)
+          });
+        });
+      }
+
+      function sortRows(rows) {
+        var list = (rows || []).slice();
+        if ($scope.sort === 'likes') {
+          list.sort(function(a, b) { return (b.Likes || 0) - (a.Likes || 0); });
+        } else if ($scope.sort === 'views') {
+          list.sort(function(a, b) { return (b.Views || 0) - (a.Views || 0); });
+        } else {
+          list.sort(function(a, b) { return (b.CreatedOn || 0) - (a.CreatedOn || 0); });
+        }
+        return list;
+      }
+
+      function applyFilter() {
+        var key = String($scope.searchKey || '').trim().toLowerCase();
+        var filtered = ($scope.rows || []).filter(function(row) {
+          if ($scope.selectedTagId && (row.Tags || []).indexOf($scope.selectedTagId) === -1) {
+            return false;
+          }
+          if (key && row.searchText.indexOf(key) === -1) {
+            return false;
+          }
+          return true;
+        });
+        $scope.visibleRows = sortRows(filtered);
+      }
+
+      $scope.applyFilter = applyFilter;
+
+      function refreshStats(rows) {
+        $scope.stats = {
+          verified: (rows || []).filter(function(r) { return !!r.IsVerified; }).length
+        };
+      }
+
+      function load() {
+        $scope.loading = true;
+        $scope.errorMessage = '';
+
+        $q.all([
+          $http.get(baseUrl + '/Query/GetPublicBlogList'),
+          $http.get(baseUrl + '/Query/GetAllTags'),
+          $http.get(baseUrl + '/Query/GetBlogTagCounts')
+        ])
+          .then(function(responses) {
+            var tags = (responses[1] && responses[1].data) || [];
+            var tagMap = {};
+            tags.forEach(function(t) {
+              var id = t.TagId || t.tagId || t.Id || t.id;
+              var name = t.Name || t.name || t.label || t.Label;
+              if (id != null) tagMap[id] = name;
+            });
+            $scope.tagMap = tagMap;
+
+            var counts = (responses[2] && responses[2].data) || [];
+            $scope.popularTags = counts
+              .filter(function(c) { return (c.Count || c.count || 0) > 0; })
+              .map(function(c) {
+                var id = c.Id || c.id;
+                return {
+                  Id: id,
+                  Count: c.Count || c.count || 0,
+                  Name: tagMap[id] || ('Tag ' + id)
+                };
+              })
+              .sort(function(a, b) { return b.Count - a.Count; })
+              .slice(0, 12);
+
+            $scope.rows = enrich((responses[0] && responses[0].data) || []);
+            refreshStats($scope.rows);
+
+            if (initialTagId && $scope.popularTags.some(function(t) { return t.Id === initialTagId; })) {
+              $scope.selectedTagId = initialTagId;
+            } else if (initialTagId) {
+              $scope.selectedTagId = initialTagId;
+            }
+
+            applyFilter();
+          })
+          .catch(function() {
+            $scope.rows = [];
+            $scope.visibleRows = [];
+            $scope.errorMessage = 'Unable to load blogs.';
+          })
+          .finally(function() {
+            $scope.loading = false;
+          });
+      }
+
+      load();
+    });
+  </script>
+</body>
+</html>
