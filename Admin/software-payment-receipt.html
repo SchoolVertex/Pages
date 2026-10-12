@@ -83,10 +83,20 @@
       box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
     }
 
+    @page {
+      size: A4;
+      margin: 12mm;
+    }
+
     @media print {
-      body {
+      html, body {
         background: #fff !important;
         padding: 0 !important;
+        margin: 0 !important;
+        width: 100%;
+        height: auto;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
       }
 
       .no-print {
@@ -98,12 +108,104 @@
         border: none !important;
         border-radius: 0 !important;
         max-width: none !important;
+        width: 100% !important;
+        margin: 0 !important;
+        overflow: visible !important;
       }
 
       .receipt-watermark {
         opacity: 0.08;
+        width: 42%;
+        max-width: 220px;
+        top: 38%;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
+      }
+
+      /* Compact vertical rhythm so content stays on one A4 page */
+      .receipt-header {
+        padding: 14px 20px !important;
+      }
+
+      .receipt-header h1 {
+        font-size: 1.35rem !important;
+      }
+
+      .receipt-header .logo-wrap {
+        width: 56px !important;
+        height: 56px !important;
+      }
+
+      .receipt-meta,
+      .receipt-payment-meta {
+        padding: 8px 20px !important;
+        gap: 8px !important;
+      }
+
+      .receipt-parties {
+        padding: 12px 20px !important;
+        gap: 16px !important;
+      }
+
+      .receipt-particular,
+      .receipt-totals {
+        padding: 12px 20px !important;
+      }
+
+      .receipt-ack {
+        padding: 0 20px 8px !important;
+      }
+
+      .receipt-footer {
+        padding: 8px 20px !important;
+      }
+
+      .amount-paid-box {
+        padding: 10px 14px !important;
+      }
+
+      .totals-box {
+        padding: 10px 12px !important;
+      }
+
+      .amount-row {
+        padding: 6px 0 !important;
+      }
+
+      .amount-row.highlight {
+        padding-top: 10px !important;
+      }
+
+      .service-input {
+        margin-bottom: 10px !important;
+        padding-top: 0.35rem !important;
+        padding-bottom: 0.35rem !important;
+      }
+
+      /* Force side-by-side rows in print (Tailwind sm/md breakpoints don't apply) */
+      .receipt-meta,
+      .receipt-parties,
+      .receipt-payment-meta,
+      .amount-paid-box {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        align-items: start;
+      }
+
+      .receipt-meta,
+      .receipt-payment-meta,
+      .amount-paid-box {
+        align-items: center;
+      }
+
+      .receipt-parties > :last-child,
+      .receipt-meta > :last-child,
+      .receipt-payment-meta > :last-child {
+        text-align: right !important;
+      }
+
+      .amount-paid-box > :last-child {
+        justify-content: flex-end;
       }
 
       .editable-field,
@@ -130,6 +232,10 @@
       .reference-field:has(#referenceNo:placeholder-shown) {
         display: none !important;
       }
+
+      .receipt-payment-meta:has(#referenceNo:placeholder-shown) {
+        grid-template-columns: 1fr !important;
+      }
     }
   </style>
 </head>
@@ -150,19 +256,19 @@
          alt="" />
 
     <!-- Header -->
-    <div class="flex items-center justify-between px-6 sm:px-8 py-6 border-b border-gray-200 bg-indigo-50">
+    <div class="receipt-header flex items-center justify-between px-6 sm:px-8 py-6 border-b border-gray-200 bg-indigo-50">
       <div>
         <h1 class="text-2xl font-bold text-indigo-700">SCHOOL VERTEX</h1>
         <p class="text-sm text-gray-600">Payment Receipt</p>
       </div>
-      <div class="w-20 h-20 rounded-full bg-white overflow-hidden flex items-center justify-center shrink-0">
+      <div class="logo-wrap w-20 h-20 rounded-full bg-white overflow-hidden flex items-center justify-center shrink-0">
         <img src="https://res.cloudinary.com/bashbook3/image/upload/v1686680797/School%20Logos/favicon1.png"
              alt="Company Logo" class="w-full h-full object-contain" />
       </div>
     </div>
 
     <!-- Meta Info -->
-    <div class="px-6 sm:px-8 py-4 text-sm text-gray-600 flex flex-col sm:flex-row sm:justify-between gap-3">
+    <div class="receipt-meta px-6 sm:px-8 py-4 text-sm text-gray-600 flex flex-col sm:flex-row sm:justify-between gap-3">
       <div class="flex items-center gap-2">
         <span class="font-medium text-gray-700 shrink-0">Date:</span>
         <input type="date" id="receiptDate" class="editable-field max-w-[11rem]" />
@@ -174,7 +280,7 @@
     </div>
 
     <!-- Parties -->
-    <div class="px-6 sm:px-8 py-6 grid grid-cols-1 md:grid-cols-2 gap-8 border-b border-gray-100">
+    <div class="receipt-parties px-6 sm:px-8 py-6 grid grid-cols-1 md:grid-cols-2 gap-8 border-b border-gray-100">
       <div>
         <h3 class="text-sm font-semibold text-gray-500 uppercase mb-2">Received From</h3>
         <input type="text" id="schoolName" class="editable-field text-lg font-medium text-gray-800 mb-1"
@@ -198,7 +304,7 @@
     </div>
 
     <!-- Payment Meta -->
-    <div class="px-6 sm:px-8 py-4 grid grid-cols-1 sm:grid-cols-2 gap-4 border-b border-gray-100 text-sm">
+    <div class="receipt-payment-meta px-6 sm:px-8 py-4 grid grid-cols-1 sm:grid-cols-2 gap-4 border-b border-gray-100 text-sm">
       <div class="flex items-center gap-2">
         <span class="font-medium text-gray-700 shrink-0">Payment Mode:</span>
         <input type="text" id="paymentMode" class="editable-field" placeholder="Cash / UPI / Bank / Cheque" value="UPI" />
@@ -210,13 +316,13 @@
     </div>
 
     <!-- Service + Amount Being Paid -->
-    <div class="px-6 sm:px-8 py-6 border-b border-gray-100">
+    <div class="receipt-particular px-6 sm:px-8 py-6 border-b border-gray-100">
       <h3 class="text-sm font-semibold text-gray-500 uppercase mb-3">Particular</h3>
       <input type="text" id="serviceParticular" class="service-input mb-4"
              placeholder="Service description"
              value="School Vertex ERP Annual Subscription" />
 
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-4">
+      <div class="amount-paid-box flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-4">
         <span class="text-base font-semibold text-gray-700">Amount Being Paid</span>
         <div class="flex items-center gap-0">
           <span class="text-2xl font-bold text-indigo-700 leading-none">₹</span>
@@ -228,9 +334,9 @@
     </div>
 
     <!-- Total & Balance -->
-    <div class="px-6 sm:px-8 py-6">
+    <div class="receipt-totals px-6 sm:px-8 py-6">
       <div class="flex justify-end">
-        <div class="bg-gray-50 rounded-xl p-4 w-full max-w-sm border border-gray-200">
+        <div class="totals-box bg-gray-50 rounded-xl p-4 w-full max-w-sm border border-gray-200">
           <div class="amount-row">
             <span class="text-sm font-semibold text-gray-700">Total Amount :</span>
             <div class="flex items-center gap-0">
@@ -259,7 +365,7 @@
     </div>
 
     <!-- Acknowledgement -->
-    <div class="px-6 sm:px-8 pb-4">
+    <div class="receipt-ack px-6 sm:px-8 pb-4">
       <p class="text-sm text-gray-600 leading-relaxed">
         We sincerely appreciate your continued trust in us.
       </p>
@@ -269,7 +375,7 @@
     </div>
 
     <!-- Footer -->
-    <div class="text-center text-xs text-gray-500 border-t px-8 py-4 bg-gray-50">
+    <div class="receipt-footer text-center text-xs text-gray-500 border-t px-8 py-4 bg-gray-50">
       <p>This is a computer-generated receipt and does not require a physical signature.</p>
     </div>
   </div>
