@@ -7,6 +7,15 @@
     "https://stag-saas-messagebot.tech-v2.groupin.app/api/v1/message/template",
     "9fac14690fadaa1292760581f0b97fce"
   ],
+  "GroupInSchoolKeys": {
+    "195": "b5e2824c92a7a6081c1383a6e6250b0d",
+    "200": "b5e2824c92a7a6081c1383a6e6250b0d",
+    "201": "b5e2824c92a7a6081c1383a6e6250b0d",
+    "202": "b5e2824c92a7a6081c1383a6e6250b0d",
+    "203": "b5e2824c92a7a6081c1383a6e6250b0d",
+    "204": "b5e2824c92a7a6081c1383a6e6250b0d",
+    "205": "b5e2824c92a7a6081c1383a6e6250b0d"
+  },
   "GroupInMessages": {
       "default": {
       "AbsentMessage": "*Absent Alert*\n\nDear Parent,\n\nGreetings from {{schoolName}}.\n\nThis is to inform you that {{studentName}} was marked absent from school today.\n\nIf this absence was not expected, please contact the school.\n\nRegards,\nSchool Vertex",
