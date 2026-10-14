@@ -149,7 +149,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 16a4 4 0 0 0 4-4" />
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 16a4 4 0 0 1-4-4" />
                     </svg>
-                    <img ng-if="orgInfo.Image" ng-src="{{orgInfo.Image}}" alt="School Logo"
+                    <img ng-if="orgInfo.Image" ng-src="{{orgInfo.Image}}" alt="Logo"
                         class="w-full h-full object-cover">
                 </div>
                 <div style="text-align: center;">
@@ -203,7 +203,7 @@
                     <div class="text-gray-900">{{userInfo.Category}}</div>
                 </div>
                 <div class="grid grid-cols-2 gap-4 items-center border-b border-gray-200 py-2">
-                    <div class="font-medium text-gray-700">8. Date of First Admission in the School with Class </div>
+                    <div class="font-medium text-gray-700">8. Date of First Admission in the Institution with Class </div>
                     <div class="text-gray-900">{{userInfo.AdmissionDate | date:'dd-MMM-yyyy'}} (Class:
                         {{userInfo.AdmissionClass}})</div>
                 </div>
@@ -229,7 +229,7 @@
                     <div class="text-gray-900">{{userInfo.PromotionStatus}}</div>
                 </div>
                 <div class="grid grid-cols-2 gap-4 items-center border-b border-gray-200 py-2">
-                    <div class="font-medium text-gray-700">14. Month up to which the pupil has paid school dues </div>
+                    <div class="font-medium text-gray-700">14. Month up to which the pupil has paid dues </div>
                     <div class="text-gray-900">{{userInfo.DuesPaidUpTo}}</div>
                 </div>
                 <div class="grid grid-cols-2 gap-4 items-center border-b border-gray-200 py-2">
@@ -257,7 +257,7 @@
                     <div class="text-gray-900">{{userInfo.DateOfIssue | date:'dd-MMM-yyyy'}}</div>
                 </div>
                 <div class="grid grid-cols-2 gap-4 items-center border-b border-gray-200 py-2">
-                    <div class="font-medium text-gray-700">21. Reasons for leaving the School </div>
+                    <div class="font-medium text-gray-700">21. Reasons for leaving the institution </div>
                     <div class="text-gray-900">{{userInfo.ReasonForLeaving}}</div>
                 </div>
                 <div class="grid grid-cols-2 gap-4 items-center border-b border-gray-200 py-2">
@@ -289,10 +289,10 @@
             <form ng-submit="saveChanges()" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
                 <div class="sm:col-span-2">
-                    <h3 class="text-lg font-semibold mt-4 mb-2 border-b pb-1">School / Organization</h3>
+                    <h3 class="text-lg font-semibold mt-4 mb-2 border-b pb-1">Organization</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <label class="block sm:col-span-2">
-                            <span class="text-gray-700">School Name</span>
+                            <span class="text-gray-700">Institution Name</span>
                             <input type="text" ng-model="modal.orgInfo.Name"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
                         </label>
@@ -460,7 +460,7 @@
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
                 </label>
                 <label class="block">
-                    <span class="text-gray-700">21. Reasons for leaving the School</span>
+                    <span class="text-gray-700">21. Reasons for leaving</span>
                     <input type="text" ng-model="modal.userInfo.ReasonForLeaving"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
                 </label>
@@ -530,7 +530,7 @@
 
             // Initialize organization info with defaults
             $scope.orgInfo = {
-                Name: 'DEMO PUBLIC SCHOOL',
+                Name: 'DEMO PUBLIC Institution',
                 Description: 'Affiliated to C.B.S.E, New Delhi',
                 FullAddress: 'FCI-Gacchabowli, Hyderabad - 49'
             };
