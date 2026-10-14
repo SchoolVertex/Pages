@@ -260,7 +260,7 @@
     <div class="certificate-container">
         <div class="header" style="display: inline-flex; width: 100%;">
             <div style="width: 15%;">
-                <img ng-src="{{orgInfo.Image}}" alt="School Logo">
+                <img ng-src="{{orgInfo.Image}}" alt="Logo">
             </div>
             <div style="width: 85%;">
                 <h1>{{orgInfo.Name}}</h1>
@@ -293,7 +293,7 @@
                 <span class="placeholder" ng-if="!(userInfo.FatherName && userInfo.MotherName)">{{userInfo.ParentName ||
                     userInfo.FatherName}}</span>,
                 is a bonafide student of this institution.
-                As per our school records, {{userInfo.GenderId == 501 ? 'he' : 'she'}} is studying in
+                As per our records, {{userInfo.GenderId == 501 ? 'he' : 'she'}} is studying in
                 <span class="placeholder">{{userInfo.ClassName}}</span>
                 <span ng-if="userInfo.AdmissionNumber"> with
                     Admission Number -<span class="placeholder">{{userInfo.AdmissionNumber}}</span>
