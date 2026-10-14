@@ -260,7 +260,7 @@
     <div class="certificate-container">
         <div class="header" style="display: inline-flex; width: 100%;">
             <div style="width: 15%;">
-                <img ng-src="{{orgInfo.Image}}" alt="School Logo">
+                <img ng-src="{{orgInfo.Image}}" alt="Logo">
             </div>
             <div style="width: 85%;">
                 <h1>{{orgInfo.Name}}</h1>
@@ -298,11 +298,11 @@
                 to
                 <strong ng-if="userInfo.TcDate">{{userInfo.TcDate | date:'dd-MMM-yyyy'}}</strong>
                 <strong ng-if="!userInfo.TcDate">________________</strong>.
-                As per our school records, {{userInfo.GenderId == 501 ? 'His' : 'Her'}}
+                As per our records, {{userInfo.GenderId == 501 ? 'His' : 'Her'}}
                 date of birth is
                 <span class="placeholder">{{userInfo.DateOfBirth | date:'dd-MMM-yyyy'}}</span> (in words: <span
                     class="placeholder">{{dateOfBirthWords}}</span>).
-                During her tenure at our school, her character and conduct have been found to be
+                During her tenure at our institution, her character and conduct have been found to be
                 <strong>{{userInfo.Conduct}}</strong>
 
                 <div class="div-wish">
