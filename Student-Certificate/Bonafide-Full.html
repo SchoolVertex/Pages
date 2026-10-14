@@ -311,7 +311,7 @@
 
     <div class="certificate-frame">
         <div class="cert-header">
-            <img ng-src="{{orgInfo.Image}}" alt="School Logo" class="logo">
+            <img ng-src="{{orgInfo.Image}}" alt="Logo" class="logo">
             <div class="cert-header-text">
                 <h1 ng-style="{'font-size': orgNameFontSize}">{{orgInfo.Name}}</h1>
                 <p>{{orgInfo.Description}}</p>
@@ -332,9 +332,9 @@
             <p>This is to certify that <strong>{{userInfo.FullName}}</strong>, {{userInfo.GenderId == 501 ? 'son' :
                 'daughter'}} of <strong>{{userInfo.ParentName}}</strong>, is a bonafide student of this institution.</p>
 
-            <p>As per the school's official records {{userInfo.GenderId == 501 ? 'his' : 'her'}} date of birth is
+            <p>As per our official records {{userInfo.GenderId == 501 ? 'his' : 'her'}} date of birth is
                 <strong>{{userInfo.DateOfBirth | date:'dd-MMM-yyyy'}}</strong> <span ng-if="userInfo.AdmissionDate"> and
-                have been enrolled in this school since <strong>{{userInfo.AdmissionDate | date:'dd-MMM-yyyy'
+                have been enrolled in this institution since <strong>{{userInfo.AdmissionDate | date:'dd-MMM-yyyy'
                 }}</strong></span>. </p>
 
             <p>Currently, {{userInfo.GenderId == 501 ? 'he' : 'she'}} is studying in
@@ -350,9 +350,9 @@
             <div class="footer-item">
                 <div class="line"
                     style="display: flex; justify-content: center; align-items: center; font-style: italic; color: #ccc;">
-                    (School Seal)
+                    (Seal)
                 </div>
-                <p>School Seal</p>
+                <p>Seal</p>
             </div>
             <div class="footer-item">
                 <div class="line"></div>
