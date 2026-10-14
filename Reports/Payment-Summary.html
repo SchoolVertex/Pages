@@ -895,6 +895,10 @@ angular.module('feeApp', [])
             .filter(function(payment) {
                 return !payment.IsConcessionPayment;
             })
+            .slice()
+            .sort(function(a, b) {
+                return toSortableTimestamp(b.CreatedOn) - toSortableTimestamp(a.CreatedOn);
+            })
             .map(function(payment) {
                 return {
                     date: formatApiDate(payment.CreatedOn),
@@ -909,6 +913,23 @@ angular.module('feeApp', [])
         $scope.totalPaymentAmount = $scope.payments.reduce(function(total, payment) {
             return total + payment.amount;
         }, 0);
+    }
+
+    function toSortableTimestamp(value) {
+        if (!value && value !== 0) {
+            return 0;
+        }
+
+        var timestamp = Number(value);
+        if (!isNaN(timestamp) && timestamp > 0) {
+            if (timestamp < 100000000000) {
+                timestamp = timestamp * 1000;
+            }
+            return timestamp;
+        }
+
+        var parsed = new Date(value).getTime();
+        return isNaN(parsed) ? 0 : parsed;
     }
 
     function formatPaymentFeeItems(items) {
