@@ -498,6 +498,7 @@
 
         @media (min-width: 481px) {
             .report-shell {
+                max-width: 640px;
                 padding: 24px 16px 48px;
             }
 
@@ -511,6 +512,96 @@
 
             .school-copy h1 {
                 font-size: 1.45rem;
+            }
+        }
+
+        /* Tablet / laptop */
+        @media (min-width: 768px) {
+            .report-shell {
+                max-width: 900px;
+                padding: 28px 20px 52px;
+            }
+
+            .report-top {
+                padding: 28px 28px 24px;
+            }
+
+            .brand-row {
+                gap: 18px;
+            }
+
+            .school-logo {
+                width: 76px;
+                height: 76px;
+            }
+
+            .school-copy h1 {
+                font-size: 1.6rem;
+            }
+
+            .report-body {
+                padding: 26px 28px 32px;
+            }
+
+            .meta-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 12px 16px;
+            }
+
+            .summary-strip {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .summary-tile.accent {
+                grid-column: auto;
+            }
+
+            .summary-tile .amount {
+                font-size: 1.45rem;
+            }
+
+            .summary-tile.accent .amount {
+                font-size: 1.55rem;
+            }
+
+            .list {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+        }
+
+        /* Desktop */
+        @media (min-width: 1100px) {
+            .report-shell {
+                max-width: 1120px;
+                padding: 36px 24px 56px;
+            }
+
+            .report-body {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                column-gap: 28px;
+                row-gap: 0;
+                padding: 28px 32px 36px;
+            }
+
+            .student-panel,
+            .report-body > .section:nth-child(2),
+            .footer-note {
+                grid-column: 1 / -1;
+            }
+
+            .meta-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .list {
+                grid-template-columns: 1fr;
+            }
+
+            .section {
+                margin-top: 26px;
             }
         }
 
