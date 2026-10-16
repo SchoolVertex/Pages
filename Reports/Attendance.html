@@ -405,6 +405,130 @@
       font-size: 11px;
       color: var(--muted);
     }
+
+    .charts {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    /* Tablet / laptop */
+    @media (min-width: 768px) {
+      .shell {
+        max-width: 820px;
+        padding: 24px 20px 40px;
+      }
+
+      .hero {
+        padding: 24px 24px 20px;
+      }
+
+      .hero__title {
+        font-size: 1.75rem;
+      }
+
+      .overall {
+        gap: 12px;
+        padding: 16px 16px 18px;
+      }
+
+      .stat {
+        padding: 16px 10px;
+      }
+
+      .stat__value {
+        font-size: 1.6rem;
+      }
+
+      .pad {
+        padding: 18px 20px;
+      }
+
+      .month-tabs {
+        padding: 14px 16px;
+        gap: 10px;
+      }
+
+      .charts {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr;
+        gap: 16px;
+        align-items: stretch;
+        margin-bottom: 14px;
+      }
+
+      .donut-wrap {
+        margin-bottom: 0;
+        height: 100%;
+      }
+
+      .bars {
+        margin-bottom: 0;
+        height: 100%;
+        min-height: 160px;
+      }
+
+      .bar {
+        width: 44px;
+      }
+
+      .bar-col {
+        max-width: 96px;
+      }
+
+      .donut {
+        width: 120px;
+        height: 120px;
+      }
+
+      .donut__hole {
+        width: 72px;
+        height: 72px;
+      }
+
+      .donut__hole strong {
+        font-size: 18px;
+      }
+
+      .chip {
+        min-width: 42px;
+        padding: 7px 10px;
+        font-size: 12px;
+      }
+    }
+
+    /* Desktop */
+    @media (min-width: 1024px) {
+      .shell {
+        max-width: 1080px;
+        padding: 32px 24px 48px;
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 16px;
+        align-items: start;
+      }
+
+      .shell > .loading,
+      .shell > .error,
+      .shell > article.card,
+      .shell > .empty,
+      .shell > .footer {
+        grid-column: 1 / -1;
+      }
+
+      .shell > section.card {
+        min-width: 0;
+      }
+
+      .hero__title {
+        font-size: 1.9rem;
+      }
+
+      .overall {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        max-width: 720px;
+      }
+    }
   </style>
 </head>
 <body ng-controller="AttendanceController">
@@ -462,45 +586,47 @@
       <div class="pad">
         <h2 class="section-title">{{selected.label}} summary</h2>
 
-        <div class="donut-wrap" ng-if="selected.total > 0">
-          <div class="donut"
-               style="--presentDeg: {{selected.presentDeg}}deg; --lateEndDeg: {{selected.lateEndDeg}}deg;">
-            <div class="donut__hole">
-              <strong>{{selected.total}}</strong>
-              <span>Days</span>
+        <div class="charts" ng-if="selected.total > 0">
+          <div class="donut-wrap">
+            <div class="donut"
+                 style="--presentDeg: {{selected.presentDeg}}deg; --lateEndDeg: {{selected.lateEndDeg}}deg;">
+              <div class="donut__hole">
+                <strong>{{selected.total}}</strong>
+                <span>Days</span>
+              </div>
             </div>
+            <ul class="legend">
+              <li>
+                <span class="legend__left"><span class="dot dot--ok"></span> Present</span>
+                <span>{{selected.presentPct}}%</span>
+              </li>
+              <li>
+                <span class="legend__left"><span class="dot dot--late"></span> Late</span>
+                <span>{{selected.latePct}}%</span>
+              </li>
+              <li>
+                <span class="legend__left"><span class="dot dot--bad"></span> Absent</span>
+                <span>{{selected.absentPct}}%</span>
+              </li>
+            </ul>
           </div>
-          <ul class="legend">
-            <li>
-              <span class="legend__left"><span class="dot dot--ok"></span> Present</span>
-              <span>{{selected.presentPct}}%</span>
-            </li>
-            <li>
-              <span class="legend__left"><span class="dot dot--late"></span> Late</span>
-              <span>{{selected.latePct}}%</span>
-            </li>
-            <li>
-              <span class="legend__left"><span class="dot dot--bad"></span> Absent</span>
-              <span>{{selected.absentPct}}%</span>
-            </li>
-          </ul>
-        </div>
 
-        <div class="bars" ng-if="selected.total > 0">
-          <div class="bar-col">
-            <span class="bar-col__value">{{selected.present}}</span>
-            <div class="bar bar--ok" style="height: {{selected.presentBar}}%;"></div>
-            <span class="bar-col__label">Present</span>
-          </div>
-          <div class="bar-col">
-            <span class="bar-col__value">{{selected.absent}}</span>
-            <div class="bar bar--bad" style="height: {{selected.absentBar}}%;"></div>
-            <span class="bar-col__label">Absent</span>
-          </div>
-          <div class="bar-col">
-            <span class="bar-col__value">{{selected.late}}</span>
-            <div class="bar bar--late" style="height: {{selected.lateBar}}%;"></div>
-            <span class="bar-col__label">Late</span>
+          <div class="bars">
+            <div class="bar-col">
+              <span class="bar-col__value">{{selected.present}}</span>
+              <div class="bar bar--ok" style="height: {{selected.presentBar}}%;"></div>
+              <span class="bar-col__label">Present</span>
+            </div>
+            <div class="bar-col">
+              <span class="bar-col__value">{{selected.absent}}</span>
+              <div class="bar bar--bad" style="height: {{selected.absentBar}}%;"></div>
+              <span class="bar-col__label">Absent</span>
+            </div>
+            <div class="bar-col">
+              <span class="bar-col__value">{{selected.late}}</span>
+              <div class="bar bar--late" style="height: {{selected.lateBar}}%;"></div>
+              <span class="bar-col__label">Late</span>
+            </div>
           </div>
         </div>
 
