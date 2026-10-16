@@ -669,6 +669,116 @@
       font-weight: 700;
       cursor: pointer;
     }
+
+    /* Tablet / laptop */
+    @media (min-width: 768px) {
+      .shell {
+        max-width: 760px;
+        padding: 24px 20px 40px;
+      }
+
+      .hero {
+        padding: 24px 24px 20px;
+      }
+
+      .hero__title {
+        font-size: 1.7rem;
+      }
+
+      .body {
+        padding: 18px 20px 20px;
+      }
+
+      .section {
+        padding: 14px 16px;
+      }
+
+      .media {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .media video,
+      .recorder__preview video,
+      .recorder__live {
+        max-height: 320px;
+      }
+
+      .upload__actions {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .upload__btn--full {
+        grid-column: auto;
+      }
+
+      .recorder {
+        padding: 14px 16px;
+      }
+
+      .btn {
+        max-width: 280px;
+      }
+
+      textarea {
+        min-height: 140px;
+      }
+    }
+
+    /* Desktop */
+    @media (min-width: 1024px) {
+      .shell {
+        max-width: 1040px;
+        padding: 32px 24px 48px;
+      }
+
+      .hero {
+        padding: 28px 28px 22px;
+      }
+
+      .hero__title {
+        font-size: 1.9rem;
+      }
+
+      .body {
+        padding: 22px 24px 24px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        align-items: start;
+      }
+
+      /* Assigned work + submit form stay full width; feedback panels sit side by side */
+      .body > .section:first-child,
+      .body > .section--submit {
+        grid-column: 1 / -1;
+      }
+
+      .section {
+        margin-bottom: 0;
+      }
+
+      .media {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .media video {
+        grid-column: span 2;
+        max-height: 360px;
+      }
+
+      .upload__actions {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .btn {
+        max-width: 300px;
+      }
+
+      .preview img {
+        max-width: min(900px, 92vw);
+      }
+    }
   </style>
 </head>
 <body ng-controller="HomeworkDetailController">
