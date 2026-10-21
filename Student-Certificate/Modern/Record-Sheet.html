@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Record Sheet</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <link rel="stylesheet" href="https://schoolvertex.github.io/Pages/Student-Certificate/Modern/cert-theme.css">
+</head>
+<body ng-controller="myCtrl">
+  <div class="sv-toolbar">
+    <button class="sv-btn sv-btn-print" onclick="window.print()">Print</button>
+  </div>
+
+  <article class="sv-cert full">
+    <div class="sv-cert-inner sv-record">
+      <header class="sv-head">
+        <div class="sv-logo"><img ng-src="{{orgInfo.Image}}" alt="Logo"></div>
+        <div>
+          <h1 contenteditable="true">{{orgInfo.Name}}</h1>
+          <p contenteditable="true">{{orgInfo.FullAddress}}</p>
+        </div>
+      </header>
+      <div class="sv-title">
+        <h2 contenteditable="true">Record Sheet</h2>
+        <p style="margin:8px 0 0;font-size:0.78rem;color:var(--sv-muted)" contenteditable="true">(As per RULE 43 and 46 Chapter - II, T.S.E.R.)</p>
+      </div>
+
+      <div class="sv-meta">
+        <span>Date: <b contenteditable="true">{{ today | date:'dd-MMM-yyyy' }}</b></span>
+        <span>RC No: <b contenteditable="true">{{userInfo.PEN}}</b></span>
+        <span>Record Sheet No: <b contenteditable="true">{{userInfo.PEN}}</b></span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px 16px">
+        <div class="field"><span class="lbl" contenteditable="true">School UDISE:</span><span class="val" contenteditable="true">UDISE98765</span></div>
+        <div class="field"><span class="lbl" contenteditable="true">PEN ID:</span><span class="val" contenteditable="true">{{userInfo.PEN}}</span></div>
+        <div class="field"><span class="lbl" contenteditable="true">Admission No:</span><span class="val" contenteditable="true">{{userInfo.AdmissionNumber}}</span></div>
+      </div>
+      <div class="field"><span class="lbl" contenteditable="true">Pupil Aadhar No:</span><span class="val" contenteditable="true">{{userInfo.AadharNumber}}</span></div>
+      <div class="field"><span class="lbl" contenteditable="true">Name of the Pupil:</span><span class="val" contenteditable="true">{{userInfo.FullName}}</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px 16px">
+        <div class="field"><span class="lbl" contenteditable="true">Date of Birth:</span><span class="val" contenteditable="true">{{userInfo.DateOfBirth | date:'dd-MMM-yyyy'}}</span></div>
+        <div class="field"><span class="lbl" contenteditable="true">Sex:</span><span class="val" contenteditable="true">{{userInfo.GenderId == 501 ? 'Male' : 'Female'}}</span></div>
+        <div class="field"><span class="lbl" contenteditable="true">Religion:</span><span class="val" contenteditable="true">{{userInfo.Religion}}</span></div>
+      </div>
+      <div class="field"><span class="lbl" contenteditable="true">Caste / Sub Caste:</span><span class="val" contenteditable="true">{{userInfo.Caste}}</span></div>
+      <div class="field"><span class="lbl" contenteditable="true">Father's / Guardian's Name:</span><span class="val" contenteditable="true">{{userInfo.FatherName}}</span></div>
+      <div class="field"><span class="lbl" contenteditable="true">Mother's Name:</span><span class="val" contenteditable="true">{{userInfo.MotherName}}</span></div>
+      <div class="field"><span class="lbl" contenteditable="true">Address:</span><span class="val" contenteditable="true">{{userInfo.Address}}</span></div>
+
+      <table class="sv-table">
+        <thead>
+          <tr>
+            <th contenteditable="true">Quarter</th>
+            <th contenteditable="true">Class</th>
+            <th contenteditable="true">Working Days</th>
+            <th contenteditable="true">Days Present</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td contenteditable="true">1st Qtr (June-Aug)</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+          <tr><td contenteditable="true">2nd Qtr (Sept-Nov)</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+          <tr><td contenteditable="true">3rd Qtr (Dec-Feb)</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+          <tr><td contenteditable="true">4th Qtr (Mar-May)</td><td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td></tr>
+        </tbody>
+      </table>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 16px">
+        <div class="field"><span class="lbl" contenteditable="true">Date of Admission:</span><span class="val" contenteditable="true">{{userInfo.AdmissionDate | date:'dd-MMM-yyyy'}}</span></div>
+        <div class="field"><span class="lbl" contenteditable="true">Progress:</span><span class="val" contenteditable="true"></span></div>
+        <div class="field"><span class="lbl" contenteditable="true">Date of leaving:</span><span class="val" contenteditable="true">{{userInfo.TcDate | date:'dd-MMM-yyyy'}}</span></div>
+        <div class="field"><span class="lbl" contenteditable="true">Conduct:</span><span class="val" contenteditable="true"></span></div>
+      </div>
+      <div class="field"><span class="lbl" contenteditable="true">Attained the age prescribed:</span><span class="val" contenteditable="true">Yes</span></div>
+      <div class="field"><span class="lbl" contenteditable="true">Completed the FIFTH class on:</span><span class="val" contenteditable="true">{{userInfo.TcDate | date:'dd-MMM-yyyy'}}</span></div>
+      <div class="field"><span class="lbl" contenteditable="true">Identification Marks:</span><span class="val" contenteditable="true">{{userInfo.IdentificationMarks}}</span></div>
+
+      <div class="sv-footer" style="margin-top:70px">
+        <div class="sv-sign"><div class="line"></div><p contenteditable="true">Signature of the Pupil</p></div>
+        <div class="sv-sign"><div class="line"></div><p contenteditable="true">Signature of the H.M.</p></div>
+      </div>
+    </div>
+  </article>
+
+  <script src="https://schoolvertex.github.io/Pages/Student-Certificate/Modern/cert-core.js"></script>
+  <script>
+    angular.module("myApp", []).controller("myCtrl", function ($scope, $http) {
+      $scope.today = new Date();
+      var query = SVCert.getQueryParams();
+      $http.get(SVCert.apiBase + "/Organisation/GetInfoForCertificate/" + query.orgId)
+        .then(function (res) { $scope.orgInfo = res.data; });
+      $http.get(SVCert.apiBase + "/User/GetInfoForCertificate/" + query.userId + "/" + query.entityTypeId + "/" + query.entityId)
+        .then(function (res) { $scope.userInfo = res.data; });
+    });
+  </script>
+</body>
+</html>

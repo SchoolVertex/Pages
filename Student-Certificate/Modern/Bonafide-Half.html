@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bonafide Certificate</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <link rel="stylesheet" href="https://schoolvertex.github.io/Pages/Student-Certificate/Modern/cert-theme.css">
+</head>
+<body ng-controller="myCtrl">
+  <div class="sv-toolbar">
+    <button class="sv-btn sv-btn-print" onclick="window.print()">Print</button>
+    <button class="sv-btn sv-btn-edit" ng-click="showEditModal()">Edit</button>
+  </div>
+
+  <article class="sv-cert half">
+    <div class="sv-watermark"><img ng-src="{{orgInfo.Image}}" alt=""></div>
+    <div class="sv-cert-inner">
+      <header class="sv-head">
+        <div class="sv-logo"><img ng-src="{{orgInfo.Image}}" alt="Logo"></div>
+        <div>
+          <h1>{{orgInfo.Name}}</h1>
+          <p>{{orgInfo.Description}}</p>
+          <p ng-if="orgInfo.AffiliationInfo">{{orgInfo.AffiliationInfo}}</p>
+          <p>{{orgInfo.FullAddress}}</p>
+        </div>
+      </header>
+
+      <div class="sv-title"><h2>{{userInfo.CertTitle}}</h2></div>
+
+      <div class="sv-meta">
+        <span>Cert / Sr No: <b>{{userInfo.CertificateNumber}}</b></span>
+        <span ng-if="userInfo.PEN">PEN: <b>{{userInfo.PEN}}</b></span>
+        <span>Date: <b>{{ today | date:'dd-MMM-yyyy' }}</b></span>
+      </div>
+
+      <div class="sv-body">
+        <p>
+          This is to certify that <span class="sv-name">{{userInfo.FullName}}</span>,
+          {{userInfo.GenderId == 501 ? 'son' : 'daughter'}} of
+          <span ng-if="userInfo.FatherName && userInfo.MotherName">
+            <span class="sv-hl">{{userInfo.FatherName}}</span> and
+            <span class="sv-hl">{{userInfo.MotherName}}</span>
+          </span>
+          <span class="sv-hl" ng-if="!(userInfo.FatherName && userInfo.MotherName)">{{userInfo.ParentName || userInfo.FatherName}}</span>,
+          is a bonafide student of this institution.
+          As per our records, {{userInfo.GenderId == 501 ? 'he' : 'she'}} is studying in
+          <span class="sv-hl">{{userInfo.ClassName}}</span>
+          <span ng-if="userInfo.AdmissionNumber"> with Admission Number
+            <span class="sv-hl">{{userInfo.AdmissionNumber}}</span>
+          </span>
+          during the academic year <span class="sv-hl">{{userInfo.AcademicYear}}</span>.
+          {{userInfo.GenderId == 501 ? 'His' : 'Her'}} date of birth is
+          <span class="sv-hl">{{userInfo.DateOfBirth | date:'dd-MMM-yyyy'}}</span>
+          (in words: <span class="sv-hl">{{dateOfBirthWords}}</span>).
+        </p>
+        <div class="sv-wish">{{userInfo.WishNote}}</div>
+      </div>
+
+      <div class="sv-footer">
+        <div class="sv-sign"><div class="line">(Seal)</div><p>School Seal</p></div>
+        <div class="sv-sign"><div class="line"></div><p>Signature of Principal</p></div>
+      </div>
+    </div>
+  </article>
+
+  <div class="sv-modal" ng-class="{'is-visible': modal.isVisible}">
+    <div class="sv-modal-card">
+      <h3>Edit certificate fields</h3>
+      <label>Certificate Title</label><input type="text" ng-model="modal.userInfo.CertTitle">
+      <label>Full Name</label><input type="text" ng-model="modal.userInfo.FullName">
+      <label>Father Name</label><input type="text" ng-model="modal.userInfo.FatherName">
+      <label>Mother Name</label><input type="text" ng-model="modal.userInfo.MotherName">
+      <label>Class Name</label><input type="text" ng-model="modal.userInfo.ClassName">
+      <label>Admission Number</label><input type="text" ng-model="modal.userInfo.AdmissionNumber">
+      <label>PEN</label><input type="text" ng-model="modal.userInfo.PEN">
+      <label>Academic Year</label><input type="text" ng-model="modal.userInfo.AcademicYear">
+      <label>Date of Birth</label><input type="date" ng-model="modal.userInfo.DateOfBirth">
+      <label>Certificate Number</label><input type="text" ng-model="modal.userInfo.CertificateNumber">
+      <label>Wish Note</label><input type="text" ng-model="modal.userInfo.WishNote">
+      <div class="sv-modal-actions">
+        <button class="sv-btn sv-btn-edit" ng-click="hideEditModal()">Cancel</button>
+        <button class="sv-btn sv-btn-save" ng-click="saveChanges()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://schoolvertex.github.io/Pages/Student-Certificate/Modern/cert-core.js"></script>
+  <script>
+    angular.module("myApp", []).controller("myCtrl", function ($scope, $http) {
+      $scope.today = new Date();
+      $scope.modal = { isVisible: false, userInfo: {} };
+      var query = SVCert.getQueryParams();
+      $http.get(SVCert.apiBase + "/Organisation/GetInfoForCertificate/" + query.orgId)
+        .then(function (res) { $scope.orgInfo = res.data; });
+      $http.get(SVCert.apiBase + "/User/GetInfoForCertificate/" + query.userId + "/" + query.entityTypeId + "/" + query.entityId)
+        .then(function (res) {
+          $scope.userInfo = res.data;
+          $scope.userInfo.CertTitle = "Bonafide Certificate";
+          $scope.userInfo.CertificateNumber = $scope.userInfo.UserId;
+          $scope.userInfo.WishNote = "We wish " + ($scope.userInfo.GenderId == 501 ? "him" : "her") + " a bright future";
+          if ($scope.userInfo.DateOfBirth) {
+            $scope.dateOfBirthWords = SVCert.convertDateToWords($scope.userInfo.DateOfBirth);
+            $scope.modal.userInfo = angular.copy($scope.userInfo);
+            $scope.modal.userInfo.DateOfBirth = new Date($scope.userInfo.DateOfBirth);
+          } else {
+            $scope.modal.userInfo = angular.copy($scope.userInfo);
+          }
+        });
+      $scope.showEditModal = function () {
+        $scope.modal.userInfo = angular.copy($scope.userInfo);
+        if ($scope.modal.userInfo.DateOfBirth) $scope.modal.userInfo.DateOfBirth = new Date($scope.modal.userInfo.DateOfBirth);
+        $scope.modal.isVisible = true;
+      };
+      $scope.hideEditModal = function () { $scope.modal.isVisible = false; };
+      $scope.saveChanges = function () {
+        $scope.userInfo = angular.copy($scope.modal.userInfo);
+        if ($scope.userInfo.DateOfBirth) $scope.dateOfBirthWords = SVCert.convertDateToWords($scope.userInfo.DateOfBirth);
+        $scope.hideEditModal();
+      };
+    });
+  </script>
+</body>
+</html>
