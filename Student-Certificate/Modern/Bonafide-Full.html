@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bonafide Certificate</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <link rel="stylesheet" href="cert-theme.css">
+</head>
+<body ng-controller="myCtrl">
+  <div class="sv-toolbar">
+    <button class="sv-btn sv-btn-print" onclick="window.print()">Print</button>
+    <button class="sv-btn sv-btn-edit" ng-click="showEditModal()">Edit</button>
+  </div>
+
+  <article class="sv-cert full">
+    <div class="sv-watermark"><img ng-src="{{orgInfo.Image}}" alt=""></div>
+    <div class="sv-cert-inner">
+      <header class="sv-head">
+        <div class="sv-logo"><img ng-src="{{orgInfo.Image}}" alt="Logo"></div>
+        <div>
+          <h1 ng-style="{'font-size': orgNameFontSize}">{{orgInfo.Name}}</h1>
+          <p>{{orgInfo.Description}}</p>
+          <p>{{orgInfo.FullAddress}}</p>
+        </div>
+      </header>
+
+      <div class="sv-meta">
+        <span>Ref. / Cert. No: <b>{{userInfo.CertificateNumber}}</b></span>
+        <span>Date: <b>{{ today | date:'dd-MMM-yyyy' }}</b></span>
+      </div>
+
+      <div class="sv-title"><h2>Bonafide Certificate</h2></div>
+
+      <div class="sv-body">
+        <p>This is to certify that <span class="sv-name">{{userInfo.FullName}}</span>,
+          {{userInfo.GenderId == 501 ? 'son' : 'daughter'}} of
+          <span class="sv-hl">{{userInfo.ParentName}}</span>, is a bonafide student of this institution.</p>
+        <p>As per our official records {{userInfo.GenderId == 501 ? 'his' : 'her'}} date of birth is
+          <span class="sv-hl">{{userInfo.DateOfBirth | date:'dd-MMM-yyyy'}}</span>
+          <span ng-if="userInfo.AdmissionDate"> and {{userInfo.GenderId == 501 ? 'he' : 'she'}} has been enrolled in this institution since
+            <span class="sv-hl">{{userInfo.AdmissionDate | date:'dd-MMM-yyyy'}}</span></span>.</p>
+        <p>Currently, {{userInfo.GenderId == 501 ? 'he' : 'she'}} is studying in
+          <span class="sv-hl">{{userInfo.ClassName}}</span>
+          <span ng-if="userInfo.AdmissionNumber"> bearing Admission Number
+            <span class="sv-hl">{{userInfo.AdmissionNumber}}</span></span>
+          for the academic year <span class="sv-hl">{{userInfo.AcademicYear}}</span>.
+          This certificate is issued at the request of the student's parents for the purpose of
+          <span class="sv-hl">{{userInfo.Purpose}}</span>.</p>
+      </div>
+
+      <div class="sv-footer" style="margin-top: 80px;">
+        <div class="sv-sign"><div class="line">(Seal)</div><p>School Seal</p></div>
+        <div class="sv-sign"><div class="line"></div><p>Principal's Signature</p></div>
+      </div>
+    </div>
+  </article>
+
+  <div class="sv-modal" ng-class="{'is-visible': modal.isVisible}">
+    <div class="sv-modal-card">
+      <h3>Edit certificate fields</h3>
+      <label>Full Name</label><input type="text" ng-model="modal.userInfo.FullName">
+      <label>Parent Name</label><input type="text" ng-model="modal.userInfo.ParentName">
+      <label>Class Name</label><input type="text" ng-model="modal.userInfo.ClassName">
+      <label>Admission Number</label><input type="text" ng-model="modal.userInfo.AdmissionNumber">
+      <label>Academic Year</label><input type="text" ng-model="modal.userInfo.AcademicYear">
+      <label>Date of Birth</label><input type="date" ng-model="modal.userInfo.DateOfBirth">
+      <label>Admission Date</label><input type="date" ng-model="modal.userInfo.AdmissionDate">
+      <label>Certificate Number</label><input type="text" ng-model="modal.userInfo.CertificateNumber">
+      <label>Purpose</label><textarea ng-model="modal.userInfo.Purpose" rows="3"></textarea>
+      <div class="sv-modal-actions">
+        <button class="sv-btn sv-btn-edit" ng-click="hideEditModal()">Cancel</button>
+        <button class="sv-btn sv-btn-save" ng-click="saveChanges()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="cert-core.js"></script>
+  <script>
+    angular.module("myApp", []).controller("myCtrl", function ($scope, $http) {
+      $scope.today = new Date();
+      $scope.modal = { isVisible: false, userInfo: {} };
+      $scope.orgNameFontSize = "1.55rem";
+      var query = SVCert.getQueryParams();
+      $http.get(SVCert.apiBase + "/Organisation/GetInfoForCertificate/" + query.orgId)
+        .then(function (res) {
+          $scope.orgInfo = res.data;
+          if ($scope.orgInfo && $scope.orgInfo.Name && $scope.orgInfo.Name.length > 28) {
+            $scope.orgNameFontSize = "1.2rem";
+          }
+        });
+      $http.get(SVCert.apiBase + "/User/GetInfoForCertificate/" + query.userId + "/" + query.entityTypeId + "/" + query.entityId)
+        .then(function (res) {
+          $scope.userInfo = res.data;
+          if (!$scope.userInfo.AcademicYear) {
+            var y = new Date().getFullYear();
+            $scope.userInfo.AcademicYear = y + "-" + (y + 1);
+          }
+          if (!$scope.userInfo.Purpose) $scope.userInfo.Purpose = "";
+          $scope.modal.userInfo = angular.copy($scope.userInfo);
+          if ($scope.modal.userInfo.DateOfBirth) $scope.modal.userInfo.DateOfBirth = new Date($scope.modal.userInfo.DateOfBirth);
+          if ($scope.modal.userInfo.AdmissionDate) $scope.modal.userInfo.AdmissionDate = new Date($scope.modal.userInfo.AdmissionDate);
+        });
+      $scope.showEditModal = function () {
+        $scope.modal.userInfo = angular.copy($scope.userInfo);
+        if ($scope.modal.userInfo.DateOfBirth) $scope.modal.userInfo.DateOfBirth = new Date($scope.modal.userInfo.DateOfBirth);
+        if ($scope.modal.userInfo.AdmissionDate) $scope.modal.userInfo.AdmissionDate = new Date($scope.modal.userInfo.AdmissionDate);
+        $scope.modal.isVisible = true;
+      };
+      $scope.hideEditModal = function () { $scope.modal.isVisible = false; };
+      $scope.saveChanges = function () {
+        $scope.userInfo = angular.copy($scope.modal.userInfo);
+        $scope.hideEditModal();
+      };
+    });
+  </script>
+</body>
+</html>
