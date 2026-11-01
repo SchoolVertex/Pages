@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Daily Parent Article</title>
+  <title>Today's Reading</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Nunito:wght@500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet" />
@@ -35,7 +35,31 @@
     .wrap {
       width: min(920px, calc(100% - 28px));
       margin: 0 auto;
-      padding: 28px 0 64px;
+      padding: 20px 0 64px;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .tab {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-weight: 800;
+      font-size: 0.86rem;
+      cursor: pointer;
+    }
+
+    .tab.active {
+      background: var(--leaf);
+      border-color: var(--leaf);
+      color: #fff;
     }
 
     .status {
@@ -75,6 +99,15 @@
       font-size: clamp(1.6rem, 4vw, 2.2rem);
       line-height: 1.2;
       margin-bottom: 10px;
+    }
+
+    .hero {
+      display: block;
+      width: 100%;
+      max-height: 320px;
+      object-fit: cover;
+      border-radius: 16px;
+      margin: 8px 0 18px;
     }
 
     .notification { font-weight: 750; color: #3d5563; margin-bottom: 18px; line-height: 1.45; }
@@ -120,6 +153,36 @@
 
     .card p { font-weight: 650; line-height: 1.5; }
 
+    .empty {
+      color: var(--muted);
+      font-weight: 750;
+      line-height: 1.5;
+    }
+
+    .answer-btn {
+      border: 0;
+      background: var(--leaf);
+      color: #fff;
+      border-radius: 999px;
+      padding: 8px 16px;
+      font-weight: 800;
+      cursor: pointer;
+      margin-bottom: 12px;
+    }
+
+    .eminence + .eminence {
+      margin-top: 28px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+    }
+
+    .read-more {
+      display: inline-block;
+      margin-top: 8px;
+      color: var(--leaf);
+      font-weight: 800;
+    }
+
     footer {
       margin-top: 16px;
       text-align: center;
@@ -131,46 +194,87 @@
     @media (max-width: 720px) {
       .grid { grid-template-columns: 1fr; }
       .panel { padding: 22px 16px; }
+      .wrap { padding-top: 14px; }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
+    <nav class="tabs" aria-label="Daily reading">
+      <button type="button" class="tab active" data-tab="article">Daily Article</button>
+      <button type="button" class="tab" data-tab="fact">Smart Fact</button>
+      <button type="button" class="tab" data-tab="teaser">Brain Teaser</button>
+      <button type="button" class="tab" data-tab="eminence">Day Eminence</button>
+    </nav>
+
     <div id="status" class="status" role="status"></div>
 
     <main class="panel">
-      <article id="content" hidden>
-        <div class="kicker" id="series"></div>
-        <div class="meta" id="fullDate"></div>
-        <h1 id="title"></h1>
-        <p class="notification" id="notification"></p>
-        <div class="article" id="article"></div>
-        <blockquote id="quote"></blockquote>
-        <div class="grid">
-          <section class="card">
-            <h2>Takeaway</h2>
-            <p id="moral"></p>
-          </section>
-          <section class="card">
-            <h2>Ask yourself</h2>
-            <p id="question"></p>
-          </section>
-          <section class="card">
-            <h2>Try this</h2>
-            <p id="activity"></p>
-          </section>
-          <section class="card">
-            <h2>Today’s step</h2>
-            <p id="challenge"></p>
-          </section>
+      <article id="tab-article">
+        <div id="article-content" hidden>
+          <div class="kicker" id="series"></div>
+          <div class="meta" id="fullDate"></div>
+          <h1 id="title"></h1>
+          <p class="notification" id="notification"></p>
+          <div class="article" id="article"></div>
+          <blockquote id="quote"></blockquote>
+          <div class="grid">
+            <section class="card">
+              <h2>Takeaway</h2>
+              <p id="moral"></p>
+            </section>
+            <section class="card">
+              <h2>Ask yourself</h2>
+              <p id="question"></p>
+            </section>
+            <section class="card">
+              <h2>Try this</h2>
+              <p id="activity"></p>
+            </section>
+            <section class="card">
+              <h2>Today’s step</h2>
+              <p id="challenge"></p>
+            </section>
+          </div>
         </div>
+        <p id="article-empty" class="empty" hidden>No daily article for this day.</p>
+      </article>
+
+      <article id="tab-fact" hidden>
+        <div id="fact-content" hidden>
+          <div class="kicker">Smart Fact</div>
+          <div class="meta" id="factDate"></div>
+          <h1 id="factTitle"></h1>
+          <img id="factImage" class="hero" alt="" hidden />
+          <div class="article" id="factArticle"></div>
+        </div>
+        <p id="fact-empty" class="empty" hidden>No smart fact for this day.</p>
+      </article>
+
+      <article id="tab-teaser" hidden>
+        <div id="teaser-content" hidden>
+          <div class="kicker">Brain Teaser</div>
+          <div class="meta" id="teaserDate"></div>
+          <h1 id="teaserTitle"></h1>
+          <img id="teaserImage" class="hero" alt="" hidden />
+          <div class="article" id="teaserArticle"></div>
+          <button type="button" id="teaserAnswerBtn" class="answer-btn" hidden>Show answer</button>
+          <blockquote id="teaserAnswer" hidden></blockquote>
+        </div>
+        <p id="teaser-empty" class="empty" hidden>No brain teaser for this day.</p>
+      </article>
+
+      <article id="tab-eminence" hidden>
+        <div id="eminence-content"></div>
+        <p id="eminence-empty" class="empty" hidden>No day eminence for this day.</p>
       </article>
     </main>
-    <footer>365 Daily Parent Articles · One idea for today</footer>
+    <footer>Today’s reading · One idea for every day</footer>
   </div>
 
   <script>
     const DATA_URL = "https://schoolvertex.github.io/Pages/Daily-Article/data.json";
+    const API_BASE = "https://api.schoolvertex.com/api";
 
     function pad(n) { return String(n).padStart(2, "0"); }
 
@@ -211,40 +315,186 @@
       box.className = "status" + (message ? " show" : "") + (isError ? " error" : "");
     }
 
+    function showTab(name) {
+      document.querySelectorAll(".tab").forEach(function (btn) {
+        btn.classList.toggle("active", btn.getAttribute("data-tab") === name);
+      });
+      ["article", "fact", "teaser", "eminence"].forEach(function (tab) {
+        document.getElementById("tab-" + tab).hidden = tab !== name;
+      });
+    }
+
+    function setText(id, value) {
+      document.getElementById(id).textContent = value || "";
+    }
+
     function showArticle(item, key) {
-      document.getElementById("series").textContent = item.series || item.category || "";
-      document.getElementById("fullDate").textContent = formatDate(key);
-      document.getElementById("title").textContent = item.title || "";
-      document.getElementById("notification").textContent = item.notification || "";
-      document.getElementById("article").textContent = item.article || "";
-      document.getElementById("quote").textContent = item.quote || "";
-      document.getElementById("moral").textContent = item.moral || "";
-      document.getElementById("question").textContent = item.question || "";
-      document.getElementById("activity").textContent = item.activity || "";
-      document.getElementById("challenge").textContent = item.challenge || "";
-      document.getElementById("content").hidden = false;
+      setText("series", item.series || item.category || "");
+      setText("fullDate", formatDate(key));
+      setText("title", item.title || "");
+      setText("notification", item.notification || "");
+      setText("article", item.article || "");
+      setText("quote", item.quote || "");
+      setText("moral", item.moral || "");
+      setText("question", item.question || "");
+      setText("activity", item.activity || "");
+      setText("challenge", item.challenge || "");
+      document.getElementById("article-content").hidden = false;
+      document.getElementById("article-empty").hidden = true;
+    }
+
+    function showReading(elPrefix, title, dateText, imageUrl, body) {
+      setText(elPrefix + "Title", title || "Untitled");
+      setText(elPrefix + "Date", dateText);
+      setText(elPrefix + "Article", body || "");
+      var img = document.getElementById(elPrefix + "Image");
+      if (imageUrl) {
+        img.src = imageUrl;
+        img.hidden = false;
+      } else {
+        img.removeAttribute("src");
+        img.hidden = true;
+      }
+      document.getElementById(elPrefix === "fact" ? "fact-content" : "teaser-content").hidden = false;
+    }
+
+    function renderEminence(items, key) {
+      var host = document.getElementById("eminence-content");
+      host.innerHTML = "";
+      (items || []).forEach(function (item) {
+        var block = document.createElement("section");
+        block.className = "eminence";
+        var kicker = document.createElement("div");
+        kicker.className = "kicker";
+        kicker.textContent = "Day Eminence";
+        var meta = document.createElement("div");
+        meta.className = "meta";
+        meta.textContent = formatDate(key);
+        var heading = document.createElement("h1");
+        heading.textContent = item.Title || "";
+        block.appendChild(kicker);
+        block.appendChild(meta);
+        block.appendChild(heading);
+        if (item.Image) {
+          var img = document.createElement("img");
+          img.className = "hero";
+          img.alt = item.Title || "Day eminence";
+          img.src = item.Image;
+          block.appendChild(img);
+        }
+        var body = document.createElement("div");
+        body.className = "article";
+        body.textContent = item.Description || "";
+        block.appendChild(body);
+        if (item.BlogUrl) {
+          var link = document.createElement("a");
+          link.className = "read-more";
+          link.href = item.BlogUrl;
+          link.target = "_blank";
+          link.rel = "noopener";
+          link.textContent = "Read more";
+          block.appendChild(link);
+        }
+        host.appendChild(block);
+      });
+    }
+
+    async function loadArticle(key) {
+      const controller = new AbortController();
+      const timer = setTimeout(function () { controller.abort(); }, 8000);
+      const res = await fetch(DATA_URL, { cache: "no-store", signal: controller.signal });
+      clearTimeout(timer);
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const list = await res.json();
+      const item = (list || []).find(function (row) { return row && row.date === key; });
+      if (!item) {
+        document.getElementById("article-empty").hidden = false;
+        return;
+      }
+      showArticle(item, key);
+    }
+
+    async function loadDayReading(key) {
+      const parts = key.split("-").map(Number);
+      const month = parts[0];
+      const day = parts[1];
+      const res = await fetch(
+        API_BASE + "/DailyActivity/GetDayReading?day=" + day + "&month=" + month,
+        { cache: "no-store" }
+      );
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+      const dateText = formatDate(key);
+
+      if (data && data.SmartFact && data.SmartFact.SmartFactId) {
+        showReading(
+          "fact",
+          data.SmartFact.Title,
+          dateText,
+          data.SmartFact.Url,
+          data.SmartFact.Description || data.SmartFact.Text
+        );
+        document.getElementById("fact-empty").hidden = true;
+      } else {
+        document.getElementById("fact-empty").hidden = false;
+      }
+
+      if (data && data.BrainTeaser && data.BrainTeaser.BrainTeaserId) {
+        showReading(
+          "teaser",
+          data.BrainTeaser.Title,
+          dateText,
+          data.BrainTeaser.IsVideo ? "" : data.BrainTeaser.Url,
+          data.BrainTeaser.Description || ""
+        );
+        var answer = data.BrainTeaser.Text || "";
+        var answerBtn = document.getElementById("teaserAnswerBtn");
+        var answerBox = document.getElementById("teaserAnswer");
+        if (answer) {
+          answerBox.textContent = answer;
+          answerBtn.hidden = false;
+          answerBox.hidden = true;
+          answerBtn.onclick = function () {
+            answerBox.hidden = !answerBox.hidden;
+            answerBtn.textContent = answerBox.hidden ? "Show answer" : "Hide answer";
+          };
+        }
+        document.getElementById("teaser-empty").hidden = true;
+      } else {
+        document.getElementById("teaser-empty").hidden = false;
+      }
+
+      var eminence = (data && data.DaySignificances) || [];
+      if (eminence.length) {
+        renderEminence(eminence, key);
+        document.getElementById("eminence-empty").hidden = true;
+      } else {
+        document.getElementById("eminence-empty").hidden = false;
+      }
     }
 
     async function load() {
       const key = articleKey();
+      document.querySelectorAll(".tab").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          showTab(btn.getAttribute("data-tab"));
+        });
+      });
+
       try {
-        const controller = new AbortController();
-        const timer = setTimeout(function () { controller.abort(); }, 8000);
-        const res = await fetch(DATA_URL, { cache: "no-store", signal: controller.signal });
-        clearTimeout(timer);
-        if (!res.ok) throw new Error("HTTP " + res.status);
-        const list = await res.json();
-        const item = (list || []).find(function (row) { return row && row.date === key; });
-        if (!item) {
-          setStatus("No parent article for " + key + ".", true);
-          return;
-        }
-        showArticle(item, key);
+        await loadArticle(key);
       } catch (err) {
-        setStatus(
-          "Could not load 365-daily-parent-articles.json. Keep both files in the same folder and open with a local server: cd DailyNotes && python3 -m http.server 8765",
-          true
-        );
+        document.getElementById("article-empty").hidden = false;
+        setStatus("Could not load today’s parent article.", true);
+        console.error(err);
+      }
+
+      try {
+        await loadDayReading(key);
+      } catch (err) {
+        document.getElementById("fact-empty").hidden = false;
+        document.getElementById("teaser-empty").hidden = false;
+        document.getElementById("eminence-empty").hidden = false;
         console.error(err);
       }
     }
