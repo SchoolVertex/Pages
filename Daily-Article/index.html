@@ -274,7 +274,26 @@
 
   <script>
     const DATA_URL = "https://schoolvertex.github.io/Pages/Daily-Article/data.json";
-    const API_BASE = "https://api.schoolvertex.com/api";
+    const PROD_API = "https://api.schoolvertex.com/api";
+    const LOCAL_API = "http://localhost:5000/api";
+
+    function isLocalHost() {
+      const host = window.location.hostname;
+      return window.location.protocol === "file:"
+        || host === "localhost"
+        || host === "127.0.0.1"
+        || host === "";
+    }
+
+    function resolveApiBase() {
+      const fromQuery = new URLSearchParams(window.location.search).get("api");
+      if (fromQuery) {
+        return fromQuery.replace(/\/$/, "");
+      }
+      return isLocalHost() ? LOCAL_API : PROD_API;
+    }
+
+    const API_BASE = resolveApiBase();
 
     function pad(n) { return String(n).padStart(2, "0"); }
 
