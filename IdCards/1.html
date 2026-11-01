@@ -2,6 +2,7 @@
 <html lang="en" ng-app="myApp">
 
 <head>
+  <script src="../sv-api.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student ID Card</title>
@@ -143,7 +144,7 @@
             const classId = parseInt(query.classId || 0);
             const sectionId = parseInt(query.sectionId || 0);
 
-            const baseUrl = 'https://api.schoolvertex.com/';
+            const baseUrl = SvApi.apiRoot();
             if (userId) {
                 // Single mode
                 const url = `${baseUrl}api/Fee/GetIdCardInfo/1/${userId}`;

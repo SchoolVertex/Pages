@@ -2,6 +2,7 @@
 <html lang="en" ng-app="myApp">
 
 <head>
+  <script src="../sv-api.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Student ID Card - Design Previews</title>
@@ -2614,7 +2615,7 @@ angular.module('myApp', ['ngSanitize'])
   }
 
   const orgId = new URLSearchParams(location.search).get("orgid") || new URLSearchParams(location.search).get("orgId") || 1;
-  const apiUrl = `https://api.schoolvertex.com/api/Organisation/GetInfoForCertificate/${orgId}`;
+  const apiUrl = `${SvApi.apiBase()}/Organisation/GetInfoForCertificate/${orgId}`;
 
   $http.get(apiUrl).then(res => buildCards(res.data));
 

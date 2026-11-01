@@ -558,8 +558,8 @@
   <script>
     angular.module('timetableApp', [])
     .controller('TimetableController', function($scope, $http, $window) {
-      var TIMETABLE_API = 'https://api.schoolvertex.com/api/TimeTable/GetTimeTableView/';
-      var ENTITY_API = 'https://api.schoolvertex.com/api/Organisation/GetEntityFullInfo/';
+      var TIMETABLE_API = ReportShare.apiBase() + '/TimeTable/GetTimeTableView/';
+      var ENTITY_API = ReportShare.apiBase() + '/Organisation/GetEntityFullInfo/';
 
       var DAY_NAMES = {
         1: { fullName: 'Monday', shortName: 'Mon' },

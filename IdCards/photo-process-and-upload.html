@@ -392,8 +392,35 @@
 
     const OUTPUT_WIDTH = 600;
     const OUTPUT_HEIGHT = 800;
-    const API_URL = "https://api.schoolvertex.com/api/User/UpdateUserPhoto";
-    const UPLOAD_API_URL = "https://api.schoolvertex.com/api/GitUpload/UploadStudentPhoto";
+    function svApiBase() {
+      try {
+        var q = new URLSearchParams(location.search);
+        var a = q.get("apiBase") || q.get("api");
+        if (a) {
+          a = a.replace(/\/+$/, "");
+          return /\/api$/i.test(a) ? a : a + "/api";
+        }
+      } catch (e) {}
+      try {
+        var s = sessionStorage.getItem("sv_api_base");
+        if (s) {
+          s = s.replace(/\/+$/, "");
+          return /\/api$/i.test(s) ? s : s + "/api";
+        }
+      } catch (e) {}
+      var host = location.hostname;
+      try {
+        if (window.top && window.top !== window) host = window.top.location.hostname;
+      } catch (e) {}
+      if (/^(localhost|127\.0\.0\.1)$/i.test(host)) return "http://localhost:5000/api";
+      if (/^(dev\.schoolvertex\.com|dev-api\.schoolvertex\.com)$/i.test(host)) {
+        return "https://dev-api.schoolvertex.com/api";
+      }
+      return "https://api.schoolvertex.com/api";
+    }
+    const API_BASE = svApiBase();
+    const API_URL = API_BASE + "/User/UpdateUserPhoto";
+    const UPLOAD_API_URL = API_BASE + "/GitUpload/UploadStudentPhoto";
     const CDN_WAIT_SEC = 20;
     const SUPPORTED = new Set(["jpg", "jpeg", "png", "webp"]);
     const CDN_EXTENSIONS = [".jpg", ".JPG", ".jpeg", ".JPEG", ".png", ".PNG"];

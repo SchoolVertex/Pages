@@ -672,7 +672,7 @@
   <script>
     angular.module('attendanceApp', [])
     .controller('AttendanceController', function($scope, $http, $window) {
-      var API_BASE = 'https://api.schoolvertex.com/api';
+      var API_BASE = ReportShare.apiBase();
       var MONTH_NAMES = [
         'January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'

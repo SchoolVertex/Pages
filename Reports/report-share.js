@@ -23,6 +23,17 @@
     return value;
   }
 
+  function hostApiBase(hostname) {
+    var host = String(hostname || "").toLowerCase();
+    if (/^(localhost|127\.0\.0\.1)$/.test(host)) {
+      return "http://localhost:5000/api";
+    }
+    if (host === "dev.schoolvertex.com" || host === "dev-api.schoolvertex.com") {
+      return "https://dev-api.schoolvertex.com/api";
+    }
+    return "https://api.schoolvertex.com/api";
+  }
+
   function apiBase() {
     var q = queryParams();
     var fromQuery = normalizeApiBase(q.apiBase || q.api);
@@ -31,10 +42,16 @@
       var stored = normalizeApiBase(sessionStorage.getItem("sv_api_base") || "");
       if (stored) return stored;
     } catch (e) {}
-    if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(location.origin)) {
-      return "http://localhost:5000/api";
-    }
-    return "https://api.schoolvertex.com/api";
+    try {
+      if (global.top && global.top !== global && global.top.location) {
+        return hostApiBase(global.top.location.hostname);
+      }
+    } catch (e) {}
+    return hostApiBase(location.hostname);
+  }
+
+  function apiRoot() {
+    return apiBase().replace(/\/api$/i, "") + "/";
   }
 
   function token() {
@@ -143,10 +160,18 @@
     document.body.insertBefore(bar, document.body.firstChild);
   }
 
+  global.SvApi = {
+    apiBase: apiBase,
+    apiRoot: apiRoot
+  };
+  Object.defineProperty(global.SvApi, "API_BASE", { get: apiBase });
+  Object.defineProperty(global.SvApi, "API_ROOT", { get: apiRoot });
+
   global.ReportShare = {
     query: queryParams,
     token: token,
     apiBase: apiBase,
+    apiRoot: apiRoot,
     homeUrl: appHomeUrl,
     goHome: goHome,
     hasToken: function () {
@@ -157,6 +182,9 @@
 
   Object.defineProperty(global.ReportShare, "API_BASE", {
     get: apiBase
+  });
+  Object.defineProperty(global.ReportShare, "API_ROOT", {
+    get: apiRoot
   });
 
   if (document.readyState === "loading") {

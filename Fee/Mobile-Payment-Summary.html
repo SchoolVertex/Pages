@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html ng-app="feeApp">
 <head>
+  <script src="../sv-api.js"></script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>Student Fee Summary</title>
@@ -717,7 +718,7 @@
 <script>
 angular.module('feeApp', [])
 .controller('FeeController', function($scope, $http, $window) {
-    var API_BASE_URL = 'https://api.schoolvertex.com/';
+    var API_BASE_URL = SvApi.apiRoot();
     var DEFAULT_LOGO = 'https://via.placeholder.com/80?text=Logo';
     var feeItemNames = {};
 

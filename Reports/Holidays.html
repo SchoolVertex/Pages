@@ -518,7 +518,7 @@
   <script>
     angular.module('holidaysApp', [])
     .controller('HolidaysController', function($scope, $http) {
-      var baseUrl = 'https://api.schoolvertex.com/api';
+      var baseUrl = ReportShare.apiBase();
       var WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
       function getQueryParams() {

@@ -13,7 +13,7 @@ app.controller("myCtrl", function ($scope, $http, $window) {
     return params;
   }
 
-  const baseUrl = 'https://api.schoolvertex.com/api';
+  const baseUrl = SvApi.apiBase();
   // const baseUrl = "http://localhost:62786/api";
 
   const query = getQueryParams();

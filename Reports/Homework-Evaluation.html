@@ -775,7 +775,7 @@
       };
     })
     .controller('TeacherHomeworkController', function($scope, $http, $window, $sce) {
-      var API_BASE = 'https://api.schoolvertex.com/api';
+      var API_BASE = ReportShare.apiBase();
 
       $scope.STATUS = {
         Submitted: 1601,

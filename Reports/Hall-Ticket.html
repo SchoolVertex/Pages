@@ -553,7 +553,7 @@
   <script>
     angular.module('hallTicketApp', [])
     .controller('HallTicketController', function($scope, $http, $window) {
-      var API_URL = 'https://api.schoolvertex.com/api/TestTimeTable/GetStudentHallTicketData';
+      var API_URL = ReportShare.apiBase() + '/TestTimeTable/GetStudentHallTicketData';
 
       function getQueryParams() {
         var params = {};

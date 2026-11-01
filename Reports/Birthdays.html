@@ -559,7 +559,7 @@
   <script>
     angular.module('birthdaysApp', [])
     .controller('BirthdaysController', function($scope, $http, $q) {
-      var baseUrl = 'https://api.schoolvertex.com/api';
+      var baseUrl = ReportShare.apiBase();
       var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'];
 

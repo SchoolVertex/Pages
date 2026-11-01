@@ -2,6 +2,7 @@
 <html lang="en" ng-app="offerLetterApp">
 
 <head>
+  <script src="../../sv-api.js"></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Teacher Offer Letter</title>
@@ -454,7 +455,7 @@
             };
 
             $scope.loadSchoolData = function () {
-                const orgApiUrl = "https://api.schoolvertex.com/api/Organisation/GetInfoForCertificate/" + $scope.orgId;
+                const orgApiUrl = SvApi.apiBase() + "/Organisation/GetInfoForCertificate/" + $scope.orgId;
                 $http.get(orgApiUrl).then(function (response) {
                     if (response && response.data) {
                         $scope.school = response.data;
@@ -464,7 +465,7 @@
                     alert("Unable to load school data for ID " + $scope.orgId + ".");
                 });
 
-                const userApiUrl = "https://api.schoolvertex.com/api/User/GetPreviewById/" + $scope.userId;
+                const userApiUrl = SvApi.apiBase() + "/User/GetPreviewById/" + $scope.userId;
                 $http.get(userApiUrl).then(function (response) {
                     if (response && response.data) {
                         $scope.userInfo = response.data;

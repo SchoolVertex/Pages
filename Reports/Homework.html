@@ -1081,7 +1081,7 @@
       };
     })
     .controller('HomeworkDetailController', function($scope, $http, $window, $sce, $q) {
-      var API_BASE = 'https://api.schoolvertex.com/api';
+      var API_BASE = ReportShare.apiBase();
       var GROUPIN_URL = 'https://stag-saas-messagebot.tech-v2.groupin.app/api/v1/';
       var GROUPIN_KEY = '9fac14690fadaa1292760581f0b97fce';
 

@@ -415,7 +415,7 @@
   <script>
     angular.module('blogViewApp', [])
     .controller('BlogViewController', function($scope, $http, $q, $sce) {
-      var baseUrl = 'https://api.schoolvertex.com/api';
+      var baseUrl = ReportShare.apiBase();
 
       function getQueryParams() {
         var params = {};

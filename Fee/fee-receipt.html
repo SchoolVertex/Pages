@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" ng-app="feeReceiptApp">
 <head>
+  <script src="../sv-api.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Fee Receipt 2 — SchoolVertex</title>
@@ -953,7 +954,7 @@
 
       function FeeReceiptCtrl($http, $q, $window) {
         var vm = this;
-        var API_BASE = 'https://api.schoolvertex.com/api/Fee';
+        var API_BASE = SvApi.apiBase() + '/Fee';
 
         vm.feeId = null;
         vm.orgId = null;

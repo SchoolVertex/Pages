@@ -559,7 +559,7 @@
   <script>
     angular.module('eventsApp', [])
     .controller('EventsController', function($scope, $http) {
-      var baseUrl = 'https://api.schoolvertex.com/api';
+      var baseUrl = ReportShare.apiBase();
       var WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
       var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
