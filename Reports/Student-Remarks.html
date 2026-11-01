@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
 
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <script src="report-share.js"></script>
 
   <style>
     :root {
@@ -573,7 +574,7 @@
       var orgId = num(query.orgId || query.OrgId);
       var userId = num(query.userId || query.UserId);
 
-      if (!orgId || !userId) {
+      if (!ReportShare.hasToken() && (!orgId || !userId)) {
         $scope.errorMessage = 'orgId and userId are required. Example: ?orgId=1&userId=50602';
         return;
       }
@@ -639,6 +640,27 @@
       function load() {
         $scope.loading = true;
         $scope.errorMessage = '';
+
+        if (ReportShare.hasToken()) {
+          $http.get(ReportShare.url('StudentRemarks'))
+            .then(function(response) {
+              var data = (response.data && response.data.Data) || {};
+              $scope.orgInfo = data.OrgInfo || {};
+              $scope.student = data.Student || {};
+              $scope.rows = enrich(data.Rows || []);
+              refreshStats($scope.rows);
+              applyFilter();
+            })
+            .catch(function() {
+              $scope.rows = [];
+              $scope.visibleRows = [];
+              $scope.errorMessage = 'Unable to load student remarks.';
+            })
+            .finally(function() {
+              $scope.loading = false;
+            });
+          return;
+        }
 
         $http.get(baseUrl + '/Organisation/GetInfoForCertificate/' + orgId)
           .then(function(r) { $scope.orgInfo = r.data || {}; });
