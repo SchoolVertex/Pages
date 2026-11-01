@@ -1,7 +1,7 @@
 {
   "Admission": [],
   "UploadSource": "GIN",
-  "HideDailyAtriclePopup": true,
+  "HideDailyAtriclePopup": false,
   "HideDailyAtricleUserList": [],
   "UploadPermanentRepo": "Files",
   "UploadTemporaryRepo": "Uploads",
