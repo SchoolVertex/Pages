@@ -119,7 +119,10 @@
             <div class="tagline"  contenteditable="true">{{orgInfo.Description}}</div>
             <div class="address"  contenteditable="true">{{orgInfo.FullAddress}}</div>
         </div>
-        <div class="photo-box">PHOTO</div>
+        <div class="photo-box">
+            <img ng-src="{{admInfo.Image}}" ng-if="admInfo.Image" style="width:100%;height:100%;object-fit:cover;">
+            <span ng-if="!admInfo.Image">PHOTO</span>
+        </div>
     </div>
 
     <div class="main-title">ADMISSION FORM</div>
