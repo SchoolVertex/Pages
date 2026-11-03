@@ -1,6 +1,7 @@
 {
   "Admission": [],
   "UploadSource": "GIN",
+  "ReportsGitBranch": "secure-pages",
   "HideDailyAtriclePopup": false,
   "HideDailyAtricleUserList": [],
   "UploadPermanentRepo": "Files",
