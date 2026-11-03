@@ -596,13 +596,13 @@
       $scope.visibleRows = [];
       $scope.stats = { upcoming: 0, today: 0, nextName: '-' };
 
-      var query = getQueryParams();
+      var query = ReportShare.expandCompactId(getQueryParams(), ['entityId', 'entityTypeId', 'orgId']);
       var entityId = num(query.entityId || query.EntityId);
       var entityTypeId = num(query.entityTypeId || query.EntityTypeId);
       var orgId = num(query.orgId || query.OrgId);
 
       if (!entityId || !entityTypeId) {
-        $scope.errorMessage = 'entityId and entityTypeId are required. Example: ?entityTypeId=119&entityId=274';
+        $scope.errorMessage = 'entityId and entityTypeId are required. Example: ?entityTypeId=119&entityId=274 or ?Id=274-119';
         return;
       }
 

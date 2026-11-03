@@ -1134,7 +1134,9 @@
         weakSubject: '-'
       };
 
-      var query = getQueryParams();
+      var query = ReportShare.expandCompactId(getQueryParams(), [
+        'orgId', 'userId', 'yearId', 'entityId', 'entityTypeId'
+      ]);
       var orgId = num(query.orgId || query.OrgId);
       var userId = num(query.userId || query.UserId);
       var entityId = num(query.entityId || query.EntityId);
@@ -1142,7 +1144,7 @@
       var yearId = num(query.yearId || query.YearId);
 
       if (!ReportShare.hasToken() && (!orgId || !userId || !yearId)) {
-        $scope.errorMessage = 'orgId, userId and yearId are required. Example: ?orgId=1&userId=50602&entityId=274&entityTypeId=119&yearId=9';
+        $scope.errorMessage = 'orgId, userId and yearId are required. Example: ?orgId=1&userId=50602&yearId=9 or ?Id=1-50602-9-274-119';
         return;
       }
 

@@ -845,7 +845,7 @@ angular.module('feeApp', [])
     }
 
     function readFiltersFromUrl() {
-        var queryParams = getQueryParams();
+        var queryParams = ReportShare.expandCompactId(getQueryParams(), ['schoolId', 'userId', 'yearId']);
 
         return {
             schoolId: parseQueryNumber(queryParams.schoolId),
@@ -879,7 +879,7 @@ angular.module('feeApp', [])
         $scope.filters = readFiltersFromUrl();
 
         if (!ReportShare.hasToken() && ($scope.filters.schoolId === null || $scope.filters.userId === null || $scope.filters.yearId === null)) {
-            $scope.errorMessage = 'School ID, User ID, and Year ID are required in the URL. Example: ?schoolId=1&userId=6583&yearId=8';
+            $scope.errorMessage = 'School ID, User ID, and Year ID are required in the URL. Example: ?schoolId=1&userId=6583&yearId=8 or ?Id=1-6583-8';
             return;
         }
 

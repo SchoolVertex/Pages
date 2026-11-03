@@ -1807,12 +1807,12 @@
       });
 
       $scope.loadHomework = function() {
-        var query = getQueryParams();
+        var query = ReportShare.expandCompactId(getQueryParams(), ['HomeworkId', 'userId']);
         $scope.homeworkId = parseId(query.HomeworkId || query.homeworkId || query.id);
         $scope.userId = parseId(query.userId || query.UserId);
 
         if (!ReportShare.hasToken() && ($scope.homeworkId === null || $scope.userId === null)) {
-          $scope.errorMessage = 'HomeworkId and userId are required. Example: ?HomeworkId=83036&userId=1234';
+          $scope.errorMessage = 'HomeworkId and userId are required. Example: ?HomeworkId=83036&userId=1234 or ?Id=83036-1234';
           return;
         }
 

@@ -1007,12 +1007,12 @@
       };
 
       $scope.loadData = function() {
-        var query = getQueryParams();
+        var query = ReportShare.expandCompactId(getQueryParams(), ['HomeworkId', 'UserId']);
         $scope.homeworkId = parseId(query.HomeworkId || query.homeworkId || query.assignmentId || query.id);
         $scope.userId = parseId(query.UserId || query.userId);
 
         if (!ReportShare.hasToken() && ($scope.homeworkId === null || $scope.userId === null)) {
-          $scope.errorMessage = 'HomeworkId and UserId are required. Example: ?HomeworkId=83037&UserId=1234';
+          $scope.errorMessage = 'HomeworkId and UserId are required. Example: ?HomeworkId=83037&UserId=1234 or ?Id=83037-1234';
           return;
         }
 

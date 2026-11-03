@@ -12,6 +12,47 @@
     return params;
   }
 
+  function hasOwnNonEmpty(obj, key) {
+    return !!(obj && obj[key] != null && String(obj[key]).trim() !== "");
+  }
+
+  /**
+   * AISensy / WhatsApp buttons allow one query param.
+   * ?Id=userId-orgId (hyphen-separated, same order as the named keys).
+   * Existing named params still win when present.
+   */
+  function expandCompactId(query, keys) {
+    var out = {};
+    var src = query || {};
+    Object.keys(src).forEach(function (k) {
+      out[k] = src[k];
+    });
+    keys = keys || [];
+    if (!keys.length) return out;
+
+    var compact = hasOwnNonEmpty(out, "Id")
+      ? out.Id
+      : hasOwnNonEmpty(out, "id")
+        ? out.id
+        : "";
+    if (!compact) return out;
+
+    var parts = String(compact).split("-");
+    if (keys.length > 1 && parts.length < 2) {
+      if (!hasOwnNonEmpty(out, keys[0])) {
+        out[keys[0]] = parts[0];
+      }
+      return out;
+    }
+
+    for (var i = 0; i < keys.length && i < parts.length; i++) {
+      if (!hasOwnNonEmpty(out, keys[i])) {
+        out[keys[i]] = parts[i];
+      }
+    }
+    return out;
+  }
+
   function normalizeApiBase(url) {
     var value = String(url || "").trim();
     if (!value) return "";
@@ -169,6 +210,7 @@
 
   global.ReportShare = {
     query: queryParams,
+    expandCompactId: expandCompactId,
     token: token,
     apiBase: apiBase,
     apiRoot: apiRoot,

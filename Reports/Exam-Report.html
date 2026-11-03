@@ -601,7 +601,7 @@
       }
 
       var baseUrl = ReportShare.apiBase();
-      var query = getQueryParams();
+      var query = ReportShare.expandCompactId(getQueryParams(), ['orgId', 'examId', 'userId']);
 
       $scope.orgInfo = {};
       $scope.student = {};
@@ -624,18 +624,12 @@
             $scope.reportInfo = [];
           });
       } else {
-      if (!query.id) {
-        $scope.errorMessage = 'Report ID is required in the URL. Example: ?id=orgId-examId-userId';
-        return;
-      }
-
-      var values = query.id.split('-');
-      var orgId = values[0];
-      var examId = values[1];
-      var userId = values[2];
+      var orgId = query.orgId || query.OrgId;
+      var examId = query.examId || query.ExamId || query.testId || query.TestId;
+      var userId = query.userId || query.UserId;
 
       if (!orgId || !examId || !userId) {
-        $scope.errorMessage = 'Invalid report ID format. Expected: orgId-examId-userId';
+        $scope.errorMessage = 'Report ID is required in the URL. Example: ?Id=orgId-examId-userId';
         return;
       }
 

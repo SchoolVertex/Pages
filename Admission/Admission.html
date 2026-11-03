@@ -125,7 +125,7 @@
     <div class="main-title">ADMISSION FORM</div>
 
     <div class="row">
-        <div class="field"><span class="label">Application Form No.:</span><span class="value-box"  contenteditable="true">{{admInfo.AdmisssionId}}</span></div>
+        <div class="field"><span class="label">Application Form No.:</span><span class="value-box"  contenteditable="true">{{admInfo.AdmisssionId || admInfo.AdmissionNumber || admInfo.ApplicationNumber}}</span></div>
         <div class="field">
             <span class="label">Date of Admission:</span>
             <span class="value-box"  contenteditable="true">{{admInfo.CreatedDate | date:'dd-MM-yyyy'}}</span>
@@ -170,7 +170,7 @@
             <div class="field"><span class="label">Sub caste (BC-A/B/C/D/E):</span><span class="value-box"  contenteditable="true">{{admInfo.SubCaste}}</span></div>
         </div>
 
-        <div class="field" style="margin:10px 0;"><span class="label">Name of the School Last Studied:</span><span class="value-box"  contenteditable="true"></span></div>
+        <div class="field" style="margin:10px 0;"><span class="label">Name of the School Last Studied:</span><span class="value-box"  contenteditable="true">{{admInfo.PrevSchool}}</span></div>
         
         <div class="row">
             <div class="field" style="flex:2"><span class="label">Last Class Attended:</span><span class="value-box"  contenteditable="true"></span></div>
@@ -292,8 +292,7 @@
     </div>
 </div>
 
- <script src="https://schoolVertex.github.io/Pages/Admission/admission.js"></script>
-   <!-- <script src="./admission.js"></script> -->
+ <script src="./admission.js"></script>
 </body>
 
 </body>

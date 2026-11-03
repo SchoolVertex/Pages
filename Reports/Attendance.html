@@ -883,12 +883,12 @@
       };
 
       $scope.loadReport = function() {
-        var query = getQueryParams();
+        var query = ReportShare.expandCompactId(getQueryParams(), ['UserId', 'OrgId']);
         $scope.userId = parseId(query.StudentId || query.studentId || query.UserId || query.userId);
         $scope.orgId = parseId(query.OrgId || query.orgId || query.SchoolId || query.schoolId);
 
         if (!ReportShare.hasToken() && ($scope.userId === null || $scope.orgId === null)) {
-          $scope.errorMessage = 'StudentId/UserId and OrgId/SchoolId are required. Example: ?StudentId=50602&OrgId=1';
+          $scope.errorMessage = 'StudentId/UserId and OrgId/SchoolId are required. Example: ?StudentId=50602&OrgId=1 or ?Id=50602-1';
           return;
         }
 

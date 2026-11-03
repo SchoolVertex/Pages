@@ -690,7 +690,7 @@
           });
       }
 
-      var query = getQueryParams();
+      var query = ReportShare.expandCompactId(getQueryParams(), ['EntityId', 'EntityTypeId']);
       var entityTypeId = parseNumber(query.EntityTypeId || query.entityTypeId);
       var entityId = parseNumber(query.EntityId || query.entityId);
 
@@ -721,7 +721,7 @@
 
       $scope.loadTimetable = function() {
         if (entityTypeId === null || entityId === null) {
-          $scope.errorMessage = 'EntityTypeId and EntityId are required in the URL. Example: ?EntityTypeId=119&EntityId=274';
+          $scope.errorMessage = 'EntityTypeId and EntityId are required in the URL. Example: ?EntityTypeId=119&EntityId=274 or ?Id=274-119';
           return;
         }
 

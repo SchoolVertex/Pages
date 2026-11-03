@@ -636,11 +636,11 @@
       $scope.visibleRows = [];
       $scope.stats = { today: 0, students: 0, staff: 0 };
 
-      var query = getQueryParams();
-      var orgId = num(query.orgId || query.OrgId);
+      var query = ReportShare.expandCompactId(getQueryParams(), ['orgId']);
+      var orgId = num(query.orgId || query.OrgId || query.Id || query.id);
 
       if (!orgId) {
-        $scope.errorMessage = 'orgId is required. Example: ?orgId=1';
+        $scope.errorMessage = 'orgId is required. Example: ?orgId=1 or ?Id=1';
         return;
       }
 

@@ -818,7 +818,7 @@
       };
 
       $scope.loadReport = function() {
-        var query = getQueryParams();
+        var query = ReportShare.expandCompactId(getQueryParams(), ['UserId', 'OrgId']);
         $scope.userId = parseId(query.StudentId || query.studentId || query.UserId || query.userId);
         $scope.orgId = parseId(query.OrgId || query.orgId || query.SchoolId || query.schoolId);
 

@@ -555,12 +555,12 @@
       $scope.visibleRows = [];
       $scope.stats = { upcoming: 0, today: 0, nextName: '-' };
 
-      var query = getQueryParams();
+      var query = ReportShare.expandCompactId(getQueryParams(), ['orgId', 'yearId']);
       var orgId = num(query.orgId || query.OrgId);
       var yearId = num(query.yearId || query.YearId);
 
       if (!orgId || !yearId) {
-        $scope.errorMessage = 'orgId and yearId are required. Example: ?orgId=1&yearId=9';
+        $scope.errorMessage = 'orgId and yearId are required. Example: ?orgId=1&yearId=9 or ?Id=1-9';
         return;
       }
 

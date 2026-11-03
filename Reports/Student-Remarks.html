@@ -570,12 +570,12 @@
       $scope.visibleRows = [];
       $scope.stats = { all: 0, concern: 0, health: 0, parent: 0 };
 
-      var query = getQueryParams();
+      var query = ReportShare.expandCompactId(getQueryParams(), ['orgId', 'userId']);
       var orgId = num(query.orgId || query.OrgId);
       var userId = num(query.userId || query.UserId);
 
       if (!ReportShare.hasToken() && (!orgId || !userId)) {
-        $scope.errorMessage = 'orgId and userId are required. Example: ?orgId=1&userId=50602';
+        $scope.errorMessage = 'orgId and userId are required. Example: ?orgId=1&userId=50602 or ?Id=1-50602';
         return;
       }
 

@@ -582,14 +582,16 @@
       $scope.visibleGroups = [];
       $scope.stats = { upcoming: 0, past: 0, totalSubjects: 0, nextExam: '-' };
 
-      var query = getQueryParams();
+      var query = ReportShare.expandCompactId(getQueryParams(), [
+        'orgId', 'entityId', 'entityTypeId', 'yearId'
+      ]);
       var orgId = num(query.orgId || query.OrgId);
       var entityId = num(query.entityId || query.EntityId);
       var entityTypeId = num(query.entityTypeId || query.EntityTypeId);
       var yearId = num(query.yearId || query.YearId);
 
       if (!orgId || !entityId || !entityTypeId || !yearId) {
-        $scope.errorMessage = 'orgId, entityId, entityTypeId and yearId are required. Example: ?orgId=1&entityId=274&entityTypeId=119&yearId=9';
+        $scope.errorMessage = 'orgId, entityId, entityTypeId and yearId are required. Example: ?orgId=1&entityId=274&entityTypeId=119&yearId=9 or ?Id=1-274-119-9';
         return;
       }
 
