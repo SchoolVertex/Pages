@@ -1,0 +1,72 @@
+
+name: Deploy School Vertex Pages
+
+on:
+  push:
+    branches:
+      - main
+      - secure-pages
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Main Branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: production
+
+      - name: Checkout Secure Pages Branch
+        uses: actions/checkout@v4
+        with:
+          ref: secure-pages
+          path: testing
+
+      - name: Prepare Deployment
+        run: |
+          mkdir -p _site
+
+          # Production files
+          rsync -av \
+            --exclude='.git' \
+            --exclude='.github' \
+            production/ _site/
+
+          # Testing files under secure-pages path
+          mkdir -p _site/secure-pages
+
+          rsync -av \
+            --exclude='.git' \
+            --exclude='.github' \
+            testing/ _site/secure-pages/
+
+          touch _site/.nojekyll
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
