@@ -67,7 +67,7 @@
   function hostApiBase(hostname) {
     var host = String(hostname || "").toLowerCase();
     if (/^(localhost|127\.0\.0\.1)$/.test(host)) {
-      return "http://localhost:5000/api";
+      return "http://localhost:5050/api";
     }
     if (host === "dev.schoolvertex.com" || host === "dev-api.schoolvertex.com") {
       return "https://dev-api.schoolvertex.com/api";
