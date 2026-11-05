@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
 
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <script src="report-share.js"></script>
 
   <style>
     :root {
@@ -377,15 +378,54 @@
     .role-pill.staff { background: #f3eef8; color: #5b3d7a; }
 
     .poster-link {
-      display: inline-block;
-      margin-top: 2px;
-      font-size: 0.68rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      padding: 7px 12px;
+      border-radius: 8px;
+      font-size: 0.74rem;
       font-weight: 700;
-      color: var(--brand);
+      letter-spacing: 0.01em;
+      color: #fff;
+      background: var(--brand);
+      border: 1px solid var(--brand);
       text-decoration: none;
+      box-shadow: 0 2px 8px rgba(11, 79, 108, 0.2);
+      white-space: nowrap;
+      line-height: 1.2;
     }
 
-    .poster-link:hover { text-decoration: underline; }
+    .poster-link::before {
+      content: "";
+      width: 14px;
+      height: 14px;
+      flex: 0 0 auto;
+      background: currentColor;
+      -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42 9.3-9.29H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z'/%3E%3C/svg%3E") center / contain no-repeat;
+      mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='black' d='M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42 9.3-9.29H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z'/%3E%3C/svg%3E") center / contain no-repeat;
+    }
+
+    .poster-link:hover,
+    .poster-link:focus-visible {
+      background: var(--brand-deep);
+      border-color: var(--brand-deep);
+      color: #fff;
+      text-decoration: none;
+      outline: none;
+    }
+
+    .bday-card.is-today .poster-link {
+      background: var(--pass);
+      border-color: var(--pass);
+      box-shadow: 0 2px 8px rgba(27, 122, 74, 0.22);
+    }
+
+    .bday-card.is-today .poster-link:hover,
+    .bday-card.is-today .poster-link:focus-visible {
+      background: #155f3a;
+      border-color: #155f3a;
+    }
 
     .empty-state {
       text-align: center;
@@ -558,7 +598,7 @@
   <script>
     angular.module('birthdaysApp', [])
     .controller('BirthdaysController', function($scope, $http, $q) {
-      var baseUrl = 'https://api.schoolvertex.com/api';
+      var baseUrl = ReportShare.apiBase();
       var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -596,11 +636,11 @@
       $scope.visibleRows = [];
       $scope.stats = { today: 0, students: 0, staff: 0 };
 
-      var query = getQueryParams();
-      var orgId = num(query.orgId || query.OrgId);
+      var query = ReportShare.expandCompactId(getQueryParams(), ['orgId']);
+      var orgId = num(query.orgId || query.OrgId || query.Id || query.id);
 
       if (!orgId) {
-        $scope.errorMessage = 'orgId is required. Example: ?orgId=1';
+        $scope.errorMessage = 'orgId is required. Example: ?orgId=1 or ?Id=1';
         return;
       }
 

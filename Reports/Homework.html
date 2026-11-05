@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <script src="report-share.js"></script>
 
   <style>
     :root {
@@ -1080,7 +1081,7 @@
       };
     })
     .controller('HomeworkDetailController', function($scope, $http, $window, $sce, $q) {
-      var API_BASE = 'https://api.schoolvertex.com/api';
+      var API_BASE = ReportShare.apiBase();
       var GROUPIN_URL = 'https://stag-saas-messagebot.tech-v2.groupin.app/api/v1/';
       var GROUPIN_KEY = '9fac14690fadaa1292760581f0b97fce';
 
@@ -1744,7 +1745,10 @@
         $scope.errorMessage = '';
         $scope.successMessage = '';
 
-        $http.get(API_BASE + '/Assignment/DeleteSubmission/' + encodeURIComponent(submissionId))
+        var deleteReq = ReportShare.hasToken()
+          ? $http.get(ReportShare.url('DeleteHomeworkSubmission') + '&submissionId=' + encodeURIComponent(submissionId))
+          : $http.get(API_BASE + '/Assignment/DeleteSubmission/' + encodeURIComponent(submissionId));
+        deleteReq
           .then(function() {
             $scope.successMessage = 'Submission deleted. You can submit again.';
             $scope.submitForm.description = '';
@@ -1803,12 +1807,12 @@
       });
 
       $scope.loadHomework = function() {
-        var query = getQueryParams();
+        var query = ReportShare.expandCompactId(getQueryParams(), ['HomeworkId', 'userId']);
         $scope.homeworkId = parseId(query.HomeworkId || query.homeworkId || query.id);
         $scope.userId = parseId(query.userId || query.UserId);
 
-        if ($scope.homeworkId === null || $scope.userId === null) {
-          $scope.errorMessage = 'HomeworkId and userId are required. Example: ?HomeworkId=83036&userId=1234';
+        if (!ReportShare.hasToken() && ($scope.homeworkId === null || $scope.userId === null)) {
+          $scope.errorMessage = 'HomeworkId and userId are required. Example: ?HomeworkId=83036&userId=1234 or ?Id=83036-1234';
           return;
         }
 
@@ -1816,9 +1820,19 @@
         $scope.errorMessage = '';
         $scope.successMessage = '';
 
-        $http.get(API_BASE + '/Assignment/GetByIdView/' + encodeURIComponent($scope.homeworkId) + '/' + encodeURIComponent($scope.userId))
+        var request = ReportShare.hasToken()
+          ? $http.get(ReportShare.url('Homework'))
+          : $http.get(API_BASE + '/Assignment/GetByIdView/' + encodeURIComponent($scope.homeworkId) + '/' + encodeURIComponent($scope.userId));
+        request
           .then(function(response) {
-            $scope.homework = response.data || null;
+            var body = response.data || null;
+            if (body && body.Data) {
+              $scope.userId = body.UserId || $scope.userId;
+              $scope.homeworkId = body.AssignmentId || $scope.homeworkId;
+              $scope.homework = body.Data;
+            } else {
+              $scope.homework = body;
+            }
             if (!$scope.homework) {
               $scope.errorMessage = 'Homework not found.';
             }
@@ -1864,7 +1878,9 @@
               ImageList: imageUrls || []
             };
 
-            return $http.post(API_BASE + '/Assignment/AddSubmission', payload);
+            return ReportShare.hasToken()
+              ? $http.post(ReportShare.url('AddHomeworkSubmission'), payload)
+              : $http.post(API_BASE + '/Assignment/AddSubmission', payload);
           })
           .then(function() {
             $scope.successMessage = 'Homework submitted successfully.';

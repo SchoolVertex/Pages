@@ -1,5 +1,5 @@
 window.SVCert = {
-  apiBase: "https://api.schoolvertex.com/api",
+  get apiBase() { return (typeof SvApi !== "undefined" && SvApi.apiBase()) || "https://api.schoolvertex.com/api"; },
 
   getQueryParams: function () {
     var params = {};

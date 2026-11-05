@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
 
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <script src="report-share.js"></script>
 
   <style>
     :root {
@@ -552,7 +553,7 @@
   <script>
     angular.module('hallTicketApp', [])
     .controller('HallTicketController', function($scope, $http, $window) {
-      var API_URL = 'https://api.schoolvertex.com/api/TestTimeTable/GetStudentHallTicketData';
+      var API_URL = ReportShare.apiBase() + '/TestTimeTable/GetStudentHallTicketData';
 
       function getQueryParams() {
         var params = {};
@@ -593,7 +594,9 @@
         return userList[0];
       }
 
-      var query = getQueryParams();
+      var query = ReportShare.expandCompactId(getQueryParams(), [
+        'OrgId', 'TestId', 'BatchId', 'SectionId', 'UserId'
+      ]);
 
       $scope.filters = {
         OrgId: parseNumber(query.OrgId || query.orgId, null),
@@ -646,22 +649,28 @@
       };
 
       $scope.loadHallTicket = function() {
-        if ($scope.filters.OrgId === null || $scope.filters.TestId === null || $scope.filters.BatchId === null || $scope.filters.UserId === null) {
-          $scope.errorMessage = 'OrgId, TestId, BatchId, and UserId are required in the URL. Example: ?OrgId=53&TestId=2666&BatchId=667&SectionId=0&UserId=1234';
+        if (!ReportShare.hasToken() && ($scope.filters.OrgId === null || $scope.filters.TestId === null || $scope.filters.BatchId === null || $scope.filters.UserId === null)) {
+          $scope.errorMessage = 'OrgId, TestId, BatchId, and UserId are required in the URL. Example: ?OrgId=53&TestId=2666&BatchId=667&SectionId=0&UserId=1234 or ?Id=53-2666-667-0-1234';
           return;
         }
 
         $scope.isLoading = true;
         $scope.errorMessage = '';
 
-        $http.post(API_URL, {
-          OrgId: $scope.filters.OrgId,
-          TestId: $scope.filters.TestId,
-          BatchId: $scope.filters.BatchId,
-          SectionId: $scope.filters.SectionId,
-          UserId: $scope.filters.UserId
-        }).then(function(response) {
+        var request = ReportShare.hasToken()
+          ? $http.get(ReportShare.url('HallTicket'))
+          : $http.post(API_URL, {
+              OrgId: $scope.filters.OrgId,
+              TestId: $scope.filters.TestId,
+              BatchId: $scope.filters.BatchId,
+              SectionId: $scope.filters.SectionId,
+              UserId: $scope.filters.UserId
+            });
+        request.then(function(response) {
           var data = response.data || {};
+          if (data.Data) {
+            data = data.Data;
+          }
 
           $scope.examName = data.ExamName || '';
           $scope.school = data.SchoolInfo || {};

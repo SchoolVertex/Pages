@@ -2,6 +2,7 @@
 <html lang="en" ng-app="myApp">
 
 <head>
+  <script src="../sv-api.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Transfer Certificate - A4 Print Optimized</title>
@@ -562,7 +563,7 @@
                 return params;
             }
 
-            const baseUrl = 'https://api.schoolvertex.com/api';
+            const baseUrl = SvApi.apiBase();
             const query = getQueryParams();
             const orgId = query.orgId;
             const userId = query.userId;

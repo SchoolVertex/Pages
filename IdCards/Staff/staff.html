@@ -2,6 +2,7 @@
 <html lang="en" ng-app="myApp">
 
 <head>
+  <script src="../../sv-api.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Staff ID Card</title>
@@ -544,7 +545,7 @@
 
   <script>
     var app = angular.module("myApp", []);
-    var baseApiUrl = "https://api.schoolvertex.com/api";
+    var baseApiUrl = SvApi.apiBase();
     var designBaseUrl = "https://cdn.jsdelivr.net/gh/gitcdnsv/svcdn/IdCardBg/";
     var settingsUrl = "https://schoolvertex.github.io/Pages/IdCards/Staff/staff-settings.json";
 

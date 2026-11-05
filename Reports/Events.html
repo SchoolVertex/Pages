@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
 
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <script src="report-share.js"></script>
 
   <style>
     :root {
@@ -558,7 +559,7 @@
   <script>
     angular.module('eventsApp', [])
     .controller('EventsController', function($scope, $http) {
-      var baseUrl = 'https://api.schoolvertex.com/api';
+      var baseUrl = ReportShare.apiBase();
       var WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
       var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -595,13 +596,13 @@
       $scope.visibleRows = [];
       $scope.stats = { upcoming: 0, today: 0, nextName: '-' };
 
-      var query = getQueryParams();
+      var query = ReportShare.expandCompactId(getQueryParams(), ['entityId', 'entityTypeId', 'orgId']);
       var entityId = num(query.entityId || query.EntityId);
       var entityTypeId = num(query.entityTypeId || query.EntityTypeId);
       var orgId = num(query.orgId || query.OrgId);
 
       if (!entityId || !entityTypeId) {
-        $scope.errorMessage = 'entityId and entityTypeId are required. Example: ?entityTypeId=119&entityId=274';
+        $scope.errorMessage = 'entityId and entityTypeId are required. Example: ?entityTypeId=119&entityId=274 or ?Id=274-119';
         return;
       }
 

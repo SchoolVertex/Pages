@@ -197,6 +197,7 @@
       .wrap { padding-top: 14px; }
     }
   </style>
+  <script src="../Reports/report-share.js"></script>
 </head>
 <body>
   <div class="wrap">
@@ -286,9 +287,29 @@
     }
 
     function resolveApiBase() {
-      const fromQuery = new URLSearchParams(window.location.search).get("api");
+      const params = new URLSearchParams(window.location.search);
+      const fromQuery = params.get("apiBase") || params.get("api");
       if (fromQuery) {
-        return fromQuery.replace(/\/$/, "");
+        let value = fromQuery.replace(/\/+$/, "");
+        if (!/\/api$/i.test(value)) value += "/api";
+        return value;
+      }
+      try {
+        const stored = sessionStorage.getItem("sv_api_base");
+        if (stored) {
+          let value = stored.replace(/\/+$/, "");
+          if (!/\/api$/i.test(value)) value += "/api";
+          return value;
+        }
+      } catch (e) {}
+      let host = window.location.hostname;
+      try {
+        if (window.top && window.top !== window) {
+          host = window.top.location.hostname;
+        }
+      } catch (e) {}
+      if (host === "dev.schoolvertex.com" || host === "dev-api.schoolvertex.com") {
+        return "https://dev-api.schoolvertex.com/api";
       }
       return isLocalHost() ? LOCAL_API : PROD_API;
     }

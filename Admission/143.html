@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" ng-app="myApp">
 <head>
+  <script src="../sv-api.js"></script>
 <meta charset="UTF-8">
 <title>Admission Form</title>
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
@@ -118,13 +119,16 @@
             <div class="tagline">{{orgInfo.Description}}</div>
             <div class="address">{{orgInfo.FullAddress}}</div>
         </div>
-        <div class="photo-box">PHOTO</div>
+        <div class="photo-box">
+            <img ng-src="{{admInfo.Image}}" ng-if="admInfo.Image" style="width:100%;height:100%;object-fit:cover;">
+            <span ng-if="!admInfo.Image">PHOTO</span>
+        </div>
     </div>
 
     <div class="main-title">ADMISSION FORM</div>
 
     <div class="row">
-        <div class="field"><span class="label">Application Form No.:</span><span class="value-box">{{admInfo.AdmisssionId}}</span></div>
+        <div class="field"><span class="label">Application Form No.:</span><span class="value-box">{{admInfo.AdmisssionId || admInfo.AdmissionNumber || admInfo.ApplicationNumber}}</span></div>
         <div class="field">
             <span class="label">Date of Admission:</span>
             <span class="value-box">{{admInfo.CreatedDate | date:'dd-MM-yyyy'}}</span>
@@ -169,7 +173,7 @@
             <div class="field"><span class="label">Sub caste (BC-A/B/C/D/E):</span><span class="value-box">{{admInfo.SubCaste}}</span></div>
         </div>
 
-        <div class="field" style="margin:10px 0;"><span class="label">Name of the School Last Studied:</span><span class="value-box"></span></div>
+        <div class="field" style="margin:10px 0;"><span class="label">Name of the School Last Studied:</span><span class="value-box">{{admInfo.PrevSchool}}</span></div>
         
         <div class="row">
             <div class="field" style="flex:2"><span class="label">Last Class Attended:</span><span class="value-box"></span></div>
@@ -276,8 +280,7 @@
     </div>
 </div>
 
- <script src="https://schoolVertex.github.io/Pages/Admission/admission.js"></script>
-   <!-- <script src="./admission.js"></script> -->
+ <script src="./admission.js"></script>
 </body>
 
 </body>

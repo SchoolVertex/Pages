@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
 
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <script src="report-share.js"></script>
 
   <style>
     :root {
@@ -557,8 +558,8 @@
   <script>
     angular.module('timetableApp', [])
     .controller('TimetableController', function($scope, $http, $window) {
-      var TIMETABLE_API = 'https://api.schoolvertex.com/api/TimeTable/GetTimeTableView/';
-      var ENTITY_API = 'https://api.schoolvertex.com/api/Organisation/GetEntityFullInfo/';
+      var TIMETABLE_API = ReportShare.apiBase() + '/TimeTable/GetTimeTableView/';
+      var ENTITY_API = ReportShare.apiBase() + '/Organisation/GetEntityFullInfo/';
 
       var DAY_NAMES = {
         1: { fullName: 'Monday', shortName: 'Mon' },
@@ -689,7 +690,7 @@
           });
       }
 
-      var query = getQueryParams();
+      var query = ReportShare.expandCompactId(getQueryParams(), ['EntityId', 'EntityTypeId']);
       var entityTypeId = parseNumber(query.EntityTypeId || query.entityTypeId);
       var entityId = parseNumber(query.EntityId || query.entityId);
 
@@ -720,7 +721,7 @@
 
       $scope.loadTimetable = function() {
         if (entityTypeId === null || entityId === null) {
-          $scope.errorMessage = 'EntityTypeId and EntityId are required in the URL. Example: ?EntityTypeId=119&EntityId=274';
+          $scope.errorMessage = 'EntityTypeId and EntityId are required in the URL. Example: ?EntityTypeId=119&EntityId=274 or ?Id=274-119';
           return;
         }
 

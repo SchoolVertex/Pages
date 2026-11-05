@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
 
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <script src="report-share.js"></script>
 
   <style>
     :root {
@@ -599,8 +600,8 @@
         return params;
       }
 
-      var baseUrl = 'https://api.schoolvertex.com/api';
-      var query = getQueryParams();
+      var baseUrl = ReportShare.apiBase();
+      var query = ReportShare.expandCompactId(getQueryParams(), ['orgId', 'examId', 'userId']);
 
       $scope.orgInfo = {};
       $scope.student = {};
@@ -609,18 +610,26 @@
       $scope.today = new Date();
       $scope.errorMessage = '';
 
-      if (!query.id) {
-        $scope.errorMessage = 'Report ID is required in the URL. Example: ?id=orgId-examId-userId';
-        return;
-      }
-
-      var values = query.id.split('-');
-      var orgId = values[0];
-      var examId = values[1];
-      var userId = values[2];
+      if (ReportShare.hasToken()) {
+        $http.get(ReportShare.url('ExamReport'))
+          .then(function(response) {
+            var data = (response.data && response.data.Data) || {};
+            $scope.orgInfo = data.OrgInfo || {};
+            $scope.testName = data.TestName || '';
+            $scope.student = data.Student || {};
+            $scope.reportInfo = data.ReportInfo || [];
+          })
+          .catch(function() {
+            $scope.errorMessage = 'Unable to load exam marks.';
+            $scope.reportInfo = [];
+          });
+      } else {
+      var orgId = query.orgId || query.OrgId;
+      var examId = query.examId || query.ExamId || query.testId || query.TestId;
+      var userId = query.userId || query.UserId;
 
       if (!orgId || !examId || !userId) {
-        $scope.errorMessage = 'Invalid report ID format. Expected: orgId-examId-userId';
+        $scope.errorMessage = 'Report ID is required in the URL. Example: ?Id=orgId-examId-userId';
         return;
       }
 
@@ -653,6 +662,7 @@
           $scope.errorMessage = 'Unable to load exam marks.';
           $scope.reportInfo = [];
         });
+      }
 
       $scope.getTotalMarks = function() {
         if (!$scope.reportInfo || !$scope.reportInfo.length) {

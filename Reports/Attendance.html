@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <script src="report-share.js"></script>
 
   <style>
     :root {
@@ -671,7 +672,7 @@
   <script>
     angular.module('attendanceApp', [])
     .controller('AttendanceController', function($scope, $http, $window) {
-      var API_BASE = 'https://api.schoolvertex.com/api';
+      var API_BASE = ReportShare.apiBase();
       var MONTH_NAMES = [
         'January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'
@@ -882,12 +883,12 @@
       };
 
       $scope.loadReport = function() {
-        var query = getQueryParams();
+        var query = ReportShare.expandCompactId(getQueryParams(), ['UserId', 'OrgId']);
         $scope.userId = parseId(query.StudentId || query.studentId || query.UserId || query.userId);
         $scope.orgId = parseId(query.OrgId || query.orgId || query.SchoolId || query.schoolId);
 
-        if ($scope.userId === null || $scope.orgId === null) {
-          $scope.errorMessage = 'StudentId/UserId and OrgId/SchoolId are required. Example: ?StudentId=50602&OrgId=1';
+        if (!ReportShare.hasToken() && ($scope.userId === null || $scope.orgId === null)) {
+          $scope.errorMessage = 'StudentId/UserId and OrgId/SchoolId are required. Example: ?StudentId=50602&OrgId=1 or ?Id=50602-1';
           return;
         }
 
@@ -896,13 +897,22 @@
         $scope.months = [];
         $scope.selected = null;
 
-        $http.get(
-          API_BASE + '/Attendance/GetMonthlyUserReportView/' +
-          encodeURIComponent($scope.userId) + '/' +
-          encodeURIComponent($scope.orgId)
-        )
+        var request = ReportShare.hasToken()
+          ? $http.get(ReportShare.url('Attendance'))
+          : $http.get(
+              API_BASE + '/Attendance/GetMonthlyUserReportView/' +
+              encodeURIComponent($scope.userId) + '/' +
+              encodeURIComponent($scope.orgId)
+            );
+        request
           .then(function(response) {
-            var rows = response.data || [];
+            var body = response.data || [];
+            if (body && body.Data) {
+              $scope.userId = body.UserId || $scope.userId;
+              $scope.orgId = body.OrgId || $scope.orgId;
+              body = body.Data;
+            }
+            var rows = body || [];
             if (!angular.isArray(rows)) rows = [];
 
             $scope.months = rows

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" ng-app="reportApp">
 <head>
+  <script src="../sv-api.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Exam Report Card</title>
@@ -599,7 +600,7 @@
         return params;
       }
 
-      var baseUrl = 'https://api.schoolvertex.com/api';
+      var baseUrl = SvApi.apiBase();
       var query = getQueryParams();
 
       $scope.orgInfo = {};

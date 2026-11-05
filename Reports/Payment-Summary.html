@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
 
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="report-share.js"></script>
 
     <style>
         :root {
@@ -808,7 +809,7 @@
 <script>
 angular.module('feeApp', [])
 .controller('FeeController', function($scope, $http, $window) {
-    var API_BASE_URL = 'https://api.schoolvertex.com/';
+    var API_BASE_URL = ReportShare.apiRoot();
     var DEFAULT_LOGO = 'https://via.placeholder.com/80?text=Logo';
     var feeItemNames = {};
 
@@ -844,7 +845,7 @@ angular.module('feeApp', [])
     }
 
     function readFiltersFromUrl() {
-        var queryParams = getQueryParams();
+        var queryParams = ReportShare.expandCompactId(getQueryParams(), ['schoolId', 'userId', 'yearId']);
 
         return {
             schoolId: parseQueryNumber(queryParams.schoolId),
@@ -877,13 +878,33 @@ angular.module('feeApp', [])
     $scope.loadFeeSummary = function() {
         $scope.filters = readFiltersFromUrl();
 
-        if ($scope.filters.schoolId === null || $scope.filters.userId === null || $scope.filters.yearId === null) {
-            $scope.errorMessage = 'School ID, User ID, and Year ID are required in the URL. Example: ?schoolId=1&userId=6583&yearId=8';
+        if (!ReportShare.hasToken() && ($scope.filters.schoolId === null || $scope.filters.userId === null || $scope.filters.yearId === null)) {
+            $scope.errorMessage = 'School ID, User ID, and Year ID are required in the URL. Example: ?schoolId=1&userId=6583&yearId=8 or ?Id=1-6583-8';
             return;
         }
 
         $scope.isLoading = true;
         $scope.errorMessage = '';
+
+        if (ReportShare.hasToken()) {
+            $http.get(ReportShare.url('PaymentSummary')).then(function(response) {
+                var data = (response.data && response.data.Data) || {};
+                setFeeHeads(data.FeeHeads || []);
+                setPayments(data.Payments || []);
+                setReceiptInfo(data.ReceiptInfo || {});
+            }).catch(function(error) {
+                $scope.errorMessage = buildErrorMessage(error);
+                $scope.feeHeads = [];
+                $scope.payments = [];
+                $scope.totalPaymentAmount = 0;
+                $scope.summary = resetSummary();
+                updateDisplaySummary();
+            }).finally(function() {
+                $scope.isLoading = false;
+                $scope.$applyAsync();
+            });
+            return;
+        }
 
         var feeSummaryUrl = API_BASE_URL + 'api/Fee/GetUserFeeItemSummary/' +
             encodeURIComponent($scope.filters.userId) + '/' +

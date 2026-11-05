@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" ng-app="excelApp">
 <head>
+  <script src="../sv-api.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Student Excel Upload (Single Batch/Section)</title>
@@ -417,7 +418,7 @@
 
         $scope.summary.log++;
 
-        return $http.post('https://api.schoolvertex.com/api/Account/SystemAdmission', student)
+        return $http.post(SvApi.apiBase() + '/Account/SystemAdmission', student)
           .then(function(response) {
             var studentId = response.data;
             student.Field3 = sheetName;
@@ -458,7 +459,7 @@
           UserParentInfoId: 112233
         };
 
-        return $http.post('https://api.schoolvertex.com/api/UserParentInfo/AddBySystem', parent)
+        return $http.post(SvApi.apiBase() + '/UserParentInfo/AddBySystem', parent)
           .then(function() {
             addRecordToList({ type: 'log', message: '- SUCCESS: Added ' + type + ' (' + name + ')' });
           })

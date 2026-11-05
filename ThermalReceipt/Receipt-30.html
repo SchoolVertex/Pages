@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html ng-app="feeReceiptApp" ng-controller="ReceiptController">
 <head>
+  <script src="../sv-api.js"></script>
   <meta charset="UTF-8">
   <title>Fee Receipt</title>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
@@ -83,8 +84,8 @@
       const feeId = query.feeId;
       const userId = query.userId;
 
-      const feeUrl = `https://api.schoolvertex.com/api/Fee/GetById/${feeId}`;
-      const receiptUrl = `https://api.schoolvertex.com/api/Fee/GetFeeReceiptInfo/30/${userId}`;
+      const feeUrl = `${SvApi.apiBase()}/Fee/GetById/${feeId}`;
+      const receiptUrl = `${SvApi.apiBase()}/Fee/GetFeeReceiptInfo/30/${userId}`;
 
       const paymentModes = [
         { Id: 901, Name: "Cash" },

@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
 
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <script src="report-share.js"></script>
 
   <style>
     :root {
@@ -451,7 +452,7 @@
       <header class="report-top">
         <div class="report-top-inner">
           <div class="brand-copy">
-            <h1>School Blogs</h1>
+            <h1>Blogs</h1>
             <p>Articles and updates shared for parents and students.</p>
           </div>
           <div class="doc-label">Blogs</div>
@@ -546,7 +547,7 @@
   <script>
     angular.module('blogsApp', [])
     .controller('BlogsController', function($scope, $http, $q, $sce) {
-      var baseUrl = 'https://api.schoolvertex.com/api';
+      var baseUrl = ReportShare.apiBase();
 
       function getQueryParams() {
         var params = {};

@@ -2,6 +2,7 @@
 <html lang="en" ng-app="admissionApp">
 
 <head>
+  <script src="../sv-api.js"></script>
   <meta charset="UTF-8">
   <title>Admission Inquiry Form</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -320,7 +321,7 @@ angular.module('admissionApp', [])
   }
 
   const query = getQueryParams();
-  const baseUrl = 'https://api.schoolvertex.com/api';
+  const baseUrl = SvApi.apiBase();
 
   $scope.classList = [];
   $scope.sectionList = [];

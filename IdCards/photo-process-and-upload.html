@@ -392,10 +392,35 @@
 
     const OUTPUT_WIDTH = 600;
     const OUTPUT_HEIGHT = 800;
-    const API_URL = "https://api.schoolvertex.com/api/User/UpdateUserPhoto";
-    const PAT_KEY_URL = "https://api.schoolvertex.com/api/GitUpload/GetPatKey";
-    const GITHUB_OWNER = "gitcdnsv";
-    const GITHUB_BRANCH = "main";
+    function svApiBase() {
+      try {
+        var q = new URLSearchParams(location.search);
+        var a = q.get("apiBase") || q.get("api");
+        if (a) {
+          a = a.replace(/\/+$/, "");
+          return /\/api$/i.test(a) ? a : a + "/api";
+        }
+      } catch (e) {}
+      try {
+        var s = sessionStorage.getItem("sv_api_base");
+        if (s) {
+          s = s.replace(/\/+$/, "");
+          return /\/api$/i.test(s) ? s : s + "/api";
+        }
+      } catch (e) {}
+      var host = location.hostname;
+      try {
+        if (window.top && window.top !== window) host = window.top.location.hostname;
+      } catch (e) {}
+      if (/^(localhost|127\.0\.0\.1)$/i.test(host)) return "http://localhost:5000/api";
+      if (/^(dev\.schoolvertex\.com|dev-api\.schoolvertex\.com)$/i.test(host)) {
+        return "https://dev-api.schoolvertex.com/api";
+      }
+      return "https://api.schoolvertex.com/api";
+    }
+    const API_BASE = svApiBase();
+    const API_URL = API_BASE + "/User/UpdateUserPhoto";
+    const UPLOAD_API_URL = API_BASE + "/GitUpload/UploadStudentPhoto";
     const CDN_WAIT_SEC = 20;
     const SUPPORTED = new Set(["jpg", "jpeg", "png", "webp"]);
     const CDN_EXTENSIONS = [".jpg", ".JPG", ".jpeg", ".JPEG", ".png", ".PNG"];
@@ -416,25 +441,36 @@
     let faceDetectorWarned = false;
     let faceBackend = null;            // "native" | "faceapi" | null
 
+    function pageAccessToken() {
+      const hash = new URLSearchParams(String(location.hash || "").replace(/^#/, ""));
+      const query = new URLSearchParams(location.search);
+      return (hash.get("access_token") || query.get("access_token") || "").trim();
+    }
+
+    function authHeaders(extra) {
+      const token = pageAccessToken();
+      const headers = Object.assign({ Accept: "application/json" }, extra || {});
+      if (token) {
+        headers.Authorization = "Bearer " + token;
+      }
+      return headers;
+    }
+
     function config() {
       const orgId = el("orgId").value.trim();
-      const owner = GITHUB_OWNER;
       const repo = el("githubRepo").value.trim();
       const resize = el("resizeImages").checked;
       const crop = el("cropImages").checked;
       return {
         orgId,
-        owner,
         repo,
-        branch: GITHUB_BRANCH,
-        token: "",
+        token: pageAccessToken(),
         cdnWait: CDN_WAIT_SEC,
         apiUrl: API_URL,
         jpegQuality: Math.min(1, Math.max(0.5, parseFloat(el("jpegQuality").value) || 0.95)),
         resize,
         crop,
         uploadAsIs: !resize && !crop,
-        cdnBase: `https://cdn.jsdelivr.net/gh/${owner}/${repo}/${orgId}`,
         githubOrgPath: orgId
       };
     }
@@ -821,55 +857,37 @@
       };
     }
 
-    function githubHeaders(token) {
-      return {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28"
-      };
-    }
-
-    function githubFileUrl(cfg, repoPath) {
-      const encoded = repoPath.split("/").map(encodeURIComponent).join("/");
-      return `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${encoded}`;
-    }
-
-    async function getExistingSha(cfg, repoPath) {
-      const url = `${githubFileUrl(cfg, repoPath)}?ref=${encodeURIComponent(cfg.branch)}`;
-      const res = await fetch(url, { headers: githubHeaders(cfg.token) });
-      if (res.status === 404) return null;
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`GitHub GET failed ${repoPath}: ${res.status} ${text}`);
-      }
-      const data = await res.json();
-      return data.sha || null;
-    }
-
-    async function uploadToGithub(cfg, fileName, blob) {
-      const repoPath = `${cfg.githubOrgPath}/${fileName}`;
-      const content = await blobToBase64(blob);
-      const sha = await getExistingSha(cfg, repoPath);
-      const payload = {
-        message: `Update student photo ${fileName} (org ${cfg.orgId})`,
-        content,
-        branch: cfg.branch
-      };
-      if (sha) payload.sha = sha;
-
-      const res = await fetch(githubFileUrl(cfg, repoPath), {
-        method: "PUT",
-        headers: {
-          ...githubHeaders(cfg.token),
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
+    async function uploadToApi(cfg, fileName, blob) {
+      const userId = fileName.replace(/\.[^.]+$/, "");
+      const ext = fileExt(fileName) || "jpg";
+      const form = new FormData();
+      form.append("file", blob, fileName);
+      const qs = new URLSearchParams({
+        id: userId,
+        folder: cfg.githubOrgPath,
+        repo: cfg.repo || "Uploads",
+        extension: ext
       });
-      if (res.status !== 200 && res.status !== 201) {
-        const text = await res.text();
-        throw new Error(`GitHub upload failed ${repoPath}: ${res.status} ${text}`);
+      const res = await fetch(UPLOAD_API_URL + "?" + qs.toString(), {
+        method: "POST",
+        headers: authHeaders(),
+        body: form
+      });
+      const text = await res.text();
+      if (!res.ok) {
+        throw new Error(`Upload API ${res.status}: ${text}`);
       }
-      return repoPath;
+      let parsed = {};
+      try {
+        parsed = JSON.parse(text);
+      } catch {
+        parsed = {};
+      }
+      const url = parsed.Url || parsed.url;
+      if (!url) {
+        throw new Error("Upload API did not return a URL.");
+      }
+      return url;
     }
 
     /** Probe CDN without CORS (fetch from file:// or cross-origin often fails). */
@@ -921,46 +939,10 @@
       return new Promise((r) => setTimeout(r, ms));
     }
 
-    function parsePatKeyResponse(raw) {
-      const text = String(raw || "").trim();
-      if (!text) return "";
-      try {
-        const parsed = JSON.parse(text);
-        if (typeof parsed === "string") return parsed.trim();
-        if (parsed && typeof parsed === "object") {
-          const candidate =
-            parsed.token ||
-            parsed.Token ||
-            parsed.pat ||
-            parsed.PatKey ||
-            parsed.key ||
-            parsed.Key;
-          if (candidate) return String(candidate).trim();
-        }
-      } catch {
-        /* plain text token */
-      }
-      return text.replace(/^["']|["']$/g, "").trim();
-    }
-
-    async function fetchGithubToken() {
-      const res = await fetch(PAT_KEY_URL, {
-        method: "GET",
-        headers: { Accept: "application/json, text/plain" }
-      });
-      const body = await res.text();
-      if (!res.ok) {
-        throw new Error(`GetPatKey failed ${res.status}: ${body}`);
-      }
-      const token = parsePatKeyResponse(body);
-      if (!token) throw new Error("GetPatKey returned an empty GitHub token.");
-      return token;
-    }
-
     async function updateUserPhoto(cfg, userId, cdnUrl) {
       const res = await fetch(cfg.apiUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({
           UserId: parseInt(userId, 10),
           Token: cdnUrl,
@@ -987,13 +969,14 @@
           );
         }
         if (!cfg.orgId) throw new Error("Org ID is required.");
-        if (!cfg.owner || !cfg.repo) throw new Error("GitHub owner/repo required.");
+        if (!cfg.repo) throw new Error("GitHub repo is required.");
         if (!selectedFiles.length) throw new Error("Select student photos first.");
+        if (!cfg.token) {
+          throw new Error("Open this page from School Vertex after login. A signed-in access token is required.");
+        }
 
         log("ID Card Photo Pipeline", "info");
-        log("Loading GitHub token from GetPatKey…", "info");
-        cfg.token = await fetchGithubToken();
-        log("GitHub token loaded.", "ok");
+        log("Using signed-in School Vertex token (GitHub PAT is not loaded in the browser).", "ok");
         log(`Org ID     : ${cfg.orgId}`, "info");
         if (cfg.uploadAsIs) {
           log("Mode       : upload as-is (no resize / crop / compress)", "info");
@@ -1001,8 +984,7 @@
           log(`Resize     : ${cfg.resize ? `${OUTPUT_WIDTH}x${OUTPUT_HEIGHT}` : "no"}`, "info");
           log(`Face crop  : ${cfg.crop ? "yes" : "no"}`, "info");
         }
-        log(`GitHub     : ${cfg.owner}/${cfg.repo}@${cfg.branch}`, "info");
-        log(`CDN base   : ${cfg.cdnBase}`, "info");
+        log(`Upload API : GitUpload/UploadStudentPhoto`, "info");
         log("", "info");
 
         // student IDs output
@@ -1050,8 +1032,8 @@
         log(`Processed OK : ${processed.length} | Failed : ${failedProcess}`, "info");
         if (!processed.length) throw new Error("No images were processed.");
 
-        // STEP 2 — GitHub upload
-        log(`\n=== STEP 2/3: Upload to GitHub (remote) ===`, "info");
+        // STEP 2 — authenticated API upload
+        log(`\n=== STEP 2/3: Upload via School Vertex API ===`, "info");
         log(`Folder : ${cfg.githubOrgPath}/`, "info");
         let okUp = 0;
         let failUp = 0;
@@ -1065,7 +1047,7 @@
             "info"
           );
           try {
-            await uploadToGithub(cfg, item.fileName, item.blob);
+            item.cdnUrl = await uploadToApi(cfg, item.fileName, item.blob);
             log(`  ✅ Uploaded ${item.fileName}`, "ok");
             okUp++;
           } catch (err) {
@@ -1075,7 +1057,7 @@
           setProgress(i + 1, processed.length);
         }
         log(`Uploaded OK : ${okUp} | Failed : ${failUp}`, "info");
-        if (okUp === 0) throw new Error("No files were uploaded to GitHub.");
+        if (okUp === 0) throw new Error("No files were uploaded.");
 
         // STEP 3 — CDN + API
         log(`\n=== STEP 3/3: Update user photos via API ===`, "info");
@@ -1090,10 +1072,7 @@
         for (let i = 0; i < processed.length; i++) {
           const item = processed[i];
           try {
-            const preferredExt = item.fileName.includes(".")
-              ? item.fileName.slice(item.fileName.lastIndexOf("."))
-              : ".jpg";
-            const cdnUrl = await getValidCdnUrl(cfg, item.userId, preferredExt);
+            const cdnUrl = item.cdnUrl;
             if (!cdnUrl) {
               log(`⚠️  CDN image not found for UserId ${item.userId}. Skipping API call.`, "warn");
               skippedApi++;

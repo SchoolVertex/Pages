@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
 
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <script src="report-share.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
 
   <style>
@@ -1038,7 +1039,7 @@
     var app = angular.module('reportApp', []);
 
     app.controller('ReportController', function($scope, $http, $timeout) {
-      var baseUrl = 'https://api.schoolvertex.com/api';
+      var baseUrl = ReportShare.apiBase();
       var ENTITY_BATCH = 118;
       var ENTITY_SECTION = 119;
       var IGNORE_SUBJECTS = [79, 80, 81, 82];
@@ -1133,15 +1134,17 @@
         weakSubject: '-'
       };
 
-      var query = getQueryParams();
+      var query = ReportShare.expandCompactId(getQueryParams(), [
+        'orgId', 'userId', 'yearId', 'entityId', 'entityTypeId'
+      ]);
       var orgId = num(query.orgId || query.OrgId);
       var userId = num(query.userId || query.UserId);
       var entityId = num(query.entityId || query.EntityId);
       var entityTypeId = num(query.entityTypeId || query.EntityTypeId);
       var yearId = num(query.yearId || query.YearId);
 
-      if (!orgId || !userId || !yearId) {
-        $scope.errorMessage = 'orgId, userId and yearId are required. Example: ?orgId=1&userId=50602&entityId=274&entityTypeId=119&yearId=9';
+      if (!ReportShare.hasToken() && (!orgId || !userId || !yearId)) {
+        $scope.errorMessage = 'orgId, userId and yearId are required. Example: ?orgId=1&userId=50602&yearId=9 or ?Id=1-50602-9-274-119';
         return;
       }
 
@@ -1759,6 +1762,29 @@
         $scope.trendMeta = '';
         $scope.insights = [];
         destroyCharts();
+
+        if (ReportShare.hasToken()) {
+          $http.get(ReportShare.url('ExamReportSummary'))
+            .then(function(r) {
+              var data = (r.data && r.data.Data) || {};
+              orgId = r.data.OrgId || orgId;
+              userId = r.data.UserId || userId;
+              yearId = r.data.YearId || yearId;
+              entityId = r.data.EntityId || entityId;
+              entityTypeId = r.data.EntityTypeId || entityTypeId;
+              $scope.orgInfo = data.OrgInfo || {};
+              $scope.student = data.Student || {};
+              buildView(data.Marks || [], data.SubjectTotals || [], data.Tests || [], data.Subjects || []);
+              $scope.loading = false;
+              $scope.$applyAsync();
+            })
+            .catch(function() {
+              $scope.loading = false;
+              $scope.errorMessage = 'Unable to load year marks summary.';
+              $scope.$applyAsync();
+            });
+          return;
+        }
 
         var batchId = 0;
         var sectionId = 0;
