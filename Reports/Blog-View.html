@@ -460,11 +460,6 @@
         return;
       }
 
-      if (!queryId) {
-        $scope.errorMessage = 'queryId is required. Example: ?queryId=123&userId=456';
-        return;
-      }
-
       $scope.trusted = function(html) {
         return $sce.trustAsHtml(html || '');
       };
@@ -509,7 +504,11 @@
 
         $http.get(ReportShare.url('BlogView'))
           .then(function(response) {
-            var data = (response.data && response.data.Data) || {};
+            var envelope = response.data || {};
+            queryId = num(envelope.EntityId) || queryId;
+            userId = num(envelope.UserId) || userId;
+            $scope.backUrl = userId > 0 ? ('Blogs.html?userId=' + userId) : 'Blogs.html';
+            var data = envelope.Data || {};
             var blog = data.Detail || {};
             if (!blog.QueryId) {
               $scope.errorMessage = 'Blog not found.';

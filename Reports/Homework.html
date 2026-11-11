@@ -1849,8 +1849,8 @@ $scope.isLoading = true;
 
       $scope.submitHomework = function() {
         if (!$scope.homework || $scope.homework.IsSubmitted) return;
-        if ($scope.userId === null) {
-          $scope.errorMessage = 'userId is required in the URL.';
+        if (!$scope.userId) {
+          $scope.errorMessage = 'Unable to submit: student is missing from the share link.';
           return;
         }
 

@@ -695,7 +695,9 @@
 
         $http.get(ReportShare.url('Blogs'))
           .then(function(response) {
-            var data = (response.data && response.data.Data) || {};
+            var envelope = response.data || {};
+            viewerUserId = num(envelope.UserId) || viewerUserId;
+            var data = envelope.Data || {};
             var tags = data.Tags || [];
             var tagMap = {};
             tags.forEach(function(t) {

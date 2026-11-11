@@ -606,11 +606,6 @@
         return;
       }
 
-      if (!entityId || !entityTypeId) {
-        $scope.errorMessage = 'entityId and entityTypeId are required. Example: ?entityTypeId=119&entityId=274 or ?Id=274-119';
-        return;
-      }
-
       $scope.formatDate = function(value) {
         if (!value) return '-';
         var date = new Date(value);
@@ -701,7 +696,11 @@
 
         $http.get(ReportShare.url('Events'))
           .then(function(response) {
-            var data = (response.data && response.data.Data) || {};
+            var envelope = response.data || {};
+            entityId = num(envelope.EntityId) || entityId;
+            entityTypeId = num(envelope.EntityTypeId) || entityTypeId;
+            orgId = num(envelope.OrgId) || orgId;
+            var data = envelope.Data || {};
             if (data.OrgId) {
               orgId = num(data.OrgId) || orgId;
             }

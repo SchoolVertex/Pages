@@ -644,11 +644,6 @@
         return;
       }
 
-      if (!orgId) {
-        $scope.errorMessage = 'orgId is required. Example: ?orgId=1 or ?Id=1';
-        return;
-      }
-
       $scope.formatDob = function(value) {
         if (!value) return '-';
         var date = new Date(value);
@@ -741,7 +736,9 @@
 
         $http.get(ReportShare.url('Birthdays'))
           .then(function(response) {
-            var data = (response.data && response.data.Data) || {};
+            var envelope = response.data || {};
+            orgId = num(envelope.OrgId) || orgId;
+            var data = envelope.Data || {};
             $scope.orgInfo = data.OrgInfo || {};
             var students = enrich(data.Students || [], 'student');
             var staff = enrich(data.Staff || [], 'staff');

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="inquiryPrintApp">
+<head>
+  <script src="../sv-api.js"></script>
+  <script src="../Reports/report-share.js?v=inquiry-form-1"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>First Information Form</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      background: #e8ecf0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #111;
+    }
+
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      padding: 10px;
+      background: #222;
+    }
+
+    .toolbar button {
+      border: 0;
+      border-radius: 6px;
+      padding: 8px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      background: #1976d2;
+      color: #fff;
+    }
+
+    .page-wrap {
+      padding: 12px;
+    }
+
+    /* Half A4: 210mm × 148.5mm */
+    .sheet {
+      width: 210mm;
+      height: 148.5mm;
+      max-height: 148.5mm;
+      margin: 0 auto;
+      background: #fff;
+      border: 1.5px dashed #333;
+      padding: 3mm;
+      overflow: hidden;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12);
+    }
+
+    .sheet-inner {
+      height: 100%;
+      border: 1.5px solid #111;
+      padding: 2.5mm 3mm;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      display: grid;
+      grid-template-columns: 18mm 1fr;
+      gap: 2.5mm;
+      align-items: center;
+      margin-bottom: 1.5mm;
+      flex: 0 0 auto;
+    }
+
+    .logo {
+      width: 16mm;
+      height: 16mm;
+      object-fit: contain;
+    }
+
+    .header-text {
+      text-align: center;
+      min-width: 0;
+    }
+
+    .school-name {
+      margin: 0;
+      font-size: 16pt;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      line-height: 1.1;
+    }
+
+    .school-meta {
+      margin: 0.5mm 0 0;
+      font-size: 7pt;
+      color: #333;
+      line-height: 1.2;
+    }
+
+    .form-title {
+      margin: 0 0 1.5mm;
+      text-align: center;
+      font-size: 11pt;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      flex: 0 0 auto;
+    }
+
+    .form-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      flex: 1 1 auto;
+      font-size: 8.5pt;
+    }
+
+    .form-table th,
+    .form-table td {
+      border: 1px solid #111;
+      vertical-align: middle;
+      padding: 1.2mm 2mm;
+    }
+
+    .label-cell {
+      width: 42%;
+      font-weight: 700;
+      text-align: left;
+      background: #fff;
+      white-space: nowrap;
+    }
+
+    .write-cell {
+      height: 6.2mm;
+      background: #fff;
+    }
+
+    .write-cell.tall {
+      height: 10mm;
+    }
+
+    .write-cell.taller {
+      height: 14mm;
+    }
+
+    .split-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      height: 100%;
+      min-height: 6.2mm;
+    }
+
+    .split-col {
+      display: flex;
+      align-items: flex-start;
+      gap: 1.5mm;
+      padding: 0.6mm 1.5mm;
+      border-right: 1px solid #111;
+      min-height: 6.2mm;
+    }
+
+    .split-col:last-child {
+      border-right: 0;
+    }
+
+    .split-label {
+      font-weight: 700;
+      white-space: nowrap;
+      font-size: 8pt;
+    }
+
+    .split-blank {
+      flex: 1 1 auto;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #555;
+      font-size: 13px;
+    }
+
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 10mm;
+      }
+
+      body {
+        background: #fff;
+      }
+
+      .toolbar {
+        display: none !important;
+      }
+
+      .page-wrap {
+        padding: 0;
+      }
+
+      .sheet {
+        width: 210mm;
+        height: 148.5mm;
+        max-height: 148.5mm;
+        margin: 0;
+        border: 1.5px dashed #333;
+        box-shadow: none;
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body ng-controller="InquiryPrintCtrl">
+  <div class="toolbar">
+    <button type="button" onclick="window.print()">Print</button>
+  </div>
+
+  <div class="page-wrap" ng-cloak>
+    <div class="loading" ng-if="!orgInfo && !loadError">Loading school info…</div>
+    <div class="loading" ng-if="loadError">{{ loadError }}</div>
+
+    <div class="sheet" ng-if="orgInfo">
+      <div class="sheet-inner">
+        <header class="header">
+          <img
+            class="logo"
+            ng-src="{{ orgInfo.Image }}"
+            alt="School logo"
+            ng-if="orgInfo.Image"
+          />
+          <div class="header-text" ng-style="{ 'grid-column': orgInfo.Image ? 'auto' : '1 / -1' }">
+            <h1 class="school-name">{{ orgInfo.Name }}</h1>
+            <p class="school-meta" ng-if="orgInfo.AffiliationInfo">
+              {{ orgInfo.AffiliationInfo }}
+            </p>
+            <p class="school-meta" ng-if="orgInfo.FullAddress">
+              {{ orgInfo.FullAddress }}
+            </p>
+          </div>
+        </header>
+
+        <h2 class="form-title">First Information Form</h2>
+
+        <table class="form-table">
+          <tr>
+            <th class="label-cell">Name of the Student</th>
+            <td class="write-cell" colspan="2"></td>
+          </tr>
+          <tr>
+            <th class="label-cell">Sur Name</th>
+            <td class="write-cell" colspan="2"></td>
+          </tr>
+          <tr>
+            <th class="label-cell">Mother Name</th>
+            <td class="write-cell" colspan="2"></td>
+          </tr>
+          <tr>
+            <th class="label-cell">Father Name</th>
+            <td class="write-cell" colspan="2"></td>
+          </tr>
+          <tr>
+            <th class="label-cell">Occupation of Parents</th>
+            <td class="write-cell" colspan="2" style="padding: 0">
+              <div class="split-row">
+                <div class="split-col">
+                  <span class="split-label">Mother</span>
+                  <span class="split-blank"></span>
+                </div>
+                <div class="split-col">
+                  <span class="split-label">Father</span>
+                  <span class="split-blank"></span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <th class="label-cell">Parent Qualification</th>
+            <td class="write-cell" colspan="2" style="padding: 0">
+              <div class="split-row">
+                <div class="split-col">
+                  <span class="split-label">Mother</span>
+                  <span class="split-blank"></span>
+                </div>
+                <div class="split-col">
+                  <span class="split-label">Father</span>
+                  <span class="split-blank"></span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <th class="label-cell">Address</th>
+            <td class="write-cell" colspan="2"></td>
+          </tr>
+          <tr>
+            <th class="label-cell">Contact Number &amp; Email ID</th>
+            <td class="write-cell" colspan="2"></td>
+          </tr>
+          <tr>
+            <th class="label-cell">Admission into Class</th>
+            <td class="write-cell" colspan="2" style="padding: 0">
+              <div class="split-row">
+                <div class="split-col">
+                  <span class="split-label">Class</span>
+                  <span class="split-blank"></span>
+                </div>
+                <div class="split-col">
+                  <span class="split-label">Day / Residential</span>
+                  <span class="split-blank"></span>
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <th class="label-cell">Previous School Name &amp; Address</th>
+            <td class="write-cell" colspan="2"></td>
+          </tr>
+          <tr>
+            <th class="label-cell">Reason for School Change</th>
+            <td class="write-cell" colspan="2"></td>
+          </tr>
+          <tr>
+            <th class="label-cell">Parent / Guardian Signature</th>
+            <td class="write-cell tall" colspan="2"></td>
+          </tr>
+          <tr>
+            <th class="label-cell">Principal feedback &amp; Signature</th>
+            <td class="write-cell taller" colspan="2"></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    angular.module("inquiryPrintApp", []).controller("InquiryPrintCtrl", function ($scope, $http) {
+      if (typeof ReportShare === "undefined" || !ReportShare.hasToken()) {
+        $scope.orgInfo = { Name: "School Name" };
+        $scope.loadError = "Open this inquiry form from the School Vertex app.";
+        return;
+      }
+
+      function applyOrg(orgInfo) {
+        $scope.orgInfo = orgInfo || { Name: "School Name" };
+      }
+
+      var load =
+        typeof ReportShare.loadInquiryForm === "function"
+          ? ReportShare.loadInquiryForm($http)
+          : $http.get(ReportShare.url("InquiryForm")).then(function (response) {
+              var data = (response.data && response.data.Data) || {};
+              return { orgInfo: data.OrgInfo || {} };
+            });
+
+      load
+        .then(function (result) {
+          applyOrg(result && result.orgInfo);
+        })
+        .catch(function (err) {
+          applyOrg(null);
+          $scope.loadError =
+            (err && (err.message || (err.data && err.data.message))) ||
+            "Unable to load school info.";
+        });
+    });
+  </script>
+</body>
+</html>

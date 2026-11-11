@@ -7,7 +7,7 @@
     "SoftUpdate": true,
     "ForceUpdate": false
   },
-  "MessageBalanceLowThreshold": 5000,
+  "MessageBalanceLowThreshold": 500,
   "HideDailyAtriclePopup": false,
   "HideDailyAtricleUserList": [],
   "UploadPermanentRepo": "Files",

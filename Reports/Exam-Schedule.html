@@ -595,12 +595,7 @@
         return;
       }
 
-      if (!orgId || !entityId || !entityTypeId || !yearId) {
-        $scope.errorMessage = 'orgId, entityId, entityTypeId and yearId are required. Example: ?orgId=1&entityId=274&entityTypeId=119&yearId=9 or ?Id=1-274-119-9';
-        return;
-      }
-
-      $scope.yearLabel = 'Year #' + yearId;
+      $scope.yearLabel = yearId ? ('Year #' + yearId) : '-';
 
       $scope.formatDate = function(value) {
         if (!value) return '-';
@@ -741,7 +736,15 @@
 
         $http.get(ReportShare.url('ExamSchedule'))
           .then(function(response) {
-            var data = (response.data && response.data.Data) || {};
+            var envelope = response.data || {};
+            orgId = num(envelope.OrgId) || orgId;
+            entityId = num(envelope.EntityId) || entityId;
+            entityTypeId = num(envelope.EntityTypeId) || entityTypeId;
+            yearId = num(envelope.YearId) || yearId;
+            if (yearId) {
+              $scope.yearLabel = 'Year #' + yearId;
+            }
+            var data = envelope.Data || {};
             $scope.orgInfo = data.OrgInfo || {};
             applyYearLabel(data.Years || []);
             $scope.rows = data.Rows || [];

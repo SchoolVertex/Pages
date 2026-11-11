@@ -235,6 +235,20 @@
     });
   }
 
+  function loadInquiryForm($http) {
+    if (!token()) {
+      return Promise.reject({
+        message: "Open this inquiry form from the School Vertex app."
+      });
+    }
+    return $http.get(url("InquiryForm")).then(function (response) {
+      var data = (response.data && response.data.Data) || {};
+      return {
+        orgInfo: data.OrgInfo || {}
+      };
+    });
+  }
+
   function loadPoster($http, routeName, openMessage) {
     if (!token()) {
       return Promise.reject({
@@ -395,6 +409,7 @@
     url: url,
     loadStudentCertificate: loadStudentCertificate,
     loadAdmission: loadAdmission,
+    loadInquiryForm: loadInquiryForm,
     loadBirthday: loadBirthday,
     loadSports: loadSports,
     loadAcademic: loadAcademic,

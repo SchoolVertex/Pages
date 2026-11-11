@@ -1147,7 +1147,7 @@
           $scope.error = 'Open this report from the School Vertex app (share link).';
           return;
         }
-      $scope.yearLabel = 'Year #' + yearId;
+      $scope.yearLabel = yearId ? ('Year #' + yearId) : '-';
 
       function subjectName(id, list) {
         var found = (list || []).find(function(x) { return x.SubjectId === id; });
