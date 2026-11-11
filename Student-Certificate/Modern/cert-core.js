@@ -1,5 +1,11 @@
 window.SVCert = {
-  get apiBase() { return (typeof SvApi !== "undefined" && SvApi.apiBase()) || "https://api.schoolvertex.com/api"; },
+  get apiBase() {
+    return (
+      (typeof ReportShare !== "undefined" && ReportShare.apiBase()) ||
+      (typeof SvApi !== "undefined" && SvApi.apiBase()) ||
+      "https://api.schoolvertex.com/api"
+    );
+  },
 
   getQueryParams: function () {
     var params = {};
@@ -14,6 +20,16 @@ window.SVCert = {
         if (key) params[key] = decodeURIComponent(value || "");
       });
     return params;
+  },
+
+  /** Loads OrgInfo + UserInfo via signed ReportShare token. */
+  loadCertificateData: function ($http) {
+    if (typeof ReportShare === "undefined" || !ReportShare.hasToken()) {
+      return Promise.reject({
+        message: "Open this certificate from the School Vertex app.",
+      });
+    }
+    return ReportShare.loadStudentCertificate($http);
   },
 
   convertDateToWords: function (dateString) {

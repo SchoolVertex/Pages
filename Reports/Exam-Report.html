@@ -610,59 +610,23 @@
       $scope.today = new Date();
       $scope.errorMessage = '';
 
-      if (ReportShare.hasToken()) {
-        $http.get(ReportShare.url('ExamReport'))
-          .then(function(response) {
-            var data = (response.data && response.data.Data) || {};
-            $scope.orgInfo = data.OrgInfo || {};
-            $scope.testName = data.TestName || '';
-            $scope.student = data.Student || {};
-            $scope.reportInfo = data.ReportInfo || [];
-          })
-          .catch(function() {
-            $scope.errorMessage = 'Unable to load exam marks.';
-            $scope.reportInfo = [];
-          });
-      } else {
-      var orgId = query.orgId || query.OrgId;
-      var examId = query.examId || query.ExamId || query.testId || query.TestId;
-      var userId = query.userId || query.UserId;
-
-      if (!orgId || !examId || !userId) {
-        $scope.errorMessage = 'Report ID is required in the URL. Example: ?Id=orgId-examId-userId';
+      if (!ReportShare.hasToken()) {
+        $scope.errorMessage = 'Open this report from the School Vertex app (share link).';
         return;
       }
 
-      $http.get(baseUrl + '/Organisation/GetInfoForCertificate/' + encodeURIComponent(orgId))
+      $http.get(ReportShare.url('ExamReport'))
         .then(function(response) {
-          $scope.orgInfo = response.data || {};
-        })
-        .catch(function() {
-          $scope.errorMessage = $scope.errorMessage || 'Unable to load school information.';
-        });
-
-      $http.get(baseUrl + '/Test/GetName/' + encodeURIComponent(examId))
-        .then(function(response) {
-          $scope.testName = response.data || '';
-        });
-
-      $http.get(baseUrl + '/User/GetPreviewById/' + encodeURIComponent(userId))
-        .then(function(response) {
-          $scope.student = response.data || {};
-        });
-
-      $http.get(baseUrl + '/Test/GetMarkReportData/' +
-          encodeURIComponent(userId) + '/' +
-          encodeURIComponent(orgId) + '/' +
-          encodeURIComponent(examId))
-        .then(function(response) {
-          $scope.reportInfo = response.data || [];
+          var data = (response.data && response.data.Data) || {};
+          $scope.orgInfo = data.OrgInfo || {};
+          $scope.testName = data.TestName || '';
+          $scope.student = data.Student || {};
+          $scope.reportInfo = data.ReportInfo || [];
         })
         .catch(function() {
           $scope.errorMessage = 'Unable to load exam marks.';
           $scope.reportInfo = [];
         });
-      }
 
       $scope.getTotalMarks = function() {
         if (!$scope.reportInfo || !$scope.reportInfo.length) {

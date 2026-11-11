@@ -76,32 +76,33 @@
     </div>
   </div>
 
-  <script src="https://schoolvertex.github.io/Pages/Student-Certificate/Modern/cert-core.js"></script>
+  <script src="../../Reports/report-share.js"></script>
+  <script src="cert-core.js"></script>
   <script>
     angular.module("myApp", []).controller("myCtrl", function ($scope, $http) {
       $scope.today = new Date();
       $scope.modal = { isVisible: false, userInfo: {} };
       $scope.orgNameFontSize = "1.55rem";
-      var query = SVCert.getQueryParams();
-      $http.get(SVCert.apiBase + "/Organisation/GetInfoForCertificate/" + query.orgId)
-        .then(function (res) {
-          $scope.orgInfo = res.data;
-          if ($scope.orgInfo && $scope.orgInfo.Name && $scope.orgInfo.Name.length > 28) {
-            $scope.orgNameFontSize = "1.2rem";
-          }
-        });
-      $http.get(SVCert.apiBase + "/User/GetInfoForCertificate/" + query.userId + "/" + query.entityTypeId + "/" + query.entityId)
-        .then(function (res) {
-          $scope.userInfo = res.data;
-          if (!$scope.userInfo.AcademicYear) {
-            var y = new Date().getFullYear();
-            $scope.userInfo.AcademicYear = y + "-" + (y + 1);
-          }
-          if (!$scope.userInfo.Purpose) $scope.userInfo.Purpose = "";
-          $scope.modal.userInfo = angular.copy($scope.userInfo);
-          if ($scope.modal.userInfo.DateOfBirth) $scope.modal.userInfo.DateOfBirth = new Date($scope.modal.userInfo.DateOfBirth);
-          if ($scope.modal.userInfo.AdmissionDate) $scope.modal.userInfo.AdmissionDate = new Date($scope.modal.userInfo.AdmissionDate);
-        });
+      $scope.errorMessage = "";
+      SVCert.loadCertificateData($http).then(function (data) {
+        $scope.orgInfo = data.orgInfo || {};
+        if ($scope.orgInfo.Name && $scope.orgInfo.Name.length > 28) {
+          $scope.orgNameFontSize = "1.2rem";
+        }
+        $scope.userInfo = data.userInfo || {};
+        if (!$scope.userInfo.AcademicYear) {
+          var y = new Date().getFullYear();
+          $scope.userInfo.AcademicYear = y + "-" + (y + 1);
+        }
+        if (!$scope.userInfo.Purpose) $scope.userInfo.Purpose = "";
+        $scope.modal.userInfo = angular.copy($scope.userInfo);
+        if ($scope.modal.userInfo.DateOfBirth) $scope.modal.userInfo.DateOfBirth = new Date($scope.modal.userInfo.DateOfBirth);
+        if ($scope.modal.userInfo.AdmissionDate) $scope.modal.userInfo.AdmissionDate = new Date($scope.modal.userInfo.AdmissionDate);
+        $scope.$applyAsync();
+      }).catch(function (err) {
+        $scope.errorMessage = (err && err.message) || "Unable to load certificate.";
+        $scope.$applyAsync();
+      });
       $scope.showEditModal = function () {
         $scope.modal.userInfo = angular.copy($scope.userInfo);
         if ($scope.modal.userInfo.DateOfBirth) $scope.modal.userInfo.DateOfBirth = new Date($scope.modal.userInfo.DateOfBirth);

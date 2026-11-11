@@ -878,55 +878,21 @@ angular.module('feeApp', [])
     $scope.loadFeeSummary = function() {
         $scope.filters = readFiltersFromUrl();
 
-        if (!ReportShare.hasToken() && ($scope.filters.schoolId === null || $scope.filters.userId === null || $scope.filters.yearId === null)) {
-            $scope.errorMessage = 'School ID, User ID, and Year ID are required in the URL. Example: ?schoolId=1&userId=6583&yearId=8 or ?Id=1-6583-8';
+        
+        if (!ReportShare.hasToken()) {
+            $scope.errorMessage = 'Open this report from the School Vertex app (share link).';
             return;
         }
 
         $scope.isLoading = true;
         $scope.errorMessage = '';
 
-        if (ReportShare.hasToken()) {
-            $http.get(ReportShare.url('PaymentSummary')).then(function(response) {
-                var data = (response.data && response.data.Data) || {};
-                setFeeHeads(data.FeeHeads || []);
-                setPayments(data.Payments || []);
-                setReceiptInfo(data.ReceiptInfo || {});
-            }).catch(function(error) {
-                $scope.errorMessage = buildErrorMessage(error);
-                $scope.feeHeads = [];
-                $scope.payments = [];
-                $scope.totalPaymentAmount = 0;
-                $scope.summary = resetSummary();
-                updateDisplaySummary();
-            }).finally(function() {
-                $scope.isLoading = false;
-                $scope.$applyAsync();
-            });
-            return;
-        }
-
-        var feeSummaryUrl = API_BASE_URL + 'api/Fee/GetUserFeeItemSummary/' +
-            encodeURIComponent($scope.filters.userId) + '/' +
-            encodeURIComponent($scope.filters.yearId);
-
-        var paymentsUrl = API_BASE_URL + 'api/Fee/GetUserPayments/' +
-            encodeURIComponent($scope.filters.schoolId) + '/' +
-            encodeURIComponent($scope.filters.userId) + '/' +
-            encodeURIComponent($scope.filters.yearId);
-
-        var receiptInfoUrl = API_BASE_URL + 'api/Fee/GetFeeReceiptInfo/' +
-            encodeURIComponent($scope.filters.schoolId) + '/' +
-            encodeURIComponent($scope.filters.userId);
-
-        Promise.all([
-            $http.get(feeSummaryUrl),
-            $http.get(paymentsUrl),
-            $http.get(receiptInfoUrl)
-        ]).then(function(responses) {
-            setFeeHeads(responses[0].data || []);
-            setPayments(responses[1].data || []);
-            setReceiptInfo(responses[2].data || {});
+        $http.get(ReportShare.url('PaymentSummary')).then(function(response) {
+            var envelope = response.data || {};
+            var data = envelope.Data || envelope;
+            setFeeHeads(data.FeeHeads || []);
+            setPayments(data.Payments || []);
+            setReceiptInfo(data.ReceiptInfo || {});
         }).catch(function(error) {
             $scope.errorMessage = buildErrorMessage(error);
             $scope.feeHeads = [];

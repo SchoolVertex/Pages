@@ -590,23 +590,17 @@
       var entityTypeId = num(query.entityTypeId || query.EntityTypeId);
       var yearId = num(query.yearId || query.YearId);
 
+      if (!ReportShare.hasToken()) {
+        $scope.errorMessage = 'Open this report from the School Vertex app (share link).';
+        return;
+      }
+
       if (!orgId || !entityId || !entityTypeId || !yearId) {
         $scope.errorMessage = 'orgId, entityId, entityTypeId and yearId are required. Example: ?orgId=1&entityId=274&entityTypeId=119&yearId=9 or ?Id=1-274-119-9';
         return;
       }
 
       $scope.yearLabel = 'Year #' + yearId;
-
-      $http.get(baseUrl + '/Organisation/GetYearList')
-        .then(function(response) {
-          var years = response.data || [];
-          var found = years.find(function(y) {
-            return Number(y.value || y.Value || y.id || y.Id) === yearId;
-          });
-          if (found) {
-            $scope.yearLabel = found.label || found.Label || found.text || found.Text || $scope.yearLabel;
-          }
-        });
 
       $scope.formatDate = function(value) {
         if (!value) return '-';
@@ -732,25 +726,27 @@
         };
       }
 
+      function applyYearLabel(years) {
+        var found = (years || []).find(function(y) {
+          return Number(y.value || y.Value || y.id || y.Id) === yearId;
+        });
+        if (found) {
+          $scope.yearLabel = found.label || found.Label || found.text || found.Text || $scope.yearLabel;
+        }
+      }
+
       function load() {
         $scope.loading = true;
         $scope.errorMessage = '';
 
-        $http.get(baseUrl + '/Organisation/GetInfoForCertificate/' + orgId)
-          .then(function(r) { $scope.orgInfo = r.data || {}; });
-
-        var url = baseUrl + '/TestTimeTable/GetYearTestSchedule/' +
-          encodeURIComponent(entityId) + '/' +
-          encodeURIComponent(entityTypeId) + '/' +
-          encodeURIComponent(orgId) + '/' +
-          encodeURIComponent(yearId);
-
-        $http.get(url)
+        $http.get(ReportShare.url('ExamSchedule'))
           .then(function(response) {
-            $scope.rows = response.data || [];
+            var data = (response.data && response.data.Data) || {};
+            $scope.orgInfo = data.OrgInfo || {};
+            applyYearLabel(data.Years || []);
+            $scope.rows = data.Rows || [];
             $scope.examGroups = buildGroups($scope.rows);
             refreshStats($scope.examGroups, $scope.rows);
-            // Default to upcoming when available, else full year
             var hasUpcoming = $scope.examGroups.some(function(g) {
               return g.status === 'upcoming' || g.status === 'next';
             });

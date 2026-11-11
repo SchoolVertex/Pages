@@ -208,6 +208,179 @@
   Object.defineProperty(global.SvApi, "API_BASE", { get: apiBase });
   Object.defineProperty(global.SvApi, "API_ROOT", { get: apiRoot });
 
+  function loadStudentCertificate($http) {
+    if (!token()) {
+      return Promise.reject({ message: "Open this certificate from the School Vertex app." });
+    }
+    return $http.get(url("StudentCertificate")).then(function (response) {
+      var data = (response.data && response.data.Data) || {};
+      return {
+        orgInfo: data.OrgInfo || {},
+        userInfo: data.UserInfo || {}
+      };
+    });
+  }
+
+  function loadAdmission($http) {
+    if (!token()) {
+      return Promise.reject({ message: "Open this admission form from the School Vertex app." });
+    }
+    return $http.get(url("Admission")).then(function (response) {
+      var data = (response.data && response.data.Data) || {};
+      return {
+        orgInfo: data.OrgInfo || {},
+        admInfo: data.AdmInfo || {},
+        classNumber: data.ClassNumber
+      };
+    });
+  }
+
+  function loadPoster($http, routeName, openMessage) {
+    if (!token()) {
+      return Promise.reject({
+        message: openMessage || "Open this page from the School Vertex app."
+      });
+    }
+    return $http.get(url(routeName)).then(function (response) {
+      var data = (response.data && response.data.Data) || {};
+      return {
+        orgInfo: data.OrgInfo || {},
+        userInfo: data.UserInfo || {},
+        parentList: data.ParentList || []
+      };
+    });
+  }
+
+  function loadBirthday($http) {
+    return loadPoster(
+      $http,
+      "Birthday",
+      "Open this birthday poster from the School Vertex app."
+    );
+  }
+
+  function loadSports($http) {
+    return loadPoster(
+      $http,
+      "Sports",
+      "Open this sports certificate from the School Vertex app."
+    );
+  }
+
+  function loadAcademic($http) {
+    return loadPoster(
+      $http,
+      "Academic",
+      "Open this academic certificate from the School Vertex app."
+    );
+  }
+
+  function loadStaffDocument($http, routeName, openMessage) {
+    return loadPoster(
+      $http,
+      routeName,
+      openMessage || "Open this document from the School Vertex app."
+    );
+  }
+
+  function loadFeeDeclaration($http) {
+    if (!token()) {
+      return Promise.reject({
+        message: "Open this fee declaration from the School Vertex app."
+      });
+    }
+    return $http.get(url("FeeDeclaration")).then(function (response) {
+      var data = (response.data && response.data.Data) || {};
+      return {
+        orgInfo: data.OrgInfo || {},
+        feeInfo: data.FeeInfo || []
+      };
+    });
+  }
+
+  function loadFeeReceipt($http) {
+    if (!token()) {
+      return Promise.reject({
+        message: "Open this fee receipt from the School Vertex app."
+      });
+    }
+    return $http.get(url("FeeReceipt")).then(function (response) {
+      var data = (response.data && response.data.Data) || {};
+      return {
+        fee: data.Fee || null,
+        receiptInfo: data.ReceiptInfo || {},
+        preData: data.PreData || {},
+        summary: data.Summary || {}
+      };
+    });
+  }
+
+  function loadIdCard($http) {
+    if (!token()) {
+      return Promise.reject({
+        message: "Open this ID card from the School Vertex app."
+      });
+    }
+    return $http.get(url("IdCard")).then(function (response) {
+      var data = (response.data && response.data.Data) || {};
+      return {
+        orgInfo: data.OrgInfo || {},
+        card: data.Card || null,
+        cards: data.Cards || []
+      };
+    });
+  }
+
+  function loadStaffIdCard($http) {
+    if (!token()) {
+      return Promise.reject({
+        message: "Open this staff ID card from the School Vertex app."
+      });
+    }
+    return $http.get(url("StaffIdCard")).then(function (response) {
+      var data = (response.data && response.data.Data) || {};
+      return {
+        orgInfo: data.OrgInfo || {},
+        card: data.Card || null,
+        cards: data.Cards || []
+      };
+    });
+  }
+
+  function loadIdCardOrg($http) {
+    if (!token()) {
+      return Promise.reject({
+        message: "Open this ID card page from the School Vertex app."
+      });
+    }
+    return $http.get(url("IdCardOrg")).then(function (response) {
+      var data = (response.data && response.data.Data) || {};
+      return {
+        orgInfo: data.OrgInfo || {}
+      };
+    });
+  }
+
+  function postIdCardList($http, orgId, userList) {
+    if (!token()) {
+      return Promise.reject({
+        message: "Open this ID card page from the School Vertex app."
+      });
+    }
+    return $http
+      .post(url("IdCardList"), {
+        OrgId: orgId,
+        UserList: userList || []
+      })
+      .then(function (response) {
+        var data = (response.data && response.data.Data) || {};
+        return {
+          orgInfo: data.OrgInfo || {},
+          cards: data.Cards || []
+        };
+      });
+  }
+
   global.ReportShare = {
     query: queryParams,
     expandCompactId: expandCompactId,
@@ -219,7 +392,19 @@
     hasToken: function () {
       return !!token();
     },
-    url: url
+    url: url,
+    loadStudentCertificate: loadStudentCertificate,
+    loadAdmission: loadAdmission,
+    loadBirthday: loadBirthday,
+    loadSports: loadSports,
+    loadAcademic: loadAcademic,
+    loadStaffDocument: loadStaffDocument,
+    loadFeeDeclaration: loadFeeDeclaration,
+    loadFeeReceipt: loadFeeReceipt,
+    loadIdCard: loadIdCard,
+    loadStaffIdCard: loadStaffIdCard,
+    loadIdCardOrg: loadIdCardOrg,
+    postIdCardList: postIdCardList
   };
 
   Object.defineProperty(global.ReportShare, "API_BASE", {

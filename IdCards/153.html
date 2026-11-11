@@ -3,6 +3,7 @@
 
 <head>
   <script src="../sv-api.js"></script>
+  <script src="../Reports/report-share.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Student ID Card</title>
@@ -1812,47 +1813,26 @@
       }
 
       $scope.org = {};
-      var orgApiUrl = baseApiUrl + "/Organisation/GetInfoForCertificate/" + orgId;
-      $http.get(orgApiUrl).then(function (response) {
-        var data = response.data;
-          if (data) {
-          $scope.org = data;
-          if ($scope.useTwoLineSchoolName) {
-            if (!$scope.schoolNameLine1) {
-              splitSchoolName(data.Name);
-            }
-          } else {
-            splitSchoolName(data.Name);
-          }
-          if (data.FullAddress) {
-            $scope.org.fullAddress = data.FullAddress;
-          } else if (data.AddressInfo) {
-            var a = data.AddressInfo;
-            var parts = [a.Plot_HouseNumber, a.LandMark, a.Street, a.City, a.State, a.ZipCode].filter(Boolean);
-            $scope.org.fullAddress = parts.join(", ");
-          }
-          applySchoolInfoOverrides();
-        }
-      }, function (error) {
-        console.error("Organisation API failed:", error.status, error.statusText);
-      });
 
-      var designApiUrl = "https://schoolvertex.github.io/Pages/IdCards/settings.json";
-      $http.get(designApiUrl).then(function (response) {
-        var data = response.data || {};
-        var key = orgId != null ? String(orgId) : "All";
-        var config = data[key] || data["All"] || {};
-        applyDesignConfig(config);
-        // Query format wins over settings if provided
-        if (query.format) {
-          applyContentFormat(query.format);
+      function applyOrgInfo(data) {
+        if (!data) return;
+        $scope.org = data;
+        if ($scope.useTwoLineSchoolName) {
+          if (!$scope.schoolNameLine1) splitSchoolName(data.Name);
+        } else {
+          splitSchoolName(data.Name);
         }
-      }, function (error) {
-        console.error("Design config API failed — using defaults:", error.status, error.statusText);
-      });
+        if (data.FullAddress) {
+          $scope.org.fullAddress = data.FullAddress;
+        } else if (data.AddressInfo) {
+          var a = data.AddressInfo;
+          var parts = [a.Plot_HouseNumber, a.LandMark, a.Street, a.City, a.State, a.ZipCode].filter(Boolean);
+          $scope.org.fullAddress = parts.join(", ");
+        }
+        if (typeof applySchoolInfoOverrides === 'function') applySchoolInfoOverrides();
+      }
 
       function offerHideCardsWithoutPhotos(usersOrUser, isBulk) {
-        // Store full dataset; filtering is controlled by the top checkbox.
         if (isBulk) {
           $scope._allUserList = Array.isArray(usersOrUser) ? usersOrUser.slice() : [];
           $scope._allUserInfo = null;
@@ -1860,29 +1840,39 @@
           $scope._allUserInfo = usersOrUser || null;
           $scope._allUserList = [];
         }
-        $scope.applyCardFilters();
+        if ($scope.applyCardFilters) $scope.applyCardFilters();
       }
 
-      if (userId) {
-        var url = baseApiUrl + "/Fee/GetIdCardInfo/" + orgId + "/" + userId;
-        $http.get(url).then(function (response) {
-          $scope.userInfo = response.data;
-          offerHideCardsWithoutPhotos($scope.userInfo, false);
-        });
-      } else if (sectionId > 0 || classId > 0) {
-        var bulkUrl = null;
-        if (sectionId > 0) {
-          bulkUrl = baseApiUrl + "/Fee/GetSectionIdCardInfo/" + sectionId;
-        } else if (classId > 0) {
-          bulkUrl = baseApiUrl + "/Fee/GetBatchIdCardInfo/" + classId;
-        }
-        if (bulkUrl) {
-          $http.get(bulkUrl).then(function (response) {
-            $scope.userList = response.data || [];
-            offerHideCardsWithoutPhotos($scope.userList, true);
-          });
-        }
+
+      var designApiUrl = "https://schoolvertex.github.io/Pages/IdCards/settings.json";
+      $http.get(designApiUrl).then(function (response) {
+        var data = response.data || {};
+        var key = orgId != null ? String(orgId) : "All";
+        var config = data[key] || data["All"] || {};
+        if (typeof applyDesignConfig === 'function') applyDesignConfig(config);
+        if (query.format && typeof applyContentFormat === 'function') applyContentFormat(query.format);
+      }, function (error) {
+        console.error("Design config API failed — using defaults:", error.status, error.statusText);
+      });
+
+      if (!ReportShare.hasToken()) {
+        console.error('Open this ID card page from the School Vertex app.');
+        return;
       }
+
+      ReportShare.loadIdCard($http).then(function (result) {
+        applyOrgInfo(result.orgInfo);
+        if (result.card) {
+          $scope.userInfo = result.card;
+          offerHideCardsWithoutPhotos($scope.userInfo, false);
+        } else {
+          $scope.userList = result.cards || [];
+          offerHideCardsWithoutPhotos($scope.userList, true);
+        }
+        $scope.$applyAsync();
+      }).catch(function (err) {
+        console.error('IdCard share failed:', err);
+      });
     });
   </script>
 </body>

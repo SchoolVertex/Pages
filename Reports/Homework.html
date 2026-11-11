@@ -1745,9 +1745,7 @@
         $scope.errorMessage = '';
         $scope.successMessage = '';
 
-        var deleteReq = ReportShare.hasToken()
-          ? $http.get(ReportShare.url('DeleteHomeworkSubmission') + '&submissionId=' + encodeURIComponent(submissionId))
-          : $http.get(API_BASE + '/Assignment/DeleteSubmission/' + encodeURIComponent(submissionId));
+        var deleteReq = $http.get(ReportShare.url('DeleteHomeworkSubmission') + '&submissionId=' + encodeURIComponent(submissionId));
         deleteReq
           .then(function() {
             $scope.successMessage = 'Submission deleted. You can submit again.';
@@ -1811,18 +1809,15 @@
         $scope.homeworkId = parseId(query.HomeworkId || query.homeworkId || query.id);
         $scope.userId = parseId(query.userId || query.UserId);
 
-        if (!ReportShare.hasToken() && ($scope.homeworkId === null || $scope.userId === null)) {
-          $scope.errorMessage = 'HomeworkId and userId are required. Example: ?HomeworkId=83036&userId=1234 or ?Id=83036-1234';
+        if (!ReportShare.hasToken()) {
+          $scope.error = 'Open this report from the School Vertex app (share link).';
           return;
         }
-
-        $scope.isLoading = true;
+$scope.isLoading = true;
         $scope.errorMessage = '';
         $scope.successMessage = '';
 
-        var request = ReportShare.hasToken()
-          ? $http.get(ReportShare.url('Homework'))
-          : $http.get(API_BASE + '/Assignment/GetByIdView/' + encodeURIComponent($scope.homeworkId) + '/' + encodeURIComponent($scope.userId));
+        var request = $http.get(ReportShare.url('Homework'));
         request
           .then(function(response) {
             var body = response.data || null;
@@ -1878,9 +1873,7 @@
               ImageList: imageUrls || []
             };
 
-            return ReportShare.hasToken()
-              ? $http.post(ReportShare.url('AddHomeworkSubmission'), payload)
-              : $http.post(API_BASE + '/Assignment/AddSubmission', payload);
+            return $http.post(ReportShare.url('AddHomeworkSubmission'), payload);
           })
           .then(function() {
             $scope.successMessage = 'Homework submitted successfully.';

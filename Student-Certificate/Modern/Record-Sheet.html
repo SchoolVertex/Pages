@@ -84,15 +84,20 @@
     </div>
   </article>
 
-  <script src="https://schoolvertex.github.io/Pages/Student-Certificate/Modern/cert-core.js"></script>
+  <script src="../../Reports/report-share.js"></script>
+  <script src="cert-core.js"></script>
   <script>
     angular.module("myApp", []).controller("myCtrl", function ($scope, $http) {
       $scope.today = new Date();
-      var query = SVCert.getQueryParams();
-      $http.get(SVCert.apiBase + "/Organisation/GetInfoForCertificate/" + query.orgId)
-        .then(function (res) { $scope.orgInfo = res.data; });
-      $http.get(SVCert.apiBase + "/User/GetInfoForCertificate/" + query.userId + "/" + query.entityTypeId + "/" + query.entityId)
-        .then(function (res) { $scope.userInfo = res.data; });
+      $scope.errorMessage = "";
+      SVCert.loadCertificateData($http).then(function (data) {
+        $scope.orgInfo = data.orgInfo || {};
+        $scope.userInfo = data.userInfo || {};
+        $scope.$applyAsync();
+      }).catch(function (err) {
+        $scope.errorMessage = (err && err.message) || "Unable to load certificate.";
+        $scope.$applyAsync();
+      });
     });
   </script>
 </body>

@@ -639,6 +639,11 @@
       var query = ReportShare.expandCompactId(getQueryParams(), ['orgId']);
       var orgId = num(query.orgId || query.OrgId || query.Id || query.id);
 
+      if (!ReportShare.hasToken()) {
+        $scope.errorMessage = 'Open this report from the School Vertex app (share link).';
+        return;
+      }
+
       if (!orgId) {
         $scope.errorMessage = 'orgId is required. Example: ?orgId=1 or ?Id=1';
         return;
@@ -734,16 +739,12 @@
         $scope.loading = true;
         $scope.errorMessage = '';
 
-        $http.get(baseUrl + '/Organisation/GetInfoForCertificate/' + orgId)
-          .then(function(r) { $scope.orgInfo = r.data || {}; });
-
-        $q.all([
-          $http.get(baseUrl + '/Organisation/GetMonthStudentBirthdays/' + orgId),
-          $http.get(baseUrl + '/Organisation/GetMonthStaffBirthdays/' + orgId)
-        ])
-          .then(function(responses) {
-            var students = enrich((responses[0] && responses[0].data) || [], 'student');
-            var staff = enrich((responses[1] && responses[1].data) || [], 'staff');
+        $http.get(ReportShare.url('Birthdays'))
+          .then(function(response) {
+            var data = (response.data && response.data.Data) || {};
+            $scope.orgInfo = data.OrgInfo || {};
+            var students = enrich(data.Students || [], 'student');
+            var staff = enrich(data.Staff || [], 'staff');
             $scope.rows = dedupe(students.concat(staff));
             refreshStats($scope.rows);
             var hasToday = $scope.rows.some(function(r) { return r.isToday; });

@@ -558,9 +558,6 @@
   <script>
     angular.module('timetableApp', [])
     .controller('TimetableController', function($scope, $http, $window) {
-      var TIMETABLE_API = ReportShare.apiBase() + '/TimeTable/GetTimeTableView/';
-      var ENTITY_API = ReportShare.apiBase() + '/Organisation/GetEntityFullInfo/';
-
       var DAY_NAMES = {
         1: { fullName: 'Monday', shortName: 'Mon' },
         2: { fullName: 'Tuesday', shortName: 'Tue' },
@@ -720,6 +717,11 @@
       };
 
       $scope.loadTimetable = function() {
+        if (!ReportShare.hasToken()) {
+          $scope.errorMessage = 'Open this report from the School Vertex app (share link).';
+          return;
+        }
+
         if (entityTypeId === null || entityId === null) {
           $scope.errorMessage = 'EntityTypeId and EntityId are required in the URL. Example: ?EntityTypeId=119&EntityId=274 or ?Id=274-119';
           return;
@@ -728,34 +730,30 @@
         $scope.isLoading = true;
         $scope.errorMessage = '';
 
-        var timetableUrl = TIMETABLE_API + encodeURIComponent(entityTypeId) + '/' + encodeURIComponent(entityId);
-        var entityUrl = ENTITY_API + encodeURIComponent(entityTypeId) + '/' + encodeURIComponent(entityId);
+        $http.get(ReportShare.url('TimeTable'))
+          .then(function(response) {
+            var data = (response.data && response.data.Data) || {};
+            var items = data.Rows || [];
+            $scope.days = groupByDay(items);
+            $scope.totalPeriods = items.length;
+            $scope.selectedDay = null;
+            $scope.entity = data.Entity || {};
+          }).catch(function(error) {
+            $scope.days = [];
+            $scope.totalPeriods = 0;
+            $scope.entity = {};
 
-        Promise.all([
-          $http.get(timetableUrl),
-          $http.get(entityUrl)
-        ]).then(function(responses) {
-          var items = responses[0].data || [];
-          $scope.days = groupByDay(items);
-          $scope.totalPeriods = items.length;
-          $scope.selectedDay = null;
-          $scope.entity = responses[1].data || {};
-        }).catch(function(error) {
-          $scope.days = [];
-          $scope.totalPeriods = 0;
-          $scope.entity = {};
-
-          if (!error) {
-            $scope.errorMessage = 'Unable to load time table.';
-          } else if (error.status === -1) {
-            $scope.errorMessage = 'Unable to connect to API.';
-          } else {
-            $scope.errorMessage = 'API error ' + error.status + ': ' + (error.statusText || 'Unable to load time table.');
-          }
-        }).finally(function() {
-          $scope.isLoading = false;
-          $scope.$applyAsync();
-        });
+            if (!error) {
+              $scope.errorMessage = 'Unable to load time table.';
+            } else if (error.status === -1) {
+              $scope.errorMessage = 'Unable to connect to API.';
+            } else {
+              $scope.errorMessage = 'API error ' + error.status + ': ' + (error.statusText || 'Unable to load time table.');
+            }
+          }).finally(function() {
+            $scope.isLoading = false;
+            $scope.$applyAsync();
+          });
       };
 
       $scope.loadTimetable();

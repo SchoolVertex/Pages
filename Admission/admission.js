@@ -12,7 +12,32 @@ app.controller("myCtrl", function ($scope, $http, $window) {
     return params;
   }
 
-  function applyAdmissionInfo(data) {
+  function applyGradeName(classNumber, yearId, currentAcYearId) {
+    $scope.GradeName = "Class/Grade";
+    if (classNumber == null || classNumber === undefined || classNumber === "") {
+      return;
+    }
+    let n = Number(classNumber);
+    if (!isFinite(n)) {
+      return;
+    }
+    const yearDiff = (yearId || 0) - (currentAcYearId || 0);
+    n = n + yearDiff;
+    if (n == 0) {
+      n = 1;
+    }
+    if (n > 0) {
+      $scope.GradeName = "Class " + n;
+    } else if (n == -1) {
+      $scope.GradeName = "UKG";
+    } else if (n == -2) {
+      $scope.GradeName = "LKG";
+    } else if (n == -3) {
+      $scope.GradeName = "NURSERY";
+    }
+  }
+
+  function applyAdmissionInfo(data, classNumber) {
     $scope.admInfo = data || {};
     if (!$scope.admInfo.AadharNumber) {
       $scope.admInfo.AadharNumber = "";
@@ -39,67 +64,11 @@ app.controller("myCtrl", function ($scope, $http, $window) {
           ? "2027-28"
           : "2025-26";
 
-    $scope.GradeName = "Class/Grade";
-    if (!$scope.admInfo.BatchId) {
-      return;
-    }
-
-    const classInfoUrl =
-      `${baseUrl}/Batch/GetClassNumber/${$scope.admInfo.BatchId}`;
-    $http.get(classInfoUrl).then(function (resp) {
-      let classNumber = resp.data;
-      const yearDiff =
-        ($scope.admInfo.YearId || 0) - ($scope.orgInfo.CurrentAcYearId || 0);
-      classNumber = classNumber + yearDiff;
-      if (classNumber == 0) {
-        classNumber = 1;
-      }
-      if (classNumber > 0) {
-        $scope.GradeName = "Class " + classNumber;
-      } else if (classNumber == -1) {
-        $scope.GradeName = "UKG";
-      } else if (classNumber == -2) {
-        $scope.GradeName = "LKG";
-      } else if (classNumber == -3) {
-        $scope.GradeName = "NURSERY";
-      }
-    });
-  }
-
-  function loadOrgThenAdmission(orgId, admissionInfoUrl) {
-    const orgInfoUrl = `${baseUrl}/Organisation/GetInfoForCertificate/${orgId}`;
-    $http.get(orgInfoUrl).then(function (response) {
-      $scope.orgInfo = response.data;
-      $http.get(admissionInfoUrl).then(function (response) {
-        applyAdmissionInfo(response.data);
-      });
-    });
-  }
-
-  const baseUrl = SvApi.apiBase();
-  const query = getQueryParams();
-
-  // Supported:
-  //   ?id=18287&orgid=153          → Admissions table row
-  //   ?userid=6325&orgid=1         → enrolled student
-  //   ?Id=6325-1                   → compact userId-orgId (same as reports)
-  let admId = query.id;
-  let userId = query.userid;
-  let orgId = query.orgid;
-
-  if (admId && String(admId).indexOf("-") >= 0) {
-    const parts = String(admId).split("-");
-    if (
-      parts.length >= 2 &&
-      /^\d+$/.test(parts[0]) &&
-      /^\d+$/.test(parts[1])
-    ) {
-      userId = userId || parts[0];
-      orgId = orgId || parts[1];
-      admId = null;
-    }
-  } else if (admId && !/^\d+$/.test(String(admId))) {
-    admId = null;
+    applyGradeName(
+      classNumber,
+      $scope.admInfo.YearId,
+      $scope.orgInfo && $scope.orgInfo.CurrentAcYearId
+    );
   }
 
   $scope.gender = "";
@@ -107,32 +76,22 @@ app.controller("myCtrl", function ($scope, $http, $window) {
   $scope.orgInfo = {};
   $scope.GradeName = "";
   $scope.YearName = "";
+  $scope.errorMessage = "";
 
-  if (admId) {
-    const admissionInfoUrl = `${baseUrl}/AdmissionReport/GetById/${admId}`;
-    if (orgId) {
-      loadOrgThenAdmission(orgId, admissionInfoUrl);
-    } else {
-      $http.get(admissionInfoUrl).then(function (response) {
-        applyAdmissionInfo(response.data);
-        const resolvedOrgId =
-          ($scope.admInfo && $scope.admInfo.OrganisationId) || 0;
-        if (resolvedOrgId) {
-          $http
-            .get(`${baseUrl}/Organisation/GetInfoForCertificate/${resolvedOrgId}`)
-            .then(function (orgResp) {
-              $scope.orgInfo = orgResp.data;
-            });
-        }
-      });
-    }
+  if (typeof ReportShare === "undefined" || !ReportShare.hasToken()) {
+    $scope.errorMessage = "Open this admission form from the School Vertex app.";
     return;
   }
 
-  if (userId && orgId) {
-    loadOrgThenAdmission(
-      orgId,
-      `${baseUrl}/AdmissionReport/GetFormByUser/${userId}/${orgId}`
-    );
-  }
+  ReportShare.loadAdmission($http)
+    .then(function (data) {
+      $scope.orgInfo = data.orgInfo || {};
+      applyAdmissionInfo(data.admInfo, data.classNumber);
+      $scope.$applyAsync();
+    })
+    .catch(function (err) {
+      $scope.errorMessage =
+        (err && err.message) || "Unable to load admission form.";
+      $scope.$applyAsync();
+    });
 });

@@ -3,6 +3,7 @@
 
 <head>
   <script src="../sv-api.js"></script>
+  <script src="../Reports/report-share.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Transfer Certificate - A4 Print Optimized</title>
@@ -563,47 +564,28 @@
                 return params;
             }
 
-            const baseUrl = SvApi.apiBase();
-            const query = getQueryParams();
-            const orgId = query.orgId;
-            const userId = query.userId;
-
-            // --- Fetch Org Info ---
-            if (orgId) {
-                const orgInfoUrl = `${baseUrl}/Organisation/GetInfoForCertificate/${orgId}`;
-                $http.get(orgInfoUrl).then(function (response) {
-                    // Merge API data with defaults
-                    $scope.orgInfo = angular.extend($scope.orgInfo, response.data);
-                    if ($scope.orgInfo && $scope.orgInfo.Name) {
-                        $scope.orgNameFontSize = adjustOrgNameFontSize($scope.orgInfo.Name);
-                    }
-                }).catch(function (error) {
-                    console.error("Error fetching org data:", error);
-                });
+            $scope.errorMessage = '';
+            if (!ReportShare.hasToken()) {
+                $scope.errorMessage = 'Open this certificate from the School Vertex app.';
+                return;
             }
-
-            // --- Fetch User Info ---
-            if (userId) {
-                const entityTypeId = query.entityTypeId;
-                const entityId = query.entityId;
-                const userInfoUrl = `${baseUrl}/User/GetInfoForCertificate/${userId}/${entityTypeId}/${entityId}`;
-                $http.get(userInfoUrl).then(function (response) {
-                    // Merge API data with defaults and convert date strings to Date objects
-                    let apiData = response.data;
-
-                    // Date conversion logic
-                    apiData.DateOfBirth = apiData.DateOfBirth ? new Date(apiData.DateOfBirth) : $scope.userInfo.DateOfBirth;
-                    apiData.AdmissionDate = apiData.AdmissionDate ? new Date(apiData.AdmissionDate) : $scope.userInfo.AdmissionDate;
-                    apiData.DateOfApplication = apiData.DateOfApplication ? new Date(apiData.DateOfApplication) : $scope.userInfo.DateOfApplication;
-                    apiData.DateOfIssue = apiData.DateOfIssue ? new Date(apiData.DateOfIssue) : $scope.userInfo.DateOfIssue;
-
-                    $scope.userInfo = angular.extend($scope.userInfo, apiData);
-                    $scope.modal.userInfo = angular.copy($scope.userInfo); // Update modal copy as well
-
-                }).catch(function (error) {
-                    console.error("Error fetching user data:", error);
-                });
-            }
+            ReportShare.loadStudentCertificate($http).then(function (data) {
+                $scope.orgInfo = angular.extend($scope.orgInfo, data.orgInfo || {});
+                if ($scope.orgInfo && $scope.orgInfo.Name) {
+                    $scope.orgNameFontSize = adjustOrgNameFontSize($scope.orgInfo.Name);
+                }
+                let apiData = data.userInfo || {};
+                apiData.DateOfBirth = apiData.DateOfBirth ? new Date(apiData.DateOfBirth) : $scope.userInfo.DateOfBirth;
+                apiData.AdmissionDate = apiData.AdmissionDate ? new Date(apiData.AdmissionDate) : $scope.userInfo.AdmissionDate;
+                apiData.DateOfApplication = apiData.DateOfApplication ? new Date(apiData.DateOfApplication) : $scope.userInfo.DateOfApplication;
+                apiData.DateOfIssue = apiData.DateOfIssue ? new Date(apiData.DateOfIssue) : $scope.userInfo.DateOfIssue;
+                $scope.userInfo = angular.extend($scope.userInfo, apiData);
+                $scope.modal.userInfo = angular.copy($scope.userInfo);
+                $scope.$applyAsync();
+            }).catch(function (err) {
+                $scope.errorMessage = (err && err.message) || 'Unable to load certificate.';
+                $scope.$applyAsync();
+            });
 
 
             // --- MODAL LOGIC ---

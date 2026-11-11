@@ -963,12 +963,11 @@
 
       $scope.saveEvaluation = function(statusId) {
         if (!$scope.selected) return;
-        if ($scope.userId === null && !ReportShare.hasToken()) {
-          $scope.errorMessage = 'UserId is required in the URL.';
+        if (!ReportShare.hasToken()) {
+          $scope.error = 'Open this report from the School Vertex app (share link).';
           return;
         }
-
-        $scope.isSaving = true;
+$scope.isSaving = true;
         $scope.errorMessage = '';
         $scope.successMessage = '';
 
@@ -980,9 +979,7 @@
           Rating: $scope.evalForm.Rating || 0
         };
 
-        var saveReq = ReportShare.hasToken()
-          ? $http.post(ReportShare.url('UpdateHomeworkSubmission'), payload)
-          : $http.post(API_BASE + '/Assignment/UpdateSubmission', payload);
+        var saveReq = $http.post(ReportShare.url('UpdateHomeworkSubmission'), payload);
         saveReq
           .then(function() {
             $scope.successMessage = statusId === $scope.STATUS.Approved
@@ -1011,17 +1008,14 @@
         $scope.homeworkId = parseId(query.HomeworkId || query.homeworkId || query.assignmentId || query.id);
         $scope.userId = parseId(query.UserId || query.userId);
 
-        if (!ReportShare.hasToken() && ($scope.homeworkId === null || $scope.userId === null)) {
-          $scope.errorMessage = 'HomeworkId and UserId are required. Example: ?HomeworkId=83037&UserId=1234 or ?Id=83037-1234';
+        if (!ReportShare.hasToken()) {
+          $scope.error = 'Open this report from the School Vertex app (share link).';
           return;
         }
-
-        $scope.isLoading = true;
+$scope.isLoading = true;
         $scope.errorMessage = '';
 
-        var request = ReportShare.hasToken()
-          ? $http.get(ReportShare.url('HomeworkEvaluation'))
-          : $http.get(API_BASE + '/Assignment/GetByIdViewAll/' + encodeURIComponent($scope.homeworkId));
+        var request = $http.get(ReportShare.url('HomeworkEvaluation'));
         return request
           .then(function(response) {
             var body = response.data || null;

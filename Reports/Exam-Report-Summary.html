@@ -1143,23 +1143,11 @@
       var entityTypeId = num(query.entityTypeId || query.EntityTypeId);
       var yearId = num(query.yearId || query.YearId);
 
-      if (!ReportShare.hasToken() && (!orgId || !userId || !yearId)) {
-        $scope.errorMessage = 'orgId, userId and yearId are required. Example: ?orgId=1&userId=50602&yearId=9 or ?Id=1-50602-9-274-119';
-        return;
-      }
-
+      if (!ReportShare.hasToken()) {
+          $scope.error = 'Open this report from the School Vertex app (share link).';
+          return;
+        }
       $scope.yearLabel = 'Year #' + yearId;
-
-      $http.get(baseUrl + '/Organisation/GetYearList')
-        .then(function(response) {
-          var years = response.data || [];
-          var found = years.find(function(y) {
-            return Number(y.value || y.Value || y.id || y.Id) === yearId;
-          });
-          if (found) {
-            $scope.yearLabel = found.label || found.Label || found.text || found.Text || $scope.yearLabel;
-          }
-        });
 
       function subjectName(id, list) {
         var found = (list || []).find(function(x) { return x.SubjectId === id; });
@@ -1763,8 +1751,13 @@
         $scope.insights = [];
         destroyCharts();
 
-        if (ReportShare.hasToken()) {
-          $http.get(ReportShare.url('ExamReportSummary'))
+        if (!ReportShare.hasToken()) {
+          $scope.loading = false;
+          $scope.errorMessage = 'Open this report from the School Vertex app (share link).';
+          return;
+        }
+
+        $http.get(ReportShare.url('ExamReportSummary'))
             .then(function(r) {
               var data = (r.data && r.data.Data) || {};
               orgId = r.data.OrgId || orgId;
@@ -1774,6 +1767,12 @@
               entityTypeId = r.data.EntityTypeId || entityTypeId;
               $scope.orgInfo = data.OrgInfo || {};
               $scope.student = data.Student || {};
+              var found = (data.Years || []).find(function(y) {
+                return Number(y.value || y.Value || y.id || y.Id) === yearId;
+              });
+              if (found) {
+                $scope.yearLabel = found.label || found.Label || found.text || found.Text || $scope.yearLabel;
+              }
               buildView(data.Marks || [], data.SubjectTotals || [], data.Tests || [], data.Subjects || []);
               $scope.loading = false;
               $scope.$applyAsync();
@@ -1783,39 +1782,6 @@
               $scope.errorMessage = 'Unable to load year marks summary.';
               $scope.$applyAsync();
             });
-          return;
-        }
-
-        var batchId = 0;
-        var sectionId = 0;
-        if (entityTypeId === ENTITY_BATCH) batchId = entityId || 0;
-        if (entityTypeId === ENTITY_SECTION) sectionId = entityId || 0;
-
-        var marksUrl = baseUrl + '/Test/GetMarkSheetData/' + userId + '/' + orgId + '/' + yearId + '/' + $scope.isMain;
-        var totalsUrl = baseUrl + '/Subject/GetSubjectTotals/' + batchId + '/' + sectionId;
-        var testsUrl = baseUrl + '/Test/GetTestList/' + orgId + '/' + yearId + '/' + $scope.isMain;
-        var subjectsUrl = baseUrl + '/Subject/GetSubjectList/' + orgId;
-
-        $http.get(baseUrl + '/Organisation/GetInfoForCertificate/' + orgId)
-          .then(function(r) { $scope.orgInfo = r.data || {}; });
-
-        $http.get(baseUrl + '/User/GetPreviewById/' + userId)
-          .then(function(r) { $scope.student = r.data || {}; });
-
-        Promise.all([
-          $http.get(marksUrl).then(function(r) { return r.data || []; }),
-          $http.get(totalsUrl).then(function(r) { return r.data || []; }, function() { return []; }),
-          $http.get(testsUrl).then(function(r) { return r.data || []; }),
-          $http.get(subjectsUrl).then(function(r) { return r.data || []; })
-        ]).then(function(parts) {
-          buildView(parts[0], parts[1], parts[2], parts[3]);
-          $scope.loading = false;
-          $scope.$applyAsync();
-        }).catch(function() {
-          $scope.loading = false;
-          $scope.errorMessage = 'Unable to load year marks summary.';
-          $scope.$applyAsync();
-        });
       }
 
       loadAll();

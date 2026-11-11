@@ -3,6 +3,7 @@
 
 <head>
   <script src="../sv-api.js"></script>
+  <script src="../Reports/report-share.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bonafide Certificate</title>
@@ -449,24 +450,17 @@
             return params;
         }
 
-        const baseUrl = SvApi.apiBase();
-        const query = getQueryParams();
-        const userId = query.userId;
-        const orgId = query.orgId;
-        const entityTypeId = query.entityTypeId;
-        const entityId = query.entityId;
-
-        const orgInfoUrl = `${baseUrl}/Organisation/GetInfoForCertificate/${orgId}`;
-        $http.get(orgInfoUrl).then(function (response) {
-            $scope.orgInfo = response.data;
-            if ($scope.orgInfo && $scope.orgInfo.Name) {
+        $scope.errorMessage = '';
+        if (!ReportShare.hasToken()) {
+            $scope.errorMessage = 'Open this certificate from the School Vertex app.';
+            return;
+        }
+        ReportShare.loadStudentCertificate($http).then(function (data) {
+            $scope.orgInfo = data.orgInfo || {};
+            if ($scope.orgInfo.Name) {
                 $scope.orgNameFontSize = adjustOrgNameFontSize($scope.orgInfo.Name);
             }
-        });
-
-        const userInfoUrl = `${baseUrl}/User/GetInfoForCertificate/${userId}/${entityTypeId}/${entityId}`;
-        $http.get(userInfoUrl).then(function (response) {
-            $scope.userInfo = response.data;
+            $scope.userInfo = data.userInfo || {};
             if (!$scope.userInfo.AcademicYear) {
                 const currentYear = new Date().getFullYear();
                 $scope.userInfo.AcademicYear = `${currentYear}-${currentYear + 1}`;
@@ -481,6 +475,10 @@
             if ($scope.modal.userInfo.AdmissionDate) {
                 $scope.modal.userInfo.AdmissionDate = new Date($scope.modal.userInfo.AdmissionDate);
             }
+            $scope.$applyAsync();
+        }).catch(function (err) {
+            $scope.errorMessage = (err && err.message) || 'Unable to load certificate.';
+            $scope.$applyAsync();
         });
 
         $scope.showEditModal = function() {

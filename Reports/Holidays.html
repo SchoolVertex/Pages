@@ -559,23 +559,17 @@
       var orgId = num(query.orgId || query.OrgId);
       var yearId = num(query.yearId || query.YearId);
 
+      if (!ReportShare.hasToken()) {
+        $scope.errorMessage = 'Open this report from the School Vertex app (share link).';
+        return;
+      }
+
       if (!orgId || !yearId) {
         $scope.errorMessage = 'orgId and yearId are required. Example: ?orgId=1&yearId=9 or ?Id=1-9';
         return;
       }
 
       $scope.yearLabel = 'Year #' + yearId;
-
-      $http.get(baseUrl + '/Organisation/GetYearList')
-        .then(function(response) {
-          var years = response.data || [];
-          var found = years.find(function(y) {
-            return Number(y.value || y.Value || y.id || y.Id) === yearId;
-          });
-          if (found) {
-            $scope.yearLabel = found.label || found.Label || found.text || found.Text || $scope.yearLabel;
-          }
-        });
 
       $scope.formatDate = function(value) {
         if (!value) return '-';
@@ -668,16 +662,25 @@
         };
       }
 
+      function applyYearLabel(years) {
+        var found = (years || []).find(function(y) {
+          return Number(y.value || y.Value || y.id || y.Id) === yearId;
+        });
+        if (found) {
+          $scope.yearLabel = found.label || found.Label || found.text || found.Text || $scope.yearLabel;
+        }
+      }
+
       function load() {
         $scope.loading = true;
         $scope.errorMessage = '';
 
-        $http.get(baseUrl + '/Organisation/GetInfoForCertificate/' + orgId)
-          .then(function(r) { $scope.orgInfo = r.data || {}; });
-
-        $http.get(baseUrl + '/Holiday/GetList/' + orgId + '/' + yearId)
+        $http.get(ReportShare.url('Holidays'))
           .then(function(response) {
-            $scope.rows = enrich(response.data || []);
+            var data = (response.data && response.data.Data) || {};
+            $scope.orgInfo = data.OrgInfo || {};
+            applyYearLabel(data.Years || []);
+            $scope.rows = enrich(data.Rows || []);
             refreshStats($scope.rows);
             var hasUpcoming = $scope.rows.some(function(r) {
               return r.status === 'upcoming' || r.status === 'today';

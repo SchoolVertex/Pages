@@ -3,6 +3,7 @@
 
 <head>
   <script src="../sv-api.js"></script>
+  <script src="../Reports/report-share.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bonafide Certificate</title>
@@ -450,21 +451,14 @@
                 return params;
             }
 
-            const baseUrl = SvApi.apiBase();
-            const query = getQueryParams();
-            const userId = query.userId;
-            const orgId = query.orgId;
-            const entityTypeId = query.entityTypeId;
-            const entityId = query.entityId;
-
-            const orgInfoUrl = `${baseUrl}/Organisation/GetInfoForCertificate/${orgId}`;
-            $http.get(orgInfoUrl).then(function (response) {
-                $scope.orgInfo = response.data;
-            });
-
-            const userInfoUrl = `${baseUrl}/User/GetInfoForCertificate/${userId}/${entityTypeId}/${entityId}`;
-            $http.get(userInfoUrl).then(function (response) {
-                $scope.userInfo = response.data;
+            $scope.errorMessage = '';
+            if (!ReportShare.hasToken()) {
+                $scope.errorMessage = 'Open this certificate from the School Vertex app.';
+                return;
+            }
+            ReportShare.loadStudentCertificate($http).then(function (data) {
+                $scope.orgInfo = data.orgInfo || {};
+                $scope.userInfo = data.userInfo || {};
                 $scope.userInfo.CertTitle = "Bonafide Certificate";
                 $scope.userInfo.CertificateNumber = $scope.userInfo.UserId;
                 const soltation =  $scope.userInfo.GenderId == 501 ? 'him' : 'her';
@@ -474,6 +468,10 @@
                     $scope.dateOfBirthWords = convertDateToWords($scope.userInfo.DateOfBirth);
                     $scope.modal.userInfo.DateOfBirth = new Date($scope.userInfo.DateOfBirth);
                 }
+                $scope.$applyAsync();
+            }).catch(function (err) {
+                $scope.errorMessage = (err && err.message) || 'Unable to load certificate.';
+                $scope.$applyAsync();
             });
 
             // Modal functions

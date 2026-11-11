@@ -574,8 +574,8 @@
       var orgId = num(query.orgId || query.OrgId);
       var userId = num(query.userId || query.UserId);
 
-      if (!ReportShare.hasToken() && (!orgId || !userId)) {
-        $scope.errorMessage = 'orgId and userId are required. Example: ?orgId=1&userId=50602 or ?Id=1-50602';
+      if (!ReportShare.hasToken()) {
+        $scope.errorMessage = 'Open this report from the School Vertex app (share link).';
         return;
       }
 
@@ -641,8 +641,7 @@
         $scope.loading = true;
         $scope.errorMessage = '';
 
-        if (ReportShare.hasToken()) {
-          $http.get(ReportShare.url('StudentRemarks'))
+        $http.get(ReportShare.url('StudentRemarks'))
             .then(function(response) {
               var data = (response.data && response.data.Data) || {};
               $scope.orgInfo = data.OrgInfo || {};
@@ -659,30 +658,7 @@
             .finally(function() {
               $scope.loading = false;
             });
-          return;
-        }
-
-        $http.get(baseUrl + '/Organisation/GetInfoForCertificate/' + orgId)
-          .then(function(r) { $scope.orgInfo = r.data || {}; });
-
-        $http.get(baseUrl + '/User/GetPreviewById/' + userId)
-          .then(function(r) { $scope.student = r.data || {}; });
-
-        $http.get(baseUrl + '/StudentRemark/GetList/' + orgId + '/' + userId)
-          .then(function(response) {
-            $scope.rows = enrich(response.data || []);
-            refreshStats($scope.rows);
-            applyFilter();
-          })
-          .catch(function() {
-            $scope.rows = [];
-            $scope.visibleRows = [];
-            $scope.errorMessage = 'Unable to load student remarks.';
-          })
-          .finally(function() {
-            $scope.loading = false;
-          });
-      }
+          }
 
       load();
     });

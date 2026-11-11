@@ -113,7 +113,8 @@
     </div>
   </div>
 
-  <script src="https://schoolvertex.github.io/Pages/Student-Certificate/Modern/cert-core.js"></script>
+  <script src="../../Reports/report-share.js"></script>
+  <script src="cert-core.js"></script>
   <script>
     angular.module("myApp", []).controller("myCtrl", function ($scope, $http) {
       $scope.orgNameFontSize = "1.5rem";
@@ -129,25 +130,22 @@
       $scope.userInfo = angular.copy(defaultUserInfo);
       $scope.orgInfo = { Name: "", Description: "", FullAddress: "" };
       $scope.modal = { isVisible: false, userInfo: angular.copy(defaultUserInfo), orgInfo: {} };
-      var query = SVCert.getQueryParams();
-      if (query.orgId) {
-        $http.get(SVCert.apiBase + "/Organisation/GetInfoForCertificate/" + query.orgId).then(function (res) {
-          $scope.orgInfo = angular.extend($scope.orgInfo, res.data);
-          if ($scope.orgInfo.Name && $scope.orgInfo.Name.length > 30) $scope.orgNameFontSize = "1.15rem";
-        });
-      }
-      if (query.userId) {
-        $http.get(SVCert.apiBase + "/User/GetInfoForCertificate/" + query.userId + "/" + query.entityTypeId + "/" + query.entityId)
-          .then(function (res) {
-            var apiData = res.data;
-            apiData.DateOfBirth = apiData.DateOfBirth ? new Date(apiData.DateOfBirth) : $scope.userInfo.DateOfBirth;
-            apiData.AdmissionDate = apiData.AdmissionDate ? new Date(apiData.AdmissionDate) : $scope.userInfo.AdmissionDate;
-            apiData.DateOfApplication = apiData.DateOfApplication ? new Date(apiData.DateOfApplication) : $scope.userInfo.DateOfApplication;
-            apiData.DateOfIssue = apiData.DateOfIssue ? new Date(apiData.DateOfIssue) : $scope.userInfo.DateOfIssue;
-            $scope.userInfo = angular.extend($scope.userInfo, apiData);
-            $scope.modal.userInfo = angular.copy($scope.userInfo);
-          });
-      }
+      $scope.errorMessage = "";
+      SVCert.loadCertificateData($http).then(function (data) {
+        $scope.orgInfo = angular.extend($scope.orgInfo, data.orgInfo || {});
+        if ($scope.orgInfo.Name && $scope.orgInfo.Name.length > 30) $scope.orgNameFontSize = "1.15rem";
+        var apiData = data.userInfo || {};
+        apiData.DateOfBirth = apiData.DateOfBirth ? new Date(apiData.DateOfBirth) : $scope.userInfo.DateOfBirth;
+        apiData.AdmissionDate = apiData.AdmissionDate ? new Date(apiData.AdmissionDate) : $scope.userInfo.AdmissionDate;
+        apiData.DateOfApplication = apiData.DateOfApplication ? new Date(apiData.DateOfApplication) : $scope.userInfo.DateOfApplication;
+        apiData.DateOfIssue = apiData.DateOfIssue ? new Date(apiData.DateOfIssue) : $scope.userInfo.DateOfIssue;
+        $scope.userInfo = angular.extend($scope.userInfo, apiData);
+        $scope.modal.userInfo = angular.copy($scope.userInfo);
+        $scope.$applyAsync();
+      }).catch(function (err) {
+        $scope.errorMessage = (err && err.message) || "Unable to load certificate.";
+        $scope.$applyAsync();
+      });
       function asDate(v) { return v ? new Date(v) : null; }
       $scope.showEditModal = function () {
         $scope.modal.userInfo = angular.copy($scope.userInfo);

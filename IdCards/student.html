@@ -3,6 +3,7 @@
 
 <head>
   <script src="../sv-api.js"></script>
+  <script src="../Reports/report-share.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Student ID Card</title>
@@ -1830,30 +1831,26 @@
       }
 
       $scope.org = {};
-      var orgApiUrl = baseApiUrl + "/Organisation/GetInfoForCertificate/" + orgId;
-      $http.get(orgApiUrl).then(function (response) {
-        var data = response.data;
-          if (data) {
-          $scope.org = data;
-          if ($scope.useTwoLineSchoolName) {
-            if (!$scope.schoolNameLine1) {
-              splitSchoolName(data.Name);
-            }
-          } else {
+
+      function applyOrgInfo(data) {
+        if (!data) return;
+        $scope.org = data;
+        if ($scope.useTwoLineSchoolName) {
+          if (!$scope.schoolNameLine1) {
             splitSchoolName(data.Name);
           }
-          if (data.FullAddress) {
-            $scope.org.fullAddress = data.FullAddress;
-          } else if (data.AddressInfo) {
-            var a = data.AddressInfo;
-            var parts = [a.Plot_HouseNumber, a.LandMark, a.Street, a.City, a.State, a.ZipCode].filter(Boolean);
-            $scope.org.fullAddress = parts.join(", ");
-          }
-          applySchoolInfoOverrides();
+        } else {
+          splitSchoolName(data.Name);
         }
-      }, function (error) {
-        console.error("Organisation API failed:", error.status, error.statusText);
-      });
+        if (data.FullAddress) {
+          $scope.org.fullAddress = data.FullAddress;
+        } else if (data.AddressInfo) {
+          var a = data.AddressInfo;
+          var parts = [a.Plot_HouseNumber, a.LandMark, a.Street, a.City, a.State, a.ZipCode].filter(Boolean);
+          $scope.org.fullAddress = parts.join(", ");
+        }
+        applySchoolInfoOverrides();
+      }
 
       var designApiUrl = "https://schoolvertex.github.io/Pages/IdCards/settings.json";
       $http.get(designApiUrl).then(function (response) {
@@ -1861,7 +1858,6 @@
         var key = orgId != null ? String(orgId) : "All";
         var config = data[key] || data["All"] || {};
         applyDesignConfig(config);
-        // Query format wins over settings if provided
         if (query.format) {
           applyContentFormat(query.format);
         }
@@ -1870,7 +1866,6 @@
       });
 
       function offerHideCardsWithoutPhotos(usersOrUser, isBulk) {
-        // Store full dataset; filtering is controlled by the top checkbox.
         if (isBulk) {
           $scope._allUserList = Array.isArray(usersOrUser) ? usersOrUser.slice() : [];
           $scope._allUserInfo = null;
@@ -1881,7 +1876,6 @@
         $scope.applyCardFilters();
       }
 
-      /** Shared pipeline for GetBatchIdCardInfo / GetSectionIdCardInfo / GetIdListCardInfo. */
       function applyBulkIdCardData(data) {
         var list = Array.isArray(data) ? data.slice() : [];
 
@@ -1899,7 +1893,6 @@
           if (aHas && bHas) return aNum - bNum;
           if (aHas && !bHas) return -1;
           if (!aHas && bHas) return 1;
-          // Both missing — fall back to string compare when both present as text
           var aStr = aVal != null && aVal !== "" ? String(aVal) : null;
           var bStr = bVal != null && bVal !== "" ? String(bVal) : null;
           if (aStr && bStr) return aStr.localeCompare(bStr, undefined, { numeric: true, sensitivity: "base" });
@@ -1913,15 +1906,12 @@
           var bClass = b && b.ClassNumber != null ? Number(b.ClassNumber) : 0;
           if (isNaN(aClass)) aClass = 0;
           if (isNaN(bClass)) bClass = 0;
-          // 1) ClassNumber high → low
           if (aClass !== bClass) return bClass - aClass;
-          // 2) RollNumber ascending when available
           var rollCmp = compareOptionalAsc(
             a && a.RollNumber,
             b && b.RollNumber
           );
           if (rollCmp !== 0) return rollCmp;
-          // 3) AdmissionNumber ascending when available
           return compareOptionalAsc(
             a && a.AdmissionNumber,
             b && b.AdmissionNumber
@@ -1934,15 +1924,10 @@
         offerHideCardsWithoutPhotos(list, true);
       }
 
-      /** Same outcome as empty batch response — no cards rendered. */
       function applyNoIdCardRecords() {
         applyBulkIdCardData([]);
       }
 
-      /**
-       * orgId-only flow: load missing student ids from GitHub JSON, then
-       * POST /IdCard/GetIdListCardInfo { orgId, userList } and reuse bulk rendering.
-       */
       function loadMissingCardsByOrg(currentOrgId) {
         var missingCardsUrl = "https://schoolvertex.github.io/Pages/IdCards/missing-cards.json";
         $http.get(missingCardsUrl).then(function (response) {
@@ -1956,15 +1941,10 @@
             return;
           }
 
-          var payload = {
-            orgId: parseInt(currentOrgId, 10) || currentOrgId,
-            userList: userIds
-          };
-
-          $http.post(baseApiUrl + "/IdCard/GetIdListCardInfo", payload).then(function (cardResponse) {
-            applyBulkIdCardData(cardResponse.data);
-          }, function (error) {
-            console.error("GetIdListCardInfo failed:", error.status, error.statusText);
+          ReportShare.postIdCardList($http, currentOrgId, userIds).then(function (result) {
+            applyBulkIdCardData(result.cards);
+          }).catch(function (error) {
+            console.error("IdCardList failed:", error);
             applyNoIdCardRecords();
           });
         }, function (error) {
@@ -1973,30 +1953,33 @@
         });
       }
 
-      if (userId) {
-        var url = baseApiUrl + "/IdCard/GetIdCardInfo/" + orgId + "/" + userId;
-        $http.get(url).then(function (response) {
-          $scope.userInfo = response.data;
-          offerHideCardsWithoutPhotos($scope.userInfo, false);
+      if (!ReportShare.hasToken()) {
+        console.error("Open this ID card page from the School Vertex app.");
+        return;
+      }
+
+      if (userId || sectionId > 0 || classId > 0) {
+        ReportShare.loadIdCard($http).then(function (result) {
+          applyOrgInfo(result.orgInfo);
+          if (result.card) {
+            $scope.userInfo = result.card;
+            offerHideCardsWithoutPhotos($scope.userInfo, false);
+          } else {
+            applyBulkIdCardData(result.cards);
+          }
+          $scope.$applyAsync();
+        }).catch(function (error) {
+          console.error("IdCard share failed:", error);
+          applyNoIdCardRecords();
         });
-      } else if (sectionId > 0 || classId > 0) {
-        var bulkUrl = null;
-        if (sectionId > 0) {
-          bulkUrl = baseApiUrl + "/IdCard/GetSectionIdCardInfo/" + sectionId;
-        } else if (classId > 0) {
-          bulkUrl = baseApiUrl + "/IdCard/GetBatchIdCardInfo/" + classId;
-        }
-        if (bulkUrl) {
-          $http.get(bulkUrl).then(function (response) {
-            applyBulkIdCardData(response.data);
-          }, function (error) {
-            console.error("Bulk ID card API failed:", error.status, error.statusText);
-            applyNoIdCardRecords();
-          });
-        }
       } else if (orgId) {
-        // Only orgId present — missing ID cards list for this school
-        loadMissingCardsByOrg(orgId);
+        ReportShare.loadIdCardOrg($http).then(function (result) {
+          applyOrgInfo(result.orgInfo);
+          $scope.$applyAsync();
+          loadMissingCardsByOrg(orgId);
+        }).catch(function (error) {
+          console.error("IdCardOrg share failed:", error);
+        });
       }
     });
   </script>

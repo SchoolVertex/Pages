@@ -3,6 +3,7 @@
 
 <head>
   <script src="../sv-api.js"></script>
+  <script src="../Reports/report-share.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Academic Certificate</title>
@@ -474,27 +475,25 @@
                 return params;
             }
 
-            const query = getQueryParams();
-            const baseUrl = SvApi.apiBase();
-
-            if (query.orgid) {
-                $http.get(`${baseUrl}/Organisation/GetInfoForCertificate/${query.orgid}`)
-                    .then(res => $scope.orgInfo = res.data);
+            $scope.errorMessage = '';
+            $scope.parentList = [];
+            if (!ReportShare.hasToken()) {
+                $scope.errorMessage = 'Open this academic certificate from the School Vertex app.';
+                return;
             }
-
-            if (query.id) {
-                $http.get(`${baseUrl}/User/GetPreviewById/${query.id}`)
-                    .then(res => $scope.userInfo = res.data);
-            }
+            ReportShare.loadAcademic($http).then(function (data) {
+                $scope.orgInfo = data.orgInfo || {};
+                $scope.userInfo = data.userInfo || {};
+                $scope.parentList = data.parentList || [];
+                $scope.$applyAsync();
+            }).catch(function (err) {
+                $scope.errorMessage = (err && err.message) || 'Unable to load academic certificate.';
+                $scope.$applyAsync();
+            });
 
             // Share button click
             $scope.shareWhatsApp = function () {
-                const url = `${baseUrl}/UserParentInfo/GetList/${query.id}`;
-
-                $http.get(url).then(function (response) {
-                    $scope.parentList = response.data || [];
-                    $scope.showParentModal = true;
-                });
+                $scope.showParentModal = true;
             };
 
             // Close modal

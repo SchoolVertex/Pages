@@ -2,6 +2,12 @@
   "Admission": [],
   "UploadSource": "GIN",
   "ReportsGitBranch": "",
+  "AppUpdate": {
+    "AppVersion": 500,
+    "SoftUpdate": true,
+    "ForceUpdate": false
+  },
+  "MessageBalanceLowThreshold": 5000,
   "HideDailyAtriclePopup": false,
   "HideDailyAtricleUserList": [],
   "UploadPermanentRepo": "Files",

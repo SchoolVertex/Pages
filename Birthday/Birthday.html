@@ -3,6 +3,7 @@
 
 <head>
   <script src="../sv-api.js"></script>
+  <script src="../Reports/report-share.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Birthday Poster</title>
@@ -429,31 +430,25 @@
                 return params;
             }
 
-            const baseUrl = SvApi.apiBase();
-            // const baseUrl = 'http://localhost:62786/api';
-
-            const query = getQueryParams();
-            const userId = query.id;
-            const orgId = query.orgid;
-
-            const orgInfoUrl = `${baseUrl}/Organisation/GetInfoForCertificate/${orgId}`;
-            $http.get(orgInfoUrl).then(function (response) {
-                $scope.orgInfo = response.data;
-            });
-
-            const userInfoUrl = `${baseUrl}/User/GetPreviewById/${userId}`;
-            $http.get(userInfoUrl).then(function (response) {
-                $scope.userInfo = response.data;
+            $scope.errorMessage = '';
+            $scope.parentList = [];
+            if (!ReportShare.hasToken()) {
+                $scope.errorMessage = 'Open this birthday poster from the School Vertex app.';
+                return;
+            }
+            ReportShare.loadBirthday($http).then(function (data) {
+                $scope.orgInfo = data.orgInfo || {};
+                $scope.userInfo = data.userInfo || {};
+                $scope.parentList = data.parentList || [];
+                $scope.$applyAsync();
+            }).catch(function (err) {
+                $scope.errorMessage = (err && err.message) || 'Unable to load birthday poster.';
+                $scope.$applyAsync();
             });
 
             // Share button click
             $scope.shareWhatsApp = function () {
-                const url = `${baseUrl}/UserParentInfo/GetList/${userId}`;
-
-                $http.get(url).then(function (response) {
-                    $scope.parentList = response.data || [];
-                    $scope.showParentModal = true;
-                });
+                $scope.showParentModal = true;
             };
 
             // Close modal

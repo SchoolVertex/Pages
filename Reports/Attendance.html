@@ -887,23 +887,16 @@
         $scope.userId = parseId(query.StudentId || query.studentId || query.UserId || query.userId);
         $scope.orgId = parseId(query.OrgId || query.orgId || query.SchoolId || query.schoolId);
 
-        if (!ReportShare.hasToken() && ($scope.userId === null || $scope.orgId === null)) {
-          $scope.errorMessage = 'StudentId/UserId and OrgId/SchoolId are required. Example: ?StudentId=50602&OrgId=1 or ?Id=50602-1';
+        if (!ReportShare.hasToken()) {
+          $scope.error = 'Open this report from the School Vertex app (share link).';
           return;
         }
-
-        $scope.isLoading = true;
+$scope.isLoading = true;
         $scope.errorMessage = '';
         $scope.months = [];
         $scope.selected = null;
 
-        var request = ReportShare.hasToken()
-          ? $http.get(ReportShare.url('Attendance'))
-          : $http.get(
-              API_BASE + '/Attendance/GetMonthlyUserReportView/' +
-              encodeURIComponent($scope.userId) + '/' +
-              encodeURIComponent($scope.orgId)
-            );
+        var request = $http.get(ReportShare.url('Attendance'));
         request
           .then(function(response) {
             var body = response.data || [];

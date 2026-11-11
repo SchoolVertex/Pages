@@ -2,6 +2,7 @@
 <html lang="en" ng-app="myApp">
 <head>
   <script src="../sv-api.js"></script>
+  <script src="../Reports/report-share.js"></script>
 <meta charset="UTF-8">
 <title>Fee Declaration</title>
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
@@ -186,25 +187,24 @@
             return params;
         }
 
-        const baseUrl = SvApi.apiBase();
-        // const baseUrl = 'http://localhost:62786/api';
-        
-        const query = getQueryParams();
-        const userId = query.userid;
-        const yearId = query.yearid;
-        const orgId = query.orgid;
-
         $scope.gender = '';
         $scope.today = new Date();
+        $scope.orgInfo = {};
+        $scope.feeInfo = [];
+        $scope.errorMessage = '';
 
-        const orgInfoUrl = `${baseUrl}/Organisation/GetInfoForCertificate/${orgId}`;
-        $http.get(orgInfoUrl).then(function (response) {
-            $scope.orgInfo = response.data;
-        });
+        if (!ReportShare.hasToken()) {
+            $scope.errorMessage = 'Open this fee declaration from the School Vertex app.';
+            return;
+        }
 
-        const feeInfoUrl = `${baseUrl}/Fee/GetUserFeeItemSummary/${userId}/${yearId}`;
-        $http.get(feeInfoUrl).then(function (feeResp) {
-            $scope.feeInfo = feeResp.data;
+        ReportShare.loadFeeDeclaration($http).then(function (data) {
+            $scope.orgInfo = data.orgInfo || {};
+            $scope.feeInfo = data.feeInfo || [];
+            $scope.$applyAsync();
+        }).catch(function (err) {
+            $scope.errorMessage = (err && err.message) || 'Unable to load fee declaration.';
+            $scope.$applyAsync();
         });
     });
  </script>

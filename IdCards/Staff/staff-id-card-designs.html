@@ -3,6 +3,7 @@
 
 <head>
   <script src="../../sv-api.js"></script>
+  <script src="../../Reports/report-share.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Staff ID Card - Design Previews</title>
@@ -1667,19 +1668,29 @@ angular.module("myApp", ["ngSanitize"])
   });
 
   var orgId = getOrgIdFromQuery();
-  $http.get(SvApi.apiBase() + "/Organisation/GetInfoForCertificate/" + orgId)
-    .then(function (res) {
-      buildCards(res.data || {});
-    }, function () {
-      buildCards({
-        Name: "Sample School",
-        Description: "Recognized by the Govt",
-        AffiliationInfo: "CBSE Curriculum",
-        FullAddress: "Hyderabad",
-        Mobile: "9000000000",
-        Image: ""
-      });
+  function applySampleOrg() {
+    buildCards({
+      Name: "Sample School",
+      Description: "Recognized by the Govt",
+      AffiliationInfo: "CBSE Curriculum",
+      FullAddress: "Hyderabad",
+      Mobile: "9000000000",
+      Image: ""
     });
+  }
+  if (!ReportShare.hasToken()) {
+    applySampleOrg();
+  } else {
+    ReportShare.loadIdCardOrg($http).then(function (result) {
+      if (result && result.orgInfo) {
+        buildCards(result.orgInfo);
+      } else {
+        applySampleOrg();
+      }
+    }).catch(function () {
+      applySampleOrg();
+    });
+  }
 });
 </script>
 </body>

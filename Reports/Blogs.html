@@ -684,17 +684,19 @@
         };
       }
 
+      if (!ReportShare.hasToken()) {
+        $scope.errorMessage = 'Open this report from the School Vertex app (share link).';
+        return;
+      }
+
       function load() {
         $scope.loading = true;
         $scope.errorMessage = '';
 
-        $q.all([
-          $http.get(baseUrl + '/Query/GetPublicBlogList'),
-          $http.get(baseUrl + '/Query/GetAllTags'),
-          $http.get(baseUrl + '/Query/GetBlogTagCounts')
-        ])
-          .then(function(responses) {
-            var tags = (responses[1] && responses[1].data) || [];
+        $http.get(ReportShare.url('Blogs'))
+          .then(function(response) {
+            var data = (response.data && response.data.Data) || {};
+            var tags = data.Tags || [];
             var tagMap = {};
             tags.forEach(function(t) {
               var id = t.TagId || t.tagId || t.Id || t.id;
@@ -703,7 +705,7 @@
             });
             $scope.tagMap = tagMap;
 
-            var counts = (responses[2] && responses[2].data) || [];
+            var counts = data.TagCounts || [];
             $scope.popularTags = counts
               .filter(function(c) { return (c.Count || c.count || 0) > 0; })
               .map(function(c) {
@@ -717,7 +719,7 @@
               .sort(function(a, b) { return b.Count - a.Count; })
               .slice(0, 12);
 
-            $scope.rows = enrich((responses[0] && responses[0].data) || []);
+            $scope.rows = enrich(data.Rows || []);
             refreshStats($scope.rows);
 
             if (initialTagId && $scope.popularTags.some(function(t) { return t.Id === initialTagId; })) {

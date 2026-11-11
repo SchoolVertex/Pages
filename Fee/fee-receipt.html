@@ -2,6 +2,7 @@
 <html lang="en" ng-app="feeReceiptApp">
 <head>
   <script src="../sv-api.js"></script>
+  <script src="../Reports/report-share.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Fee Receipt 2 — SchoolVertex</title>
@@ -954,7 +955,6 @@
 
       function FeeReceiptCtrl($http, $q, $window) {
         var vm = this;
-        var API_BASE = SvApi.apiBase() + '/Fee';
 
         vm.feeId = null;
         vm.orgId = null;
@@ -1004,6 +1004,29 @@
           return params;
         }
 
+        function applyReceiptData(data) {
+          vm.fee = data.fee || null;
+          vm.receiptInfo = data.receiptInfo || null;
+          vm.preData = data.preData || null;
+          vm.summary = data.summary || null;
+
+          if (vm.preData && vm.preData.EducationalYearList) {
+            var year = vm.preData.EducationalYearList.find(function (y) {
+              return y.value === vm.yearId;
+            });
+            vm.academicYearLabel = year ? year.label : '';
+          }
+
+          if (vm.fee && vm.fee.EducationalYearId && !vm.academicYearLabel && vm.preData && vm.preData.EducationalYearList) {
+            var altYear = vm.preData.EducationalYearList.find(function (y) {
+              return y.value === vm.fee.EducationalYearId;
+            });
+            if (altYear) {
+              vm.academicYearLabel = altYear.label;
+            }
+          }
+        }
+
         function initFromUrl() {
           var params = getQueryParams();
           // Primary names from URL; keep older aliases as fallback
@@ -1012,9 +1035,7 @@
           vm.userId = +(params.userId || params.studentId || 0) || null;
           vm.yearId = +(params.yearId || params.academicYearId || 0) || null;
 
-          if (vm.feeId && vm.orgId && vm.userId && vm.yearId) {
-            loadReceipt();
-          }
+          loadReceipt();
         }
 
         function loadReceipt() {
@@ -1023,48 +1044,20 @@
           vm.receiptInfo = null;
           vm.summary = null;
 
-          if (!vm.feeId || !vm.orgId || !vm.userId || !vm.yearId) {
-            vm.error = 'Required query params: feeId, orgId, userId, yearId';
+          if (!ReportShare.hasToken()) {
+            vm.error = 'Open this fee receipt from the School Vertex app.';
             return;
           }
 
           vm.loading = true;
 
-          var feeUrl = API_BASE + '/GetById/' + vm.feeId;
-          var receiptUrl = API_BASE + '/GetFeeReceiptInfo/' + vm.orgId + '/' + vm.userId;
-          var preDataUrl = API_BASE + '/GetUserFeePreData/' + vm.userId + '/' + vm.yearId;
-          var summaryUrl = API_BASE + '/GetUserFeeSummary/' + vm.userId + '/' + vm.yearId;
-
-          // Anonymous APIs — no Authorization header
-          $q.all([
-            $http.get(feeUrl),
-            $http.get(receiptUrl),
-            $http.get(preDataUrl),
-            $http.get(summaryUrl)
-          ]).then(function (results) {
-            vm.fee = results[0].data;
-            vm.receiptInfo = results[1].data;
-            vm.preData = results[2].data;
-            vm.summary = results[3].data;
-
-            if (vm.preData && vm.preData.EducationalYearList) {
-              var year = vm.preData.EducationalYearList.find(function (y) {
-                return y.value === vm.yearId;
-              });
-              vm.academicYearLabel = year ? year.label : '';
-            }
-
-            if (vm.fee && vm.fee.EducationalYearId && !vm.academicYearLabel && vm.preData && vm.preData.EducationalYearList) {
-              var altYear = vm.preData.EducationalYearList.find(function (y) {
-                return y.value === vm.fee.EducationalYearId;
-              });
-              vm.academicYearLabel = altYear ? altYear.label : '';
-            }
+          ReportShare.loadFeeReceipt($http).then(function (data) {
+            applyReceiptData(data);
           }).catch(function (err) {
-            var msg = 'Failed to load receipt data.';
-            if (err.status === 404) msg = 'Record not found. Please verify the IDs.';
-            else if (err.data && err.data.Message) msg = err.data.Message;
-            else if (err.status) msg += ' (HTTP ' + err.status + ')';
+            var msg = (err && err.message) || 'Failed to load receipt data.';
+            if (err && err.status === 404) msg = 'Record not found. Please verify the IDs.';
+            else if (err && err.data && err.data.Message) msg = err.data.Message;
+            else if (err && err.status) msg += ' (HTTP ' + err.status + ')';
             vm.error = msg;
           }).finally(function () {
             vm.loading = false;

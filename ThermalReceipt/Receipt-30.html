@@ -2,6 +2,7 @@
 <html ng-app="feeReceiptApp" ng-controller="ReceiptController">
 <head>
   <script src="../sv-api.js"></script>
+  <script src="../Reports/report-share.js"></script>
   <meta charset="UTF-8">
   <title>Fee Receipt</title>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
@@ -80,13 +81,6 @@
         return params;
       }
 
-      const query = getQueryParams();
-      const feeId = query.feeId;
-      const userId = query.userId;
-
-      const feeUrl = `${SvApi.apiBase()}/Fee/GetById/${feeId}`;
-      const receiptUrl = `${SvApi.apiBase()}/Fee/GetFeeReceiptInfo/30/${userId}`;
-
       const paymentModes = [
         { Id: 901, Name: "Cash" },
         { Id: 902, Name: "UPI" },
@@ -104,22 +98,28 @@
       $scope.fee = {};
       $scope.school = {};
       $scope.receiptDate = new Date();
+      $scope.errorMessage = '';
 
-      const feePromise = $http.get(feeUrl).then(function(response) {
-        $scope.fee = response.data;
-        $scope.receiptDate = new Date($scope.fee.CreatedOn * 1000);
-      });
+      if (!ReportShare.hasToken()) {
+        $scope.errorMessage = 'Open this receipt from the School Vertex app.';
+        return;
+      }
 
-      const receiptPromise = $http.get(receiptUrl).then(function(response) {
-        $scope.school = response.data;
-      });
-
-      $q.all([feePromise, receiptPromise]).then(function() {
+      ReportShare.loadFeeReceipt($http).then(function(data) {
+        $scope.fee = data.fee || {};
+        if ($scope.fee.CreatedOn) {
+          $scope.receiptDate = new Date($scope.fee.CreatedOn * 1000);
+        }
+        $scope.school = data.receiptInfo || {};
+        $scope.$applyAsync();
         setTimeout(function () {
           if (confirm("Receipt data loaded. Do you want to print now?")) {
             window.print();
           }
         }, 500);
+      }).catch(function(err) {
+        $scope.errorMessage = (err && err.message) || 'Unable to load receipt.';
+        $scope.$applyAsync();
       });
     });
 </script>

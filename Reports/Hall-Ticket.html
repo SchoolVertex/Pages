@@ -649,23 +649,14 @@
       };
 
       $scope.loadHallTicket = function() {
-        if (!ReportShare.hasToken() && ($scope.filters.OrgId === null || $scope.filters.TestId === null || $scope.filters.BatchId === null || $scope.filters.UserId === null)) {
-          $scope.errorMessage = 'OrgId, TestId, BatchId, and UserId are required in the URL. Example: ?OrgId=53&TestId=2666&BatchId=667&SectionId=0&UserId=1234 or ?Id=53-2666-667-0-1234';
+        if (!ReportShare.hasToken()) {
+          $scope.error = 'Open this report from the School Vertex app (share link).';
           return;
         }
-
-        $scope.isLoading = true;
+$scope.isLoading = true;
         $scope.errorMessage = '';
 
-        var request = ReportShare.hasToken()
-          ? $http.get(ReportShare.url('HallTicket'))
-          : $http.post(API_URL, {
-              OrgId: $scope.filters.OrgId,
-              TestId: $scope.filters.TestId,
-              BatchId: $scope.filters.BatchId,
-              SectionId: $scope.filters.SectionId,
-              UserId: $scope.filters.UserId
-            });
+        var request = $http.get(ReportShare.url('HallTicket'));
         request.then(function(response) {
           var data = response.data || {};
           if (data.Data) {

@@ -2,6 +2,7 @@
 <html ng-app="feeReceiptApp" ng-controller="ReceiptController">
 <head>
   <script src="../sv-api.js"></script>
+  <script src="../Reports/report-share.js"></script>
   <meta charset="UTF-8">
   <title>Fee Receipt</title>
   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
@@ -82,24 +83,6 @@
         return params;
       }
 
-      const query = getQueryParams();
-      const feeId = query.feeId;
-      const userId = query.userId;
-      const orgId = query.orgId;
-
-      const baseUrl = SvApi.apiBase();
-      const feeUrl = `${baseUrl}/Fee/GetById/${feeId}`;
-      const receiptUrl = `${baseUrl}/Fee/GetFeeReceiptInfo/${orgId}/${userId}`;
-
-      // Due Amount code starts
-      const feeSummaryUrl = `${baseUrl}/Fee/GetUserFeeSummary/${userId}/9`;
-      const summaryPromise = $http.get(feeSummaryUrl).then(function(response1) {
-        $scope.dueAmount = response1.data.Total - (response1.data.Received + response1.data.Concession);
-      });
-      $scope.dueAmount = 0;
-      $scope.currentDate = new Date();
-      // Due Amount code ends
-
       const paymentModes = [
         { Id: 901, Name: "Cash" },
         { Id: 902, Name: "UPI" },
@@ -117,22 +100,34 @@
       $scope.fee = {};
       $scope.school = {};
       $scope.receiptDate = new Date();
-      
-      const feePromise = $http.get(feeUrl).then(function(response) {
-        $scope.fee = response.data;
-        $scope.receiptDate = new Date($scope.fee.CreatedOn * 1000);
-      });
+      $scope.dueAmount = 0;
+      $scope.currentDate = new Date();
+      $scope.errorMessage = '';
 
-      const receiptPromise = $http.get(receiptUrl).then(function(response) {
-        $scope.school = response.data;
-      });
+      if (!ReportShare.hasToken()) {
+        $scope.errorMessage = 'Open this receipt from the School Vertex app.';
+        return;
+      }
 
-      $q.all([feePromise, receiptPromise, summaryPromise]).then(function() {
+      ReportShare.loadFeeReceipt($http).then(function(data) {
+        $scope.fee = data.fee || {};
+        if ($scope.fee.CreatedOn) {
+          $scope.receiptDate = new Date($scope.fee.CreatedOn * 1000);
+        }
+        $scope.school = data.receiptInfo || {};
+        var summary = data.summary || {};
+        $scope.dueAmount =
+          (Number(summary.Total) || 0) -
+          ((Number(summary.Received) || 0) + (Number(summary.Concession) || 0));
+        $scope.$applyAsync();
         setTimeout(function () {
           if (confirm("Receipt data loaded. Do you want to print now?")) {
             window.print();
           }
         }, 500);
+      }).catch(function(err) {
+        $scope.errorMessage = (err && err.message) || 'Unable to load receipt.';
+        $scope.$applyAsync();
       });
     });
 </script>

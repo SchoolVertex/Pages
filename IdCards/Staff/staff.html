@@ -3,6 +3,7 @@
 
 <head>
   <script src="../../sv-api.js"></script>
+  <script src="../../Reports/report-share.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Staff ID Card</title>
@@ -979,32 +980,28 @@
       var sectionId = parseInt(query.sectionId || 0);
       var orgId = query.orgId || query.orgid;
 
-      $http.get(baseApiUrl + "/Organisation/GetInfoForCertificate/" + orgId).then(function (response) {
-        var data = response.data;
-        if (data) {
-          $scope.org = data;
-          if (!data.AffiliationInfo && data.Affiliation) {
-            $scope.org.AffiliationInfo = data.Affiliation;
-          }
-          if (data.FullAddress) {
-            $scope.org.fullAddress = data.FullAddress;
-            $scope.org.FullAddress = data.FullAddress;
-          } else if (data.AddressInfo) {
-            var a = data.AddressInfo;
-            var parts = [a.Plot_HouseNumber, a.LandMark, a.Street, a.City, a.State, a.ZipCode].filter(Boolean);
-            $scope.org.fullAddress = parts.join(", ");
-            $scope.org.FullAddress = $scope.org.fullAddress;
-          }
-          if ($scope.useTwoLineSchoolName) {
-            if (!$scope.schoolNameLine1) splitSchoolName(data.Name);
-          } else {
-            splitSchoolName(data.Name);
-          }
-          applySchoolInfoOverrides();
+      function applyOrgInfo(data) {
+        if (!data) return;
+        $scope.org = data;
+        if (!data.AffiliationInfo && data.Affiliation) {
+          $scope.org.AffiliationInfo = data.Affiliation;
         }
-      }, function (error) {
-        console.error("Organisation API failed:", error.status, error.statusText);
-      });
+        if (data.FullAddress) {
+          $scope.org.fullAddress = data.FullAddress;
+          $scope.org.FullAddress = data.FullAddress;
+        } else if (data.AddressInfo) {
+          var a = data.AddressInfo;
+          var parts = [a.Plot_HouseNumber, a.LandMark, a.Street, a.City, a.State, a.ZipCode].filter(Boolean);
+          $scope.org.fullAddress = parts.join(", ");
+          $scope.org.FullAddress = $scope.org.fullAddress;
+        }
+        if ($scope.useTwoLineSchoolName) {
+          if (!$scope.schoolNameLine1) splitSchoolName(data.Name);
+        } else {
+          splitSchoolName(data.Name);
+        }
+        applySchoolInfoOverrides();
+      }
 
       $http.get(settingsUrl).then(function (response) {
         var data = response.data || {};
@@ -1015,25 +1012,24 @@
         console.error("Staff design config failed — using defaults:", error.status, error.statusText);
       });
 
-      if (userId) {
-        $http.get(baseApiUrl + "/IdCard/GetStaffIdCardInfo/" + orgId + "/" + userId).then(function (response) {
-          $scope.userInfo = response.data;
-          offerHideCardsWithoutPhotos($scope.userInfo, false);
-        });
-      } else if (sectionId > 0 || classId > 0) {
-        var bulkUrl = null;
-        if (sectionId > 0) {
-          bulkUrl = baseApiUrl + "/IdCard/GetStaffSectionIdCardInfo/" + sectionId;
-        } else if (classId > 0) {
-          bulkUrl = baseApiUrl + "/IdCard/GetStaffBatchIdCardInfo/" + classId;
-        }
-        if (bulkUrl) {
-          $http.get(bulkUrl).then(function (response) {
-            $scope.userList = response.data || [];
-            offerHideCardsWithoutPhotos($scope.userList, true);
-          });
-        }
+      if (!ReportShare.hasToken()) {
+        console.error("Open this staff ID card page from the School Vertex app.");
+        return;
       }
+
+      ReportShare.loadStaffIdCard($http).then(function (result) {
+        applyOrgInfo(result.orgInfo);
+        if (result.card) {
+          $scope.userInfo = result.card;
+          offerHideCardsWithoutPhotos($scope.userInfo, false);
+        } else {
+          $scope.userList = result.cards || [];
+          offerHideCardsWithoutPhotos($scope.userList, true);
+        }
+        $scope.$applyAsync();
+      }).catch(function (error) {
+        console.error("StaffIdCard share failed:", error);
+      });
     });
   </script>
 </body>

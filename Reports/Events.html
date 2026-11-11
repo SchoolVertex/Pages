@@ -601,6 +601,11 @@
       var entityTypeId = num(query.entityTypeId || query.EntityTypeId);
       var orgId = num(query.orgId || query.OrgId);
 
+      if (!ReportShare.hasToken()) {
+        $scope.errorMessage = 'Open this report from the School Vertex app (share link).';
+        return;
+      }
+
       if (!entityId || !entityTypeId) {
         $scope.errorMessage = 'entityId and entityTypeId are required. Example: ?entityTypeId=119&entityId=274 or ?Id=274-119';
         return;
@@ -690,19 +695,18 @@
         };
       }
 
-      function loadOrg(id) {
-        if (!(id > 0)) return;
-        $http.get(baseUrl + '/Organisation/GetInfoForCertificate/' + id)
-          .then(function(r) { $scope.orgInfo = r.data || {}; });
-      }
-
-      function loadEvents() {
+      function load() {
         $scope.loading = true;
         $scope.errorMessage = '';
 
-        $http.get(baseUrl + '/EntityUpdate/GetAll/' + entityId + '/' + entityTypeId)
+        $http.get(ReportShare.url('Events'))
           .then(function(response) {
-            $scope.rows = enrich(response.data || []);
+            var data = (response.data && response.data.Data) || {};
+            if (data.OrgId) {
+              orgId = num(data.OrgId) || orgId;
+            }
+            $scope.orgInfo = data.OrgInfo || {};
+            $scope.rows = enrich(data.Rows || []);
             refreshStats($scope.rows);
             var hasUpcoming = $scope.rows.some(function(r) {
               return r.status === 'upcoming' || r.status === 'today';
@@ -720,25 +724,7 @@
           });
       }
 
-      function start() {
-        if (orgId > 0) {
-          loadOrg(orgId);
-          loadEvents();
-          return;
-        }
-
-        $http.get(baseUrl + '/Organisation/GetOrgId/' + entityTypeId + '/' + entityId)
-          .then(function(r) {
-            orgId = num(r.data);
-            loadOrg(orgId);
-          })
-          .catch(function() { /* branding optional */ })
-          .finally(function() {
-            loadEvents();
-          });
-      }
-
-      start();
+      load();
     });
   </script>
 </body>

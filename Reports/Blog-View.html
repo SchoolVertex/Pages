@@ -455,6 +455,11 @@
       var userId = num(query.userId || query.UserId) || 0;
       $scope.backUrl = userId > 0 ? ('Blogs.html?userId=' + userId) : 'Blogs.html';
 
+      if (!ReportShare.hasToken()) {
+        $scope.errorMessage = 'Open this report from the School Vertex app (share link).';
+        return;
+      }
+
       if (!queryId) {
         $scope.errorMessage = 'queryId is required. Example: ?queryId=123&userId=456';
         return;
@@ -502,14 +507,10 @@
         $scope.loading = true;
         $scope.errorMessage = '';
 
-        var detailUrl = baseUrl + '/Query/GetByIdForUser/' + queryId + '/' + (userId || 0);
-
-        $q.all([
-          $http.get(detailUrl),
-          $http.get(baseUrl + '/Query/GetAllTags')
-        ])
-          .then(function(responses) {
-            var blog = (responses[0] && responses[0].data) || {};
+        $http.get(ReportShare.url('BlogView'))
+          .then(function(response) {
+            var data = (response.data && response.data.Data) || {};
+            var blog = data.Detail || {};
             if (!blog.QueryId) {
               $scope.errorMessage = 'Blog not found.';
               $scope.blog = {};
@@ -517,7 +518,7 @@
             }
 
             var tagMap = {};
-            ((responses[1] && responses[1].data) || []).forEach(function(t) {
+            (data.Tags || []).forEach(function(t) {
               var id = t.TagId || t.tagId || t.Id || t.id;
               var name = t.Name || t.name || t.label || t.Label;
               if (id != null) tagMap[id] = name;

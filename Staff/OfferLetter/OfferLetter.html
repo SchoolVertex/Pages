@@ -3,6 +3,7 @@
 
 <head>
   <script src="../../sv-api.js"></script>
+  <script src="../../Reports/report-share.js"></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Teacher Offer Letter</title>
@@ -455,24 +456,17 @@
             };
 
             $scope.loadSchoolData = function () {
-                const orgApiUrl = SvApi.apiBase() + "/Organisation/GetInfoForCertificate/" + $scope.orgId;
-                $http.get(orgApiUrl).then(function (response) {
-                    if (response && response.data) {
-                        $scope.school = response.data;
-                    }
+                if (!ReportShare.hasToken()) {
+                    alert("Open this offer letter from the School Vertex app.");
+                    return;
+                }
+                ReportShare.loadStaffDocument($http, "OfferLetter").then(function (data) {
+                    $scope.school = data.orgInfo || {};
+                    $scope.userInfo = data.userInfo || {};
+                    $scope.$applyAsync();
                 }).catch(function (error) {
-                    console.error("School API error:", error);
-                    alert("Unable to load school data for ID " + $scope.orgId + ".");
-                });
-
-                const userApiUrl = SvApi.apiBase() + "/User/GetPreviewById/" + $scope.userId;
-                $http.get(userApiUrl).then(function (response) {
-                    if (response && response.data) {
-                        $scope.userInfo = response.data;
-                    }
-                }).catch(function (error) {
-                    console.error("User API error:", error);
-                    alert("Unable to load User data for ID " + $scope.userId + ".");
+                    console.error("Offer letter API error:", error);
+                    alert((error && error.message) || "Unable to load offer letter data.");
                 });
             };
 

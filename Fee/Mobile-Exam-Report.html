@@ -2,6 +2,7 @@
 <html lang="en" ng-app="reportApp">
 <head>
   <script src="../sv-api.js"></script>
+  <script src="../Reports/report-share.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Exam Report Card</title>
@@ -600,8 +601,7 @@
         return params;
       }
 
-      var baseUrl = SvApi.apiBase();
-      var query = getQueryParams();
+      ReportShare.expandCompactId(getQueryParams(), ['orgId', 'examId', 'userId']);
 
       $scope.orgInfo = {};
       $scope.student = {};
@@ -610,45 +610,18 @@
       $scope.today = new Date();
       $scope.errorMessage = '';
 
-      if (!query.id) {
-        $scope.errorMessage = 'Report ID is required in the URL. Example: ?id=orgId-examId-userId';
+      if (!ReportShare.hasToken()) {
+        $scope.errorMessage = 'Open this report from the School Vertex app (share link).';
         return;
       }
 
-      var values = query.id.split('-');
-      var orgId = values[0];
-      var examId = values[1];
-      var userId = values[2];
-
-      if (!orgId || !examId || !userId) {
-        $scope.errorMessage = 'Invalid report ID format. Expected: orgId-examId-userId';
-        return;
-      }
-
-      $http.get(baseUrl + '/Organisation/GetInfoForCertificate/' + encodeURIComponent(orgId))
+      $http.get(ReportShare.url('ExamReport'))
         .then(function(response) {
-          $scope.orgInfo = response.data || {};
-        })
-        .catch(function() {
-          $scope.errorMessage = $scope.errorMessage || 'Unable to load school information.';
-        });
-
-      $http.get(baseUrl + '/Test/GetName/' + encodeURIComponent(examId))
-        .then(function(response) {
-          $scope.testName = response.data || '';
-        });
-
-      $http.get(baseUrl + '/User/GetPreviewById/' + encodeURIComponent(userId))
-        .then(function(response) {
-          $scope.student = response.data || {};
-        });
-
-      $http.get(baseUrl + '/Test/GetMarkReportData/' +
-          encodeURIComponent(userId) + '/' +
-          encodeURIComponent(orgId) + '/' +
-          encodeURIComponent(examId))
-        .then(function(response) {
-          $scope.reportInfo = response.data || [];
+          var data = (response.data && response.data.Data) || {};
+          $scope.orgInfo = data.OrgInfo || {};
+          $scope.testName = data.TestName || '';
+          $scope.student = data.Student || {};
+          $scope.reportInfo = data.ReportInfo || [];
         })
         .catch(function() {
           $scope.errorMessage = 'Unable to load exam marks.';

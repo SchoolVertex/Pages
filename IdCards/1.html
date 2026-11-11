@@ -3,6 +3,7 @@
 
 <head>
   <script src="../sv-api.js"></script>
+  <script src="../Reports/report-share.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student ID Card</title>
@@ -144,28 +145,20 @@
             const classId = parseInt(query.classId || 0);
             const sectionId = parseInt(query.sectionId || 0);
 
-            const baseUrl = SvApi.apiRoot();
-            if (userId) {
-                // Single mode
-                const url = `${baseUrl}api/Fee/GetIdCardInfo/1/${userId}`;
-                $http.get(url).then(function (response) {
-                    $scope.userInfo = response.data;
-                });
-            } else if (sectionId > 0 || classId > 0) {
-                // Bulk mode
-                let bulkUrl = null;
-                if (sectionId > 0) {
-                    bulkUrl = `${baseUrl}api/Fee/GetSectionIdCardInfo/${sectionId}`;
-                } else if (classId > 0) {
-                    bulkUrl = `${baseUrl}api/Fee/GetBatchIdCardInfo/${classId}`;
-                }
-
-                if (bulkUrl) {
-                    $http.get(bulkUrl).then(function (response) {
-                        $scope.userList = response.data;
-                    });
-                }
+            if (!ReportShare.hasToken()) {
+                console.error('Open this ID card page from the School Vertex app.');
+                return;
             }
+            ReportShare.loadIdCard($http).then(function (result) {
+                if (result.card) {
+                    $scope.userInfo = result.card;
+                } else {
+                    $scope.userList = result.cards || [];
+                }
+                $scope.$applyAsync();
+            }).catch(function (err) {
+                console.error(err);
+            });
         });
     </script>
 </body>
