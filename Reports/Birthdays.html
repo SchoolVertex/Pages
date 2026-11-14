@@ -655,9 +655,17 @@
       };
 
       $scope.posterUrl = function(item) {
-        if (!item || !item.UserId) return '#';
-        return 'https://schoolvertex.github.io/Pages/Birthday/Birthday.html?id=' +
-          item.UserId + '&orgid=' + orgId;
+        // Same as Certificates: GitHub Pages Birthday.html + per-user Birthday token.
+        var posterToken = item && (item.PosterToken || item.posterToken);
+        if (!posterToken) return '#';
+        var params = new URLSearchParams();
+        params.set('t', posterToken);
+        var api = ReportShare.apiBase();
+        if (api) {
+          params.set('apiBase', api);
+        }
+        return 'https://schoolvertex.github.io/Pages/Birthday/Birthday.html?' +
+          params.toString();
       };
 
       $scope.setFilter = function(filter) {
