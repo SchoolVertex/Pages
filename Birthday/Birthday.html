@@ -276,6 +276,18 @@
             border-radius: 6px;
             margin-bottom: 10px;
         }
+
+        .share-hint {
+            font-size: 12px;
+            color: #666;
+            margin: 0 0 12px;
+            line-height: 1.4;
+        }
+
+        .btn[disabled] {
+            opacity: 0.65;
+            cursor: wait;
+        }
     </style>
 </head>
 
@@ -334,6 +346,10 @@
 
     <div class="parent-modal" ng-show="showParentModal">
         <h3>Share With</h3>
+        <p class="share-hint">
+            Shares the birthday poster as an image. On phone/tablet, pick WhatsApp in the share sheet.
+        </p>
+        <p class="share-hint" ng-if="shareStatus" style="color:#1b4d89;">{{ shareStatus }}</p>
 
         <div class="parent-card" ng-repeat="p in parentList">
             <div>
@@ -347,14 +363,25 @@
                 {{ p.Name }}<br>
                 <small>{{ p.Mobile }}</small>
             </div>
-        
-            <button class="btn btn-save" ng-click="shareToParent(p.Mobile)">
-                Share
+
+            <button class="btn btn-save"
+                ng-disabled="sharing"
+                ng-click="shareToParent(p)">
+                {{ sharingParentId === parentKey(p) ? 'Sharing…' : 'Share' }}
+            </button>
+        </div>
+
+        <div ng-if="!parentList.length" style="margin-bottom:12px;color:#666;font-size:13px;">
+            No parent mobile numbers found.
+            <button class="btn btn-save" style="margin-top:8px;"
+                ng-disabled="sharing"
+                ng-click="shareToParent(null)">
+                {{ sharing ? 'Sharing…' : 'Share poster image' }}
             </button>
         </div>
 
         <div style="text-align:right;margin-top:10px;">
-            <button class="btn" ng-click="closeParentModal()">Close</button>
+            <button class="btn" ng-disabled="sharing" ng-click="closeParentModal()">Close</button>
         </div>
     </div>
 
@@ -395,14 +422,13 @@
             ];
 
             $scope.downloadImage = function (name) {
-                const poster = document.getElementById('poster');
-                html2canvas(poster, { scale: 2, useCORS: true }).then(canvas => {
+                capturePosterCanvas().then(function (canvas) {
                     const link = document.createElement('a');
-                    link.download = name + '.png';
-                    link.href = canvas.toDataURL();
+                    link.download = (name || 'Birthday') + '.png';
+                    link.href = canvas.toDataURL('image/png');
                     link.click();
                 });
-            }
+            };
 
             $scope.changeBackground = function (bg) {
                 const poster = document.getElementById('poster');
@@ -416,6 +442,86 @@
                     poster.style.backgroundSize = 'cover';
                 }
             };
+
+            function capturePosterCanvas() {
+                const poster = document.getElementById('poster');
+                return html2canvas(poster, { scale: 2, useCORS: true, backgroundColor: null });
+            }
+
+            function canvasToPngFile(canvas, fileName) {
+                return new Promise(function (resolve, reject) {
+                    canvas.toBlob(function (blob) {
+                        if (!blob) {
+                            reject(new Error('Could not create poster image.'));
+                            return;
+                        }
+                        resolve(new File([blob], fileName, { type: 'image/png' }));
+                    }, 'image/png');
+                });
+            }
+
+            function downloadPosterFile(file) {
+                const url = URL.createObjectURL(file);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = file.name || 'Birthday.png';
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+            }
+
+            function normalizeWhatsAppPhone(mobile) {
+                return String(mobile || '').replace(/\D/g, '');
+            }
+
+            function openWhatsAppChat(mobile, text) {
+                const phone = normalizeWhatsAppPhone(mobile);
+                const message = encodeURIComponent(text || '');
+                const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+                if (!phone) {
+                    if (isMobile) {
+                        window.location.href = 'whatsapp://send?text=' + message;
+                    } else {
+                        window.open('https://web.whatsapp.com/send?text=' + message, '_blank');
+                    }
+                    return;
+                }
+                if (isMobile) {
+                    window.location.href = 'whatsapp://send?phone=' + phone + '&text=' + message;
+                } else {
+                    window.location.href = 'https://web.whatsapp.com/send?phone=' + phone + '&text=' + message;
+                }
+            }
+
+            async function trySharePosterImage(file, title, text) {
+                if (!navigator.share) return false;
+                const payload = { files: [file], title: title, text: text };
+                try {
+                    if (navigator.canShare && !navigator.canShare({ files: [file] })) {
+                        return false;
+                    }
+                    await navigator.share(payload);
+                    return true;
+                } catch (err) {
+                    const msg = String((err && err.message) || err || '').toLowerCase();
+                    if (err && (err.name === 'AbortError' || msg.includes('cancel'))) {
+                        return true; // user cancelled share sheet
+                    }
+                    console.warn('Poster image share failed', err);
+                    return false;
+                }
+            }
+
+            function buildShareMessage(parent) {
+                const student = ($scope.userInfo && $scope.userInfo.FullName) || 'student';
+                const school = ($scope.orgInfo && $scope.orgInfo.Name) || 'School';
+                let msg = 'Warm birthday wishes for ' + student + ' from ' + school + ' 🎉';
+                if (parent && parent.Name) {
+                    msg += '\nTo: ' + parent.Name;
+                }
+                return msg;
+            }
 
             // --- Fetching Data and Controller Logic ---
             function getQueryParams() {
@@ -432,6 +538,15 @@
 
             $scope.errorMessage = '';
             $scope.parentList = [];
+            $scope.sharing = false;
+            $scope.sharingParentId = null;
+            $scope.shareStatus = '';
+
+            $scope.parentKey = function (p) {
+                if (!p) return 'none';
+                return String(p.Mobile || '') + '|' + String(p.Name || '') + '|' + String(p.RelationId || '');
+            };
+
             if (!ReportShare.hasToken()) {
                 $scope.errorMessage = 'Open this birthday poster from the School Vertex app.';
                 return;
@@ -446,33 +561,62 @@
                 $scope.$applyAsync();
             });
 
-            // Share button click
             $scope.shareWhatsApp = function () {
+                $scope.shareStatus = '';
                 $scope.showParentModal = true;
             };
 
-            // Close modal
             $scope.closeParentModal = function () {
+                if ($scope.sharing) return;
                 $scope.showParentModal = false;
+                $scope.shareStatus = '';
+                $scope.sharingParentId = null;
             };
 
-            // Open WhatsApp for selected parent
-            $scope.shareToParent = function (mobile) {
-                const message = encodeURIComponent(
-                    `Warm birthday wishes from ${$scope.orgInfo?.Name || 'School'} 🎉`
-                );
+            // Capture poster PNG and share as image (WhatsApp via system share sheet when available)
+            $scope.shareToParent = async function (parent) {
+                if ($scope.sharing) return;
 
-                const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+                const studentName = ($scope.userInfo && $scope.userInfo.FullName) || 'Birthday';
+                const fileName = studentName.replace(/[^\w\- ]+/g, '').trim() || 'Birthday';
+                const title = 'Happy Birthday - ' + studentName;
+                const text = buildShareMessage(parent);
+                const mobile = parent && parent.Mobile;
 
-                if (isMobile) {
-                    window.location.href = `whatsapp://send?phone=${mobile}&text=${message}`;
-                } else {
-                    // SAME TAB – no duplicates ever
-                    window.location.href =
-                        `https://web.whatsapp.com/send?phone=${mobile}&text=${message}`;
+                $scope.sharing = true;
+                $scope.sharingParentId = $scope.parentKey(parent);
+                $scope.shareStatus = 'Preparing poster image…';
+                $scope.$applyAsync();
+
+                try {
+                    const canvas = await capturePosterCanvas();
+                    const file = await canvasToPngFile(canvas, fileName + '.png');
+                    $scope.shareStatus = 'Opening share…';
+                    $scope.$applyAsync();
+
+                    const shared = await trySharePosterImage(file, title, text);
+                    if (shared) {
+                        $scope.shareStatus = 'Poster shared.';
+                        $scope.showParentModal = false;
+                        return;
+                    }
+
+                    // Browser cannot attach images to wa.me links — download then open chat.
+                    downloadPosterFile(file);
+                    $scope.shareStatus = mobile
+                        ? 'Poster downloaded. Opening WhatsApp — attach the image in the chat.'
+                        : 'Poster downloaded. Attach it in WhatsApp.';
+                    $scope.$applyAsync();
+                    openWhatsAppChat(mobile, text + '\n\n(Attach the birthday poster image)');
+                } catch (err) {
+                    console.error(err);
+                    $scope.shareStatus = (err && err.message) || 'Unable to share poster image.';
+                } finally {
+                    $scope.sharing = false;
+                    $scope.sharingParentId = null;
+                    $scope.$applyAsync();
                 }
             };
-
 
         });
     </script>

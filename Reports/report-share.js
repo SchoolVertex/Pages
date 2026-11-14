@@ -95,6 +95,47 @@
     return apiBase().replace(/\/api$/i, "") + "/";
   }
 
+  function normalizePagesBase(url) {
+    var value = String(url || "").trim();
+    if (!value) return "";
+    if (!/^https?:\/\//i.test(value)) return "";
+    return value.replace(/\/+$/, "");
+  }
+
+  /** Pages site root (github.io or local override via ?pagesBase= / environment). */
+  function pagesBase() {
+    var q = queryParams();
+    var fromQuery = normalizePagesBase(q.pagesBase || q.pages);
+    if (fromQuery) {
+      try {
+        sessionStorage.setItem("sv_pages_base", fromQuery);
+      } catch (e) {}
+      return fromQuery;
+    }
+    try {
+      var stored = normalizePagesBase(sessionStorage.getItem("sv_pages_base") || "");
+      if (stored) return stored;
+    } catch (e) {}
+    var path = String(location.pathname || "");
+    var reportsIdx = path.toLowerCase().lastIndexOf("/reports/");
+    if (reportsIdx >= 0) {
+      return location.origin + path.substring(0, reportsIdx);
+    }
+    var birthdayIdx = path.toLowerCase().lastIndexOf("/birthday/");
+    if (birthdayIdx >= 0) {
+      return location.origin + path.substring(0, birthdayIdx);
+    }
+    return "https://schoolvertex.github.io/Pages";
+  }
+
+  function pagesUrl(path) {
+    return (
+      pagesBase().replace(/\/+$/, "") +
+      "/" +
+      String(path || "").replace(/^\/+/, "")
+    );
+  }
+
   function token() {
     var q = queryParams();
     return String(q.t || q.token || "").trim();
@@ -401,6 +442,8 @@
     token: token,
     apiBase: apiBase,
     apiRoot: apiRoot,
+    pagesBase: pagesBase,
+    pagesUrl: pagesUrl,
     homeUrl: appHomeUrl,
     goHome: goHome,
     hasToken: function () {

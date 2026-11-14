@@ -655,7 +655,7 @@
       };
 
       $scope.posterUrl = function(item) {
-        // Same as Certificates: GitHub Pages Birthday.html + per-user Birthday token.
+        // Birthday.html on pages host (environment.pagesBase locally, else github.io).
         var posterToken = item && (item.PosterToken || item.posterToken);
         if (!posterToken) return '#';
         var params = new URLSearchParams();
@@ -664,8 +664,11 @@
         if (api) {
           params.set('apiBase', api);
         }
-        return 'https://schoolvertex.github.io/Pages/Birthday/Birthday.html?' +
-          params.toString();
+        var pages = ReportShare.pagesBase && ReportShare.pagesBase();
+        if (pages) {
+          params.set('pagesBase', pages);
+        }
+        return ReportShare.pagesUrl('Birthday/Birthday.html') + '?' + params.toString();
       };
 
       $scope.setFilter = function(filter) {
