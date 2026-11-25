@@ -3,7 +3,7 @@
   "UploadSource": "GIN",
   "ReportsGitBranch": "",
   "AppUpdate": {
-    "AppVersion": 500,
+    "AppVersion": 50002,
     "SoftUpdate": true,
     "ForceUpdate": false
   },
