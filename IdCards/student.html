@@ -1819,11 +1819,37 @@
         return params;
       }
 
+      // The app opens this page with only ?t=<signed token>. The ids live inside
+      // the token payload (r=report, u=user, o=org, s=section, b=batch), so read
+      // them from there; legacy ?userId=&orgId= query params still win if present.
+      function readTokenPayload() {
+        try {
+          var parts = String(ReportShare.token() || "").split(".");
+          if (parts.length !== 3) return {};
+          var b64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+          while (b64.length % 4) b64 += "=";
+          var json = decodeURIComponent(
+            atob(b64)
+              .split("")
+              .map(function (c) {
+                return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+              })
+              .join("")
+          );
+          return JSON.parse(json) || {};
+        } catch (e) {
+          return {};
+        }
+      }
+
       var query = getQueryParams();
-      var userId = query.userId || query.userid
+      var tokenPayload = readTokenPayload();
+      var tokenReport = String(tokenPayload.r || "").toLowerCase();
+      var userId = query.userId || query.userid || (tokenPayload.u > 0 ? tokenPayload.u : undefined);
       var classId = parseInt(query.classId || query.classid || 0);
-      var sectionId = parseInt(query.sectionId || query.sectionid || 0);
-      var orgId = query.orgId || query.orgid;
+      var sectionId = parseInt(query.sectionId || query.sectionid || tokenPayload.s || 0) || 0;
+      var batchId = parseInt(query.batchId || query.batchid || tokenPayload.b || 0) || 0;
+      var orgId = query.orgId || query.orgid || (tokenPayload.o > 0 ? String(tokenPayload.o) : undefined);
 
       // Optional format override via query: ?format=1|2|3
       if (query.format) {
@@ -1958,7 +1984,12 @@
         return;
       }
 
-      if (userId || sectionId > 0 || classId > 0) {
+      // Id-Card-Org token => org-wide "missing cards" flow; otherwise single/section/batch card.
+      var isOrgFlow = tokenReport
+        ? tokenReport === "id-card-org"
+        : !(userId || sectionId > 0 || classId > 0 || batchId > 0) && !!orgId;
+
+      if (!isOrgFlow) {
         ReportShare.loadIdCard($http).then(function (result) {
           applyOrgInfo(result.orgInfo);
           if (result.card) {
